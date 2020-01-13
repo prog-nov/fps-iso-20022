@@ -1,0 +1,151 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ObjectFactory;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.adaptor.prefix.FFPIclfpsMsgNamespacePrefixMapper;
+import com.forms.ffp.adaptor.xml.writer.FFPCDataXMLStreamWriter;
+import com.forms.ffp.core.config.FFPConnectorConfig;
+import com.forms.ffp.core.define.FFPConstants;
+import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
+
+public class FFPParticipantMessageConverter
+{
+	private static Logger _logger = LoggerFactory.getLogger(FFPParticipantMessageConverter.class);
+
+	public static String packageXml(FpsMessageEnvelope fpsMessageEnvelope) throws Exception
+	{
+		return packageXml(fpsMessageEnvelope, new ValidationEventHandler()
+		{
+			public boolean handleEvent(ValidationEvent event)
+			{
+				if (event.getMessage().contains("http://www.w3.org/2000/09/xmldsig#"))
+				{
+					return true;
+				}
+				throw new RuntimeException(String.format("Marshal XML Error: %s (Object: %s)",
+						new Object[] { event.getMessage(), (event.getLocator() != null) && (event.getLocator().getObject() != null) ? event.getLocator().getObject().getClass() : "null" }));
+			}
+		});
+	}
+
+	public static String packageXml(FpsMessageEnvelope fpsMessageEnvelope, ValidationEventHandler handler) throws Exception
+	{
+		String xml = null;
+		Marshaller marshaller = null;
+
+		try
+		{
+			JAXBContext context = JAXBContext.newInstance(FFPJaxbConstants.JAXB_CONTEXT_PACKAGE_ICLFPS);
+			marshaller = context.createMarshaller();
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", new FFPIclfpsMsgNamespacePrefixMapper());
+			marshaller.setProperty("jaxb.formatted.output", Boolean.valueOf(true));
+			marshaller.setProperty("jaxb.encoding", "UTF-8");
+			marshaller.setEventHandler(handler);
+			JAXBElement<FpsMessageEnvelope> e = (new ObjectFactory()).createFpsMsg(fpsMessageEnvelope);
+			StringWriter sw = new StringWriter();
+			XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(sw);
+			marshaller.marshal(e, new FFPCDataXMLStreamWriter(new IndentingXMLStreamWriter(xmlStreamWriter)));
+			xml = sw.toString();
+		} catch (PropertyException arg20)
+		{
+			_logger.error("marshal PropertyException: " + arg20.getMessage());
+			arg20.printStackTrace();
+			throw new RuntimeException(String.format("PropertyException: %s", new Object[] { arg20.getMessage() }));
+		} catch (JAXBException arg21)
+		{
+			_logger.error("marshal JAXBException: " + arg21.getMessage());
+			arg21.printStackTrace();
+			throw new RuntimeException(String.format("JAXBException: %s", new Object[] { arg21.getMessage() }));
+		} catch (Exception arg22)
+		{
+			_logger.error("marshal Exception: " + arg22.getMessage());
+			arg22.printStackTrace();
+			throw new RuntimeException(String.format("Exception: %s", new Object[] { arg22.getMessage() }));
+		}
+		return xml;
+	}
+
+	public static ROOT parseObject(String message) throws Exception
+	{
+		Unmarshaller unmarshaller = null;
+		try
+		{
+
+			int len = Integer.valueOf(message.substring(0, 8));
+			String str1 = message.substring(8, len + 8);
+			
+			String str = message.toString();
+			int length = str.length();
+			System.out.println("length:"+length);
+			int leng = Integer.valueOf(str.substring(0, 8));
+			int start = str.indexOf('<');
+			str = str.substring(start, length);
+
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(str1));
+			Document doc = db.parse(is);
+			
+			Node headDoc = doc.getElementsByTagName("HEAD").item(0);
+			JAXBContext con = JAXBContext.newInstance(HEAD.class);
+			unmarshaller = con.createUnmarshaller();
+			JAXBElement<HEAD> headElement = unmarshaller.unmarshal(headDoc, HEAD.class);
+			HEAD head = headElement.getValue();
+			
+			Node bodyDoc = doc.getElementsByTagName("BODY").item(0);
+			String packageName = FFPJaxbConstants.JAXB_CONTEXT_PACKAGE_PARTICIPANT_REQUEST + "." + head.getMessageType().toLowerCase();
+			
+			con = JAXBContext.newInstance(packageName);
+			unmarshaller = con.createUnmarshaller();
+			JAXBElement<?> bodyElement = (JAXBElement<?>)unmarshaller.unmarshal(bodyDoc);
+			Object object = bodyElement.getValue();
+
+			ROOT root = new ROOT();
+			root.setHEAD(head);
+			root.setBODY(object);
+			return root;
+		}catch (JAXBException e)
+		{
+			Object displayExpt = e;
+			if (e.getLinkedException() != null)
+			{
+				displayExpt = e.getLinkedException();
+			}
+
+			_logger.error(String.format("unmarshal %s: %s", new Object[] { displayExpt.getClass().getSimpleName(), ((Throwable) displayExpt).getMessage() }));
+			e.printStackTrace();
+			throw new RuntimeException(String.format("%s: %s", new Object[] { displayExpt.getClass().getSimpleName(), ((Throwable) displayExpt).getMessage() }));
+		} catch (Exception arg25)
+		{
+			_logger.error("unmarshal Exception: " + arg25.getMessage());
+			arg25.printStackTrace();
+			throw new RuntimeException(String.format("Exception: %s", new Object[] { arg25.getMessage() }));
+		}
+	}
+}

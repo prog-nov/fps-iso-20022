@@ -1,0 +1,6 @@
+#transferName = isb
+#transferProtocol = isb
+#defaultLocalInputPath = WORKING/
+#defaultLocalOutputPath = WORKING/
+#defaultRemoteInputPath = ISB/
+#defaultRemoteOutputPath = ISB/

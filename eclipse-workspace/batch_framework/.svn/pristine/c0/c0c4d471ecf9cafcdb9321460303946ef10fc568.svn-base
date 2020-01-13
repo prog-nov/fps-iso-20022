@@ -1,0 +1,252 @@
+package com.forms.framework.util;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+/**
+ * date util
+ * 
+ * @author ahnan createDate:2011-04-28 updateDate:2011-04-28
+ */
+public class DateUtil
+{
+	public static final String BATCH_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss"; // default
+
+	// data
+	// time
+	// pattern
+
+	public static final String BATCH_DATE_FORMAT = "yyyy-MM-dd"; // default data
+
+	public static final String BATCH_DATE_FORMAT_NO_SPLIT = "yyyyMMdd"; // default data
+	// pattern
+
+	/**
+	 * Convert a string to date,a_format is the format for parameter a_date
+	 */
+	public static Date stringToDate(String ip_a_date, String ip_a_format)
+			throws ParseException
+	{
+		SimpleDateFormat loc_sdf = new SimpleDateFormat(ip_a_format);
+		return loc_sdf.parse(ip_a_date);
+	}
+
+	/**
+	 * Convert a format date string to date
+	 */
+	public static Date stringToDate(String ip_a_date) throws ParseException
+	{
+
+		return stringToDate(ip_a_date, BATCH_DATE_FORMAT);
+	}
+
+	/**
+	 * Convert a date to string,a_format is the format for result.
+	 */
+	public static String dateToString(Date ip_a_date, String ip_a_format)
+	{
+		SimpleDateFormat loc_sdf = new SimpleDateFormat(ip_a_format);
+		return loc_sdf.format(ip_a_date);
+	}
+
+	/**
+	 * Convert a date to string
+	 */
+	public static String dateToString(Date ip_a_date)
+	{
+		return dateToString(ip_a_date, BATCH_DATE_FORMAT);
+	}
+
+	public static String parseFrequence(String ip_a_date)
+			throws BatchFrameworkException
+	{
+		return "DAMSHY";
+	}
+
+	public static java.util.Date addDays(java.util.Date ip_a_date, int ip_a_days)
+	{
+		Calendar loc_c = Calendar.getInstance();
+		loc_c.setTime(ip_a_date);
+		loc_c.add(5, ip_a_days);
+		return loc_c.getTime();
+	}
+
+	public static String addDays(String ip_a_date, String ip_a_format,
+			int ip_a_days) throws ParseException
+	{
+		java.util.Date date = addDays(stringToDate(ip_a_date, ip_a_format),
+				ip_a_days);
+		return dateToString(date, ip_a_format);
+	}
+
+	public static String addAcDays(String ip_a_date, String ip_a_format,
+			int ip_a_days) throws Exception
+	{
+		return getTargetWorkingDate(stringToDate(ip_a_date, ip_a_format),
+				ip_a_days);
+	}
+
+	public static String addAcDays(String ip_a_date, int ip_a_days)
+			throws Exception
+	{
+		return addAcDays(ip_a_date, BATCH_DATE_FORMAT, ip_a_days);
+	}
+
+	public static String getTargetWorkingDate(Date ip_date, int ip_days)
+			throws Exception
+	{
+		return dateToString(new Date());
+	}
+
+	public static boolean isHoliday(Date ip_date) throws Exception
+	{
+		return false;
+	}
+
+	/**
+	 * Get the system date
+	 */
+	public static Date getSysDatetime()
+	{
+		Calendar loc_cal = Calendar.getInstance();
+		Date loc_dt = loc_cal.getTime();
+		return loc_dt;
+	}
+
+	/**
+	 * Get the system date
+	 */
+	public static String getSysDate()
+	{
+		Calendar loc_cal = Calendar.getInstance();
+		Date loc_dt = loc_cal.getTime();
+		return dateToString(loc_dt);
+	}
+
+	/**
+	 * Provide the account date by specified format
+	 */
+	public static String getCurAcDate(String ip_a_format)
+	{
+		return dateToString(new Date(), ip_a_format);
+	}
+
+	/**
+	 * Provide the account date by default format
+	 */
+	public static String getCurAcDate()
+	{
+		return getCurAcDate(BATCH_DATE_FORMAT);
+	}
+
+	/**
+	 * getacdate add day
+	 */
+	public static String getAcDate(String ip_a_format, int ip_a_days)
+	{
+		String loc_acDate = getCurAcDate(ip_a_format);
+
+		try
+		{
+			loc_acDate = addDays(loc_acDate, ip_a_format, ip_a_days);
+		} catch (Exception ip_e)
+		{
+			ip_e.printStackTrace();
+		}
+		return loc_acDate;
+	}
+
+	/**
+	 * getacdate add day
+	 */
+	public static String getAcDate(int ip_a_days)
+	{
+		return getAcDate(BATCH_DATE_FORMAT, ip_a_days);
+	}
+
+	public static String getAcDate() throws BatchFrameworkException
+	{
+		Date loc_acDate = (Date) getAcDateFromDB().get("BATCH_ACDT");
+		if (loc_acDate == null)
+		{
+			throw new BatchFrameworkException("acDate is null");
+		}
+		return DateUtil.dateToString(loc_acDate);
+	}
+
+	public static Map<String, Object> getAcDateFromDB()
+			throws BatchFrameworkException
+	{
+		try
+		{
+			ConnectionManager loc_connManager = ConnectionManager.getInstance();
+			String loc_schema = loc_connManager.getDefaultSchema();
+			Map<String, Object> loc_acDate = EntityManager
+					.queryMap("SELECT BATCH_ACDT BATCH_ACDT FROM "
+							+ loc_schema + ".TB_SS_SYSTEM ");
+			return loc_acDate;
+		} catch (Exception ip_exception)
+		{
+			throw new BatchFrameworkException(ip_exception);
+		}
+	}
+
+	/**
+	 * Is an account date?
+	 * 
+	 * @throws Exception
+	 */
+	public static boolean isAcDate(Date ip_date) throws Exception
+	{
+		return true;
+	}
+	
+	public static boolean isDate(String ip_date) throws Exception
+	{
+		try
+		{
+			if (ip_date == null || ip_date.length() == 0)
+				return false;
+			
+			if (ip_date.length() != 8 && ip_date.length() != 10)
+				return false;
+			
+			StringBuffer loc_sb = new StringBuffer();
+			
+			// remove all non-digit characters
+			for (int i = 0; i < ip_date.length(); i++) {
+				char c = ip_date.charAt(i);
+				if ((c >= '0') && (c <= '9'))
+					loc_sb.append(c);
+			}
+			String loc_hostFmtDate = new String(loc_sb);
+			if (loc_hostFmtDate.length() != 8)
+				return false;
+			
+			SimpleDateFormat loc_sdf = new SimpleDateFormat(BATCH_DATE_FORMAT_NO_SPLIT, Locale.ENGLISH);
+			Date loc_date = loc_sdf.parse(loc_hostFmtDate);
+			String loc_formattedDate = loc_sdf.format(loc_date);
+			
+			if (loc_hostFmtDate.equals(loc_formattedDate))
+				return true;
+			else
+				return false;
+		}catch (Exception ip_exception)
+		{
+			throw ip_exception;
+		}
+	}
+
+	public static void main(String[] args) throws Exception
+	{
+		System.out.println(stringToDate("20340224202640", "yyyyMMddHHmmss"));
+	}
+}

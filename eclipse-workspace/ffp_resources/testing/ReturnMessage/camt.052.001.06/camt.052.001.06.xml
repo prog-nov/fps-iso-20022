@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fps:FpsMsg xmlns:fps="urn:hkicl:fps:xsd:fps.envelope.01" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:hkicl:fps:xsd:fps.envelope.01 fps.envelope.01.xsd">
+	<fps:NbOfMsgs>1</fps:NbOfMsgs>
+	<fps:FpsPylds>
+		<fps:BizData>
+			<ah:AppHdr xmlns:ah="urn:iso:std:iso:20022:tech:xsd:head.001.001.01">
+				<ah:Fr>
+					<ah:FIId>
+						<ah:FinInstnId>
+							<ah:ClrSysMmbId>
+								<ah:MmbId>##FrMmbId##</ah:MmbId>
+							</ah:ClrSysMmbId>
+						</ah:FinInstnId>
+					</ah:FIId>
+				</ah:Fr>
+				<ah:To>
+					<ah:FIId>
+						<ah:FinInstnId>
+							<ah:ClrSysMmbId>
+								<ah:MmbId>##ToMmbId##</ah:MmbId>
+							</ah:ClrSysMmbId>
+						</ah:FinInstnId>
+					</ah:FIId>
+				</ah:To>
+				<ah:BizMsgIdr>ICL##yyyyMMddhhmmss####random##</ah:BizMsgIdr>
+				<ah:MsgDefIdr>camt.052.001.06</ah:MsgDefIdr>
+				<ah:BizSvc>##BizSvc##</ah:BizSvc>
+				<ah:CreDt>##yyyy-MM-ddThh:mm:ss.sssZ##</ah:CreDt>
+			</ah:AppHdr>
+			<doc:Document xmlns:doc="urn:iso:std:iso:20022:tech:xsd:camt.052.001.06">
+				<BkToCstmrAcctRpt>
+					<GrpHdr>
+						<doc:MsgId>ICL##yyyyMMddhhmmss####random##</doc:MsgId>
+						<doc:CreDtTm>##yyyy-MM-ddThh:mm:ss.sss##</doc:CreDtTm>
+					</GrpHdr>
+					<Rpt>
+						<Id>ICL##yyyyMMddhhmmss####random##</Id>
+						<CreDtTm>##yyyy-MM-ddThh:mm:ss.sss##</CreDtTm>
+						<Acct>
+							<Id>
+								<Othr>
+									<Id>##ToMmbId##</Id>
+								</Othr>
+							</Id>
+							<Ccy>##Currency##</Ccy>
+						</Acct>
+						<Bal>
+							<Tp>
+								<CdOrPrtry>
+									<Cd>ITAV</Cd>
+								</CdOrPrtry>
+							</Tp>
+							<Amt Ccy="HKD">10000</Amt>
+							<CdtDbtInd>CRDT</CdtDbtInd>
+							<Dt>
+								<DtTm>##yyyy-MM-ddThh:mm:ss.sss##</DtTm>
+							</Dt>
+						</Bal>
+					</Rpt>
+				</BkToCstmrAcctRpt>
+			</doc:Document>
+		</fps:BizData>
+	</fps:FpsPylds>
+	<Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+		<SignedInfo>
+			<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments" />
+			<SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+			<Reference URI="">
+				<Transforms>
+					<Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+				</Transforms>
+				<DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+				<DigestValue>9SUnqHtLS2wQD9/BO2ADiezELw70QpX8Gf/V2iHDFJs=</DigestValue>
+			</Reference>
+		</SignedInfo>
+		<SignatureValue>q7gDv8NUD6olmSvsZx0ZTaF0BQ4yGugVsLJUh842YxKW3oaZ/T5F7CrMocVv/MhBWNBFnuY/k3oq
+			gcJMFh0gxX6AqcOCMjPk+EIHokIRu7f2Oq2Bali8QB3W0yVHtmW9HBYsH4Wx5XNwoqQrQkyKgeTf
+			no/GKPfw1jpyWp+NwlgrsNKvEHg236N4S2HrqePAUWH5CYx7Sn8pX9mXWriRDZr/WtHsv76r8YuX
+			vK0xyngPjzsdumMAQE32HyySi4HvJSBz2+E6kep9iBl3duSJUYxpEgZVZC09OoIypZghP0zogIEn
+			ElH4fYVNoBq1y+WR927Q3rBYHlyjINZIUfcO0w==
+		</SignatureValue>
+		<KeyInfo>
+			<X509Data>
+				<X509Certificate>MIIC1zCCAkACBRURM1DGMA0GCSqGSIb3DQEBCwUAMGMxCzAJBgNVBAYTAkhLMQswCQYDVQQIDAJI
+					SzELMAkGA1UEBwwCSEsxGjAYBgNVBAoMEUhLSUNMIFBBUlRJQ0lQQU5UMQ4wDAYDVQQLDAVIS0lD
+					TDEOMAwGA1UEAwwFSEtJQ0wwHhcNMTcxMTI5MDYzNzAyWhcNMjcxMTI3MDYzNzAyWjB9MQswCQYD
+					VQQGEwJISzESMBAGA1UECAwJSG9uZyBLb25nMRIwEAYDVQQHDAlIb25nIEtvbmcxFjAUBgNVBAoM
+					DXBhcnRpY2lwYW50MzIxFjAUBgNVBAsMDXBhcnRpY2lwYW50MzIxFjAUBgNVBAMMDXBhcnRpY2lw
+					YW50MzIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC63mXdKTaPGC96vs672KvzmYuJ
+					hD0rn4wycvmeFXZ/IyonViFOkM2xUXxiLaa/7OE2okHGkEoy1gCeMAVLFkU4I4PlIascJHNfHTtF
+					XyzYlJpaELky28EiZF3TQrKg53ysVnnSw4rhK4ula6zTdiMNTtZAQOz+h3GVyJSbv1XqIzf9pDmp
+					yIv9TtlK9TeBxtQDgfi0sUvwSJDqXdjzBFyXtwEWwAr8eU/wjcJI7nCHkZRFZgmmBoaSgkOPLoG0
+					O82qNGO5q7SQla31vEXoR2mLr3Zm76vKYDTmdmRDIHVsI/T6uqn73ymzvn7nFJ/VPorlHWAw/P7O
+					LAeU68PFsVRxAgMBAAEwDQYJKoZIhvcNAQELBQADgYEAkS/ZUsnN/u0cjCppq4NlARfGCYxb9mrc
+					stY7Z14LjZrmbUIc73QyYzM4i6aZTriWV3CSYCGAYHlZuzefDvnKwAKhYDeoGU2haGFNzfzKKr0m
+					MZ8BViFr4v/60/1P+A0eOkxl28xRjtqPhod05CEg0g/Ih8i1M1FGZTFCfZnMYvw=
+				</X509Certificate>
+			</X509Data>
+		</KeyInfo>
+	</Signature>
+</fps:FpsMsg>

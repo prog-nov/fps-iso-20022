@@ -1,0 +1,311 @@
+package com.forms.ffp.bussiness.iclfps.pacs004;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.OriginalTransactionReference241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PaymentTransaction761;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.FFPIDaoService_TxjnlAction;
+import com.forms.ffp.persistents.service.payment.returnrefund.FFPDaoService_P300;
+
+@Component("ICL.pacs.004.001.07")
+@Scope("prototype")
+public class FFPTxpacs004 extends FFPTxBase {
+
+
+	@Resource(name = "FFPDaoService_TxjnlAction")
+	private FFPIDaoService_TxjnlAction txJnlActionService;
+
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+
+	@Resource(name = "FFPDaoService_P300")
+	private FFPDaoService_P300 dao300;
+
+	@Override
+	public void perform() throws Exception {
+		if ("ICL.pacs.004.001.07".equals(this.serviceName)) {
+
+			FFPMsgVo_Pacs004 p004 = (FFPMsgVo_Pacs004) this.txVo;
+
+			List<FFPVO_Pacs004_TxInf> list = p004.getTxinf();
+
+			if (null == list)
+				return;
+			for (FFPVO_Pacs004_TxInf c : list) {
+				
+				FFPJbP300 p300 = c.getP300();
+				Object obj = txJnlService.inquiryById(p300.getTxJnl().getTransactionId(),
+						p300.getTxJnl().getEndToEndId());
+
+				/**
+				 * if we have no data about this,ignore it?
+				 */
+				if (!(obj instanceof FFPJbBase))
+					continue;
+
+				String jnlNo = FFPIDUtils.getJnlNo();
+				FFPJbBase base = (FFPJbBase) obj;
+				Date loc_date = new Date();
+
+				List<FFPTxJnlAction> listAction = p300.getJnlActionList();
+				/**
+				 * the only possible status is  refund
+				 */
+				String returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus();
+				
+				// pacs004 action
+				FFPTxJnlAction jnlAction = FFPJnlUtils.getInstance().newJnlAction(jnlNo, p004.getBizMsgIdr(),
+						FFPConstants.MSG_DIRECTION_INWARD,
+						p004.getFromClrSysMmbId() != null ? p004.getFromClrSysMmbId(): p004.getFromBic(),
+						p004.getMsgDefIdr(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(),
+						p004.getCreateDate(), loc_date, loc_date, "");
+				
+				
+
+				// rri01 response action
+				FFPTxJnlAction jnlAction1 = null;
+				
+				/**
+				 * use old srcRefNm
+				 */
+				c.getP300().setSrcRefNm(base.getTxJnl().getSrcRefNm());
+				
+				FFPMsgPacs004_RRI01 pr = new FFPMsgPacs004_RRI01(c);
+				// rri01 request action
+				FFPTxJnlAction jnlAction2 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pr.getReqRefNo(),
+						FFPConstants.MSG_DIRECTION_INWARD, pr.getRequestID(), pr.getMsgType(),
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_APPST.getStatus(), loc_date, loc_date, loc_date, "");
+				listAction.add(jnlAction);
+				
+				String rejCode=null;
+				String rejReason= null;
+
+				// update txjnl
+				try {
+					FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(pr);
+					if (response != null) {
+						FFPSendTcpMessageResp msgResp = (FFPSendTcpMessageResp) response;
+						jnlAction2.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+						pr.unmarshalResponseMsg(msgResp.getRespMessage());
+						if (null != c.getReply()) {
+
+							jnlAction1 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pr.getResRefNo(),
+									FFPConstants.MSG_DIRECTION_INWARD, pr.getRequestID(), pr.getMsgType(),
+									FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), loc_date, loc_date,
+									loc_date, null);
+							
+							if ("R".equals(c.getReply().getRsltCd())) {// RJCT
+								returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+								rejCode=c.getReply().getRejCd();
+								rejReason=c.getReply().getRejMsg();
+							}
+						}
+						
+					} else {// time out
+						returnSts = FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus();
+					}
+				} catch (Exception ip_e) {// TODO
+					ip_e.printStackTrace();
+					returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus();
+				} finally {
+
+					// update status
+					if (returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus())) {
+						base.getTxJnl().setTxStat(returnSts);
+					}
+					base.getTxJnl().setJnlRef(jnlNo);
+					dao300.updateTxjnl(base.getTxJnl());
+					
+					if (null != jnlAction)
+						listAction.add(jnlAction);
+					if (null != jnlAction1)
+						listAction.add(jnlAction1);
+					if (null != jnlAction2)
+						listAction.add(jnlAction2);
+
+					FFPTxJnl txjnl = new FFPTxJnl();
+					txjnl.setJnlNo(jnlNo);
+					if (returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus())) {
+						txjnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus());
+					} else {
+						txjnl.setTxStat(returnSts);
+					}
+					txjnl.setTxMode(FFPConstants.RUNNING_MODE_REALTIME);
+					txjnl.setSrcRefNm(base.getTxJnl().getSrcRefNm());
+					txjnl.setTxRejCode(rejCode);
+					txjnl.setTxRejReason(rejReason);
+					txjnl.setJnlRef(base.getTxJnl().getJnlNo());
+//					txjnl.setTransactionId(null);
+//					txjnl.setEndToEndId(null);
+					txjnl.setTxSrc("FFP");
+					txjnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_P300.getCode());
+					p300.setTxJnl(txjnl);
+					// insert p300dat action
+					dao300.sInsert(p300);
+				}
+
+			}
+		}
+
+	}
+
+
+	@Override
+	public void validate() throws Exception {
+		// TODO Auto-generated method stub
+		// FFPMsgVo_Pacs004 loc_vo = (FFPMsgVo_Pacs004) txVo;
+
+	}
+
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+		if ("ICL.pacs.004.001.07".equals(this.serviceName)) {
+			txVo = new FFPMsgVo_Pacs004();
+
+			parseISO20022BizDataHead(bizData);
+
+			FFPMsgVo_Pacs004 p004 = (FFPMsgVo_Pacs004) this.txVo;
+
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+
+			List<FFPVO_Pacs004_TxInf> list = getFFPVO_Pacs004_TxInfList(doc);
+
+			p004.setTxinf(list);
+
+		}
+	}
+
+	private List<FFPVO_Pacs004_TxInf> getFFPVO_Pacs004_TxInfList(Document doc) {
+		List<PaymentTransaction761> list = doc.getPmtRtr().getTxInf();
+
+		if (doc.getPmtRtr().getGrpHdr().getNbOfTxs().compareTo(String.valueOf(list.size())) != 0)
+			return null;
+		List<FFPVO_Pacs004_TxInf> listTxinf = new ArrayList<>();
+		FFPVO_Pacs004_TxInf txinf = null;
+		
+
+		/**
+		 * one pacs004 have one jnlno
+		 */
+//		String jnlno = FFPIDUtils.getJnlNo();
+
+		for (PaymentTransaction761 c : list) {
+			txinf = new FFPVO_Pacs004_TxInf();
+			FFPJbP300 p300 = new FFPJbP300();
+
+
+			/**
+			 * set TXJNL
+			 */
+			FFPTxJnl txjnl = new FFPTxJnl();
+			txjnl.setEndToEndId(c.getOrgnlEndToEndId());
+			txjnl.setTransactionId(c.getOrgnlTxId());
+			p300.setTxJnl(txjnl);
+
+			p300.setReturnId(c.getRtrId());
+//			p300.setJnlRef(jnlno);
+
+			/**
+			 * dateformat yyyy-MM-dd
+			 */
+			p300.setSettlementDate(FFPDateUtils.getDate(
+					c.getIntrBkSttlmDt().toString() == null ? new Date().toString() : c.getIntrBkSttlmDt().toString(),
+					FFPDateUtils.ISO_DATE_FORMAT));
+
+			if (null != c.getRtrdInstdAmt()) {
+				p300.setRetInsCur(c.getRtrdInstdAmt().getCcy().value());
+				p300.setRetInsAmt(c.getRtrdInstdAmt().getValue());
+			}
+			p300.setRetIntSetAmt(c.getRtrdIntrBkSttlmAmt().getValue());
+			p300.setRetIntSetCur(c.getRtrdIntrBkSttlmAmt().getCcy().value());
+
+			// ChrgBr ?????
+			/**
+			 * return/refund reason
+			 */
+			p300.setReasonCode(c.getRtrRsnInf().getRsn().getPrtry());
+			if (null != c.getRtrRsnInf().getAddtlInf()) {
+				StringBuilder sb = new StringBuilder();
+				for (String str : c.getRtrRsnInf().getAddtlInf())
+					sb.append(str);
+				p300.setAdditionalInformation(sb.toString());
+			}
+			if (null != c.getChrgsInf()) {
+				p300.setChargersAmount(c.getChrgsInf().getAmt().getValue());
+				p300.setChargersCurrency(c.getChrgsInf().getAmt().getCcy().value());
+			}
+
+			/**
+			 * OriginalTransaction Reference
+			 */
+			OriginalTransactionReference241 otr = c.getOrgnlTxRef();
+			p300.setOrgnlinstrAmt(otr.getIntrBkSttlmAmt().getValue());
+			p300.setOrgnlinstrCcy(otr.getIntrBkSttlmAmt().getCcy().value());
+
+			// debtorAgent information
+			p300.setOrgnlDbtrAgtBIC(otr.getDbtrAgt().getFinInstnId().getBICFI());
+			p300.setOrgnlDbtrAgtId(otr.getDbtrAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+
+			// debtor information
+			p300.setOrgnlDbtrNm(otr.getDbtr().getNm());
+			if (null != otr.getDbtr().getCtctDtls()) {
+				p300.setOrgnlDbtrPhNo(otr.getDbtr().getCtctDtls().getMobNb());
+				p300.setOrgnlDbtrEmAddr(otr.getDbtr().getCtctDtls().getEmailAdr());
+			}
+
+			// debtorAccount information
+			p300.setOrgnlDbtrAcctNoTp(otr.getDbtrAcct().getId().getOthr().getSchmeNm().getPrtry().value());
+			p300.setOrgnlDbtrAcctNo(otr.getDbtrAcct().getId().getOthr().getId());
+
+			// creditorAgent information
+			p300.setOrgnlCdtrAgtBIC(otr.getCdtrAgt().getFinInstnId().getBICFI());
+			p300.setOrgnlCdtrAgtId(otr.getCdtrAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+
+			// creditor information
+			p300.setOrgnlCdtrNm(otr.getCdtr().getNm());
+			if (null != otr.getCdtr().getCtctDtls()) {
+				p300.setOrgnlCdtrPhNo(otr.getCdtr().getCtctDtls().getMobNb());
+				p300.setOrgnlCdtrEmAddr(otr.getCdtr().getCtctDtls().getEmailAdr());
+			}
+
+			// creditorAcount information
+			p300.setOrgnlCdtrAcctNo(otr.getCdtrAcct().getId().getOthr().getId());
+			p300.setOrgnlCdtrAcctNoTp(otr.getCdtrAcct().getId().getOthr().getSchmeNm().getPrtry().value());
+
+			// reminfo
+			if (null != otr.getRmtInf())
+				p300.setOrgnlRemtInfo(otr.getRmtInf().getUstrd());
+
+			// PymtCatPrps
+			if (null != otr.getPmtTpInf())
+				p300.setOrgnlCatgyPurp(otr.getPmtTpInf().getCtgyPurp().getPrtry().value());
+
+			txinf.setP300(p300);
+			listTxinf.add(txinf);
+		}
+		return listTxinf;
+	}
+
+}

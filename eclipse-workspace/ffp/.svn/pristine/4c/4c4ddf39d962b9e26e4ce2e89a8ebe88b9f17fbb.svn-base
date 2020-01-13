@@ -1,0 +1,11 @@
+# \u54e8\u5175\u6a21\u5f0f 
+#sentinel1\u7684IP\u548c\u7aef\u53e3  
+redis.sentinel1.host=127.0.0.1 
+redis.sentinel1.port=6380  
+#sentinel2\u7684IP\u548c\u7aef\u53e3  
+redis.sentinel2.host=127.0.0.1
+redis.sentinel2.port=6381  
+#sentinel\u7684\u9274\u6743\u5bc6\u7801  
+redis.sentinel.masterName=beneform4j 
+
+

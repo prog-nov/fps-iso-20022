@@ -1,0 +1,36 @@
+package com.forms.ffp.bussiness.iclfps.pain009;
+
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pain_009_001_05.Document;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+public class FFPTxPain009 extends FFPTxBase {
+	
+	@Override
+	public void perform() throws Exception {
+		if ("ICL.pain.009.001.05".equals(this.serviceName)) {
+			
+		}
+	}
+
+	@Override
+	public boolean validate() {
+		
+		return true;
+	}
+
+	@Override
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+
+		if ("ICL.pain.009.001.05".equals(this.serviceName)) {
+			parseISO20022BizDataHead(bizData);
+
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			System.out.println("ok");
+
+			
+		}
+	}
+
+}
+

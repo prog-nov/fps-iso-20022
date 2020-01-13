@@ -1,0 +1,11 @@
+package com.forms.ffp.core.define;
+
+public class FFPConstantsMsg
+{
+	public static final String RESP_MSG_STS_SUCCESS = "COMPL";
+	public static final String RESP_MSG_STS_TMOUT = "TMOUT";
+	
+	public static final String RESP_MSG_REJCODE_ACCOUNT_ERROR = "001";
+	public static final String RESP_MSG_REJCODE_TX_CANCEL = "002";
+	
+}

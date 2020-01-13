@@ -1,0 +1,75 @@
+package com.forms.ffp.bussiness.iclfps.pacs003;
+
+import com.forms.ffp.bussiness.FFPVOBase;
+
+public class FFPVO_Pacs003 extends FFPVOBase
+{
+	private String MsgId;
+	private String CreDtTm;
+	private String SttlmMtd;
+	private String Prtry;
+	private String ClrSys;
+
+	private FFPVO_Pacs003_DrctDbtTxInf DrctDbtTxInf;
+
+	public String getMsgId()
+	{
+		return MsgId;
+	}
+
+	public void setMsgId(String msgId)
+	{
+		MsgId = msgId;
+	}
+
+	public String getCreDtTm()
+	{
+		return CreDtTm;
+	}
+
+	public void setCreDtTm(String creDtTm)
+	{
+		CreDtTm = creDtTm;
+	}
+
+	public String getSttlmMtd()
+	{
+		return SttlmMtd;
+	}
+
+	public void setSttlmMtd(String sttlmMtd)
+	{
+		SttlmMtd = sttlmMtd;
+	}
+
+	public String getPrtry()
+	{
+		return Prtry;
+	}
+
+	public void setPrtry(String prtry)
+	{
+		Prtry = prtry;
+	}
+
+	public FFPVO_Pacs003_DrctDbtTxInf getDrctDbtTxInf()
+	{
+		return DrctDbtTxInf;
+	}
+
+	public void setDrctDbtTxInf(FFPVO_Pacs003_DrctDbtTxInf drctDbtTxInf)
+	{
+		DrctDbtTxInf = drctDbtTxInf;
+	}
+
+	public String getClrSys()
+	{
+		return ClrSys;
+	}
+
+	public void setClrSys(String clrSys)
+	{
+		ClrSys = clrSys;
+	}
+
+}

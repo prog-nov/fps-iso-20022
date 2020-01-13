@@ -1,0 +1,343 @@
+package com.forms.ffp.bussiness.iclfps.pacs003;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP200;
+
+public class FFPVO_Pacs003_DrctDbtTxInf
+{
+	private String PmtIdEndToEndId;
+	private String PmtIdTxId;
+	private String PmtTpInfCtgyPrtry;
+	private String IntrBkSttlmCurrency;
+	private BigDecimal IntrBkSttlmAmt;
+	private Date IntrBkSttlmDt;
+	private String InstdCurrency;
+	private BigDecimal InstdAmt;
+
+	private String ChrgBr;
+	private String CdtrNm;
+	private String CdtrAcctIdOthId;
+	private String CdtrAcctIdOthSchPrtry;
+	private String CdtrAgtFiClrMmbId;
+
+	private String DbtrNm;
+	private String DbtrAcctIdOthId;
+	private String DbtrAcctIdOthSchPrtry;
+	private String DbtrAgtFiClrMmbId;
+	private String DrctDbtTxRltId;
+	private String DbtrContPhone;
+	private String DbtrContEmailAddr;
+	private FFPJbP200 p200Jb;
+	private FFPVO_Pacs003_DDI02REPLY ddi02Reply;
+	private String DbtrAgtBic;
+	private String CdtrAgtBic;
+	private String CdtrContPhone;
+	private String CdtrContEmailAddr;
+	private String PaymentPurposeType;
+	private String PaymentPurposeCd;
+	private String PaymentPurposeProprietary;
+	private String RemittanceInformation;
+
+	public String getPmtIdEndToEndId()
+	{
+		return PmtIdEndToEndId;
+	}
+
+	public void setPmtIdEndToEndId(String pmtIdEndToEndId)
+	{
+		PmtIdEndToEndId = pmtIdEndToEndId;
+	}
+
+	public String getPmtIdTxId()
+	{
+		return PmtIdTxId;
+	}
+
+	public void setPmtIdTxId(String pmtIdTxId)
+	{
+		PmtIdTxId = pmtIdTxId;
+	}
+
+	public String getPmtTpInfCtgyPrtry()
+	{
+		return PmtTpInfCtgyPrtry;
+	}
+
+	public void setPmtTpInfCtgyPrtry(String pmtTpInfCtgyPrtry)
+	{
+		PmtTpInfCtgyPrtry = pmtTpInfCtgyPrtry;
+	}
+
+	public String getIntrBkSttlmCurrency()
+	{
+		return IntrBkSttlmCurrency;
+	}
+
+	public void setIntrBkSttlmCurrency(String intrBkSttlmCurrency)
+	{
+		IntrBkSttlmCurrency = intrBkSttlmCurrency;
+	}
+
+	public BigDecimal getIntrBkSttlmAmt()
+	{
+		return IntrBkSttlmAmt;
+	}
+
+	public void setIntrBkSttlmAmt(BigDecimal intrBkSttlmAmt)
+	{
+		IntrBkSttlmAmt = intrBkSttlmAmt;
+	}
+
+	public Date getIntrBkSttlmDt()
+	{
+		return IntrBkSttlmDt;
+	}
+
+	public void setIntrBkSttlmDt(Date intrBkSttlmDt)
+	{
+		IntrBkSttlmDt = intrBkSttlmDt;
+	}
+
+	public String getInstdCurrency()
+	{
+		return InstdCurrency;
+	}
+
+	public void setInstdCurrency(String instdCurrency)
+	{
+		InstdCurrency = instdCurrency;
+	}
+
+	public BigDecimal getInstdAmt()
+	{
+		return InstdAmt;
+	}
+
+	public void setInstdAmt(BigDecimal instdAmt)
+	{
+		InstdAmt = instdAmt;
+	}
+
+	public String getChrgBr()
+	{
+		return ChrgBr;
+	}
+
+	public void setChrgBr(String chrgBr)
+	{
+		ChrgBr = chrgBr;
+	}
+
+	public String getCdtrNm()
+	{
+		return CdtrNm;
+	}
+
+	public void setCdtrNm(String cdtrNm)
+	{
+		CdtrNm = cdtrNm;
+	}
+
+	public String getCdtrAcctIdOthId()
+	{
+		return CdtrAcctIdOthId;
+	}
+
+	public void setCdtrAcctIdOthId(String cdtrAcctIdOthId)
+	{
+		CdtrAcctIdOthId = cdtrAcctIdOthId;
+	}
+
+	public String getCdtrAcctIdOthSchPrtry()
+	{
+		return CdtrAcctIdOthSchPrtry;
+	}
+
+	public void setCdtrAcctIdOthSchPrtry(String cdtrAcctIdOthSchPrtry)
+	{
+		CdtrAcctIdOthSchPrtry = cdtrAcctIdOthSchPrtry;
+	}
+
+	public String getCdtrAgtFiClrMmbId()
+	{
+		return CdtrAgtFiClrMmbId;
+	}
+
+	public void setCdtrAgtFiClrMmbId(String cdtrAgtFiClrMmbId)
+	{
+		CdtrAgtFiClrMmbId = cdtrAgtFiClrMmbId;
+	}
+
+	public String getDbtrNm()
+	{
+		return DbtrNm;
+	}
+
+	public void setDbtrNm(String dbtrNm)
+	{
+		DbtrNm = dbtrNm;
+	}
+
+	public String getDbtrAcctIdOthId()
+	{
+		return DbtrAcctIdOthId;
+	}
+
+	public void setDbtrAcctIdOthId(String dbtrAcctIdOthId)
+	{
+		DbtrAcctIdOthId = dbtrAcctIdOthId;
+	}
+
+	public String getDbtrAcctIdOthSchPrtry()
+	{
+		return DbtrAcctIdOthSchPrtry;
+	}
+
+	public void setDbtrAcctIdOthSchPrtry(String dbtrAcctIdOthSchPrtry)
+	{
+		DbtrAcctIdOthSchPrtry = dbtrAcctIdOthSchPrtry;
+	}
+
+	public String getDbtrAgtFiClrMmbId()
+	{
+		return DbtrAgtFiClrMmbId;
+	}
+
+	public void setDbtrAgtFiClrMmbId(String dbtrAgtFiClrMmbId)
+	{
+		DbtrAgtFiClrMmbId = dbtrAgtFiClrMmbId;
+	}
+
+	public String getDrctDbtTxRltId()
+	{
+		return DrctDbtTxRltId;
+	}
+
+	public void setDrctDbtTxRltId(String drctDbtTxRltId)
+	{
+		DrctDbtTxRltId = drctDbtTxRltId;
+	}
+
+	public String getDbtrContPhone()
+	{
+		return DbtrContPhone;
+	}
+
+	public void setDbtrContPhone(String dbtrContPhone)
+	{
+		DbtrContPhone = dbtrContPhone;
+	}
+
+	public String getDbtrContEmailAddr()
+	{
+		return DbtrContEmailAddr;
+	}
+
+	public void setDbtrContEmailAddr(String dbtrContEmailAddr)
+	{
+		DbtrContEmailAddr = dbtrContEmailAddr;
+	}
+
+	public FFPJbP200 getP200Jb()
+	{
+		return p200Jb;
+	}
+
+	public void setP200Jb(FFPJbP200 p200Jb)
+	{
+		this.p200Jb = p200Jb;
+	}
+
+	public FFPVO_Pacs003_DDI02REPLY getDdi02Reply()
+	{
+		return ddi02Reply;
+	}
+
+	public void setDdi02Reply(FFPVO_Pacs003_DDI02REPLY ddi02Reply)
+	{
+		this.ddi02Reply = ddi02Reply;
+	}
+
+	public String getDbtrAgtBic()
+	{
+		return DbtrAgtBic;
+	}
+
+	public void setDbtrAgtBic(String dbtrAgtBic)
+	{
+		DbtrAgtBic = dbtrAgtBic;
+	}
+
+	public String getCdtrAgtBic()
+	{
+		return CdtrAgtBic;
+	}
+
+	public void setCdtrAgtBic(String cdtrAgtBic)
+	{
+		CdtrAgtBic = cdtrAgtBic;
+	}
+
+	public String getCdtrContPhone()
+	{
+		return CdtrContPhone;
+	}
+
+	public void setCdtrContPhone(String cdtrContPhone)
+	{
+		CdtrContPhone = cdtrContPhone;
+	}
+
+	public String getCdtrContEmailAddr()
+	{
+		return CdtrContEmailAddr;
+	}
+
+	public void setCdtrContEmailAddr(String cdtrContEmailAddr)
+	{
+		CdtrContEmailAddr = cdtrContEmailAddr;
+	}
+
+	public String getPaymentPurposeType()
+	{
+		return PaymentPurposeType;
+	}
+
+	public void setPaymentPurposeType(String paymentPurposeType)
+	{
+		PaymentPurposeType = paymentPurposeType;
+	}
+
+	public String getPaymentPurposeCd()
+	{
+		return PaymentPurposeCd;
+	}
+
+	public void setPaymentPurposeCd(String paymentPurposeCd)
+	{
+		PaymentPurposeCd = paymentPurposeCd;
+	}
+
+	public String getPaymentPurposeProprietary()
+	{
+		return PaymentPurposeProprietary;
+	}
+
+	public void setPaymentPurposeProprietary(String paymentPurposeProprietary)
+	{
+		PaymentPurposeProprietary = paymentPurposeProprietary;
+	}
+
+	public String getRemittanceInformation()
+	{
+		return RemittanceInformation;
+	}
+
+	public void setRemittanceInformation(String remittanceInformation)
+	{
+		RemittanceInformation = remittanceInformation;
+	}
+
+}

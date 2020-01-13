@@ -1,0 +1,309 @@
+package com.forms.batch.job.outward;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.forms.ffp.bussiness.participant.ffpcto01.FFPMsgCTO01_MutiPacs008;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchFileProcessor extends BatchBaseJob{
+	private BatchLogger _logger; 
+	private static final String DATABASE_NAME = "ffp";
+	private static final String DATABASE_URL = "jdbc:MySQL://172.21.21.198:3306/ffp";
+	private static final String DATABASE_DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
+	private static final String DATABASE_USER_NAME = "clous";
+	private static final String DATABASE_PASSWORD = "123456";
+
+	public static int DEFAULT_EACH_MESSAGE_MAX_SIZE = 69 * 1024 * 1024;
+	public static int DEFAULT_EACH_MESSAGE_ITEM_MAX_NUM = 10000;
+	private static int batSubSeqNum = 0;// 报文文件序列号nnnnnnnn
+
+	public static final String BATCH_SUBMISSION_DIRECTORY_PATH = "D:/GCL/xml/";
+	public static final String CLEARING_CODE = "888";
+	private static ArrayList<String> messageFileList;
+
+	public static void main(String[] args) throws Exception {
+		String start_time = "2018-03-10 14:18:00";
+		String end_time = "2018-03-10 16:30:00";
+		CreditTransferOutwardBatchFileProcessor ctobfp = new CreditTransferOutwardBatchFileProcessor();
+		ctobfp.init();
+		ctobfp.getPacs008Dat(start_time, end_time);
+	}
+	
+	public void init(){
+		_logger = BatchLogger.getLogger("CreditTransfer", "OutwardBatchFileProcessor", CreditTransferOutwardBatchFileProcessor.class);
+	}
+	
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	private List<Map<String, Object>> getQueryResult(String startTime, String endTime){
+		Properties loc_prop = new Properties();
+		loc_prop.put("databaseName", DATABASE_NAME);
+		loc_prop.put("url", DATABASE_URL);
+		loc_prop.put("driverClassName", DATABASE_DRIVER_CLASS_NAME);
+		loc_prop.put("username", DATABASE_USER_NAME);
+		loc_prop.put("password", DATABASE_PASSWORD);
+
+		Connection loc_conn = null;
+		List<Map<String, Object>> listResult = null;
+		try {
+			ConnectionManager.registerDatabase(loc_prop);
+			ConnectionManager.setDefaultDatabase(DATABASE_NAME);
+			ConnectionManager loc_connMgr = ConnectionManager.getInstance();
+			loc_conn = loc_connMgr.getConnection();
+			_logger.info(String.format("Database %s is connected", DATABASE_URL));
+			
+			String sql = "SELECT A.TRANSACTION_ID,A.END_TO_END_ID,B.* FROM tb_tx_jnl A LEFT JOIN tb_tx_p100dat B ON A.JNL_NO = B.JNL_NO where create_ts between ? and ?";
+			ArrayList<String> list = new ArrayList<>();
+			list.add(startTime);
+			list.add(endTime);
+			listResult = EntityManager.queryMapList(loc_conn, sql, list.toArray());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			_logger.error(e.getMessage());
+		} finally{
+			if(loc_conn != null){
+				try {
+					loc_conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					_logger.error(e.getMessage());
+				}
+			}
+			_logger.info(String.format("Database %s is closed", DATABASE_URL));
+		}
+		
+		return listResult;
+	}
+
+	private void getPacs008Dat(String startTime, String endTime){
+		List<Map<String, Object>> queryResult = getQueryResult(startTime, endTime);
+
+		List<FFPJbP100> C3list = new ArrayList<FFPJbP100>();
+
+		for (Map<String, Object> object : queryResult) {
+			String mode = (String) object.get("BUSI_SERVICE_MODE");
+			//String mode = "C3";
+			if (("C1").equals(mode)) {
+				_logger.info("Skip PAYC01 business");
+				continue;
+			}
+
+			FFPJbP100 fb = new FFPJbP100();
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+			txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+			fb.setTxJnl(txJnl);
+			fb.setSrcRefNm(FFPIDUtils.getSrcRefNm());
+
+			if(mode == null){
+				_logger.error("Business mode is null(It should be C1, C2 or C3)");
+				continue;
+			}
+			
+			switch (mode) {
+			case "C2":
+				fb.setSrvcMode("PAYC02");
+				break;
+			case "C3":
+				fb.setSrvcMode("PAYC03");
+				break;
+			}
+
+			fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+			fb.setAccountVerification((String) object.get("ACCT_VERF"));
+			fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+			fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+			fb.setSettlementAmount(new BigDecimal((String) object.get("SETTLEMENT_AMT")));
+			fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+			fb.setInstructedAmount(new BigDecimal((String) object.get("INSTRUCTED_AMT")));
+			fb.setChargersAgentId((String) object.get("CHG_AGT_ID"));
+			fb.setChargersAgentBic((String) object.get("CHG_AGT_BIC"));
+			fb.setChargersCurrency((String) object.get("CHG_CUR"));
+			fb.setChargersAmount(new BigDecimal((String) object.get("CHG_AMT")));
+			fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+			fb.setDebtorAccountNumber((String) object.get("DEBTOR_ACCTNO"));
+			fb.setDebtorAccountNumberType((String) object.get("DEBTOR_ACCTNO_TYPE"));
+			fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+			fb.setDebtorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			// fb.setDbtrContPhone();
+			// fb.setDbtrContEmailAddr();
+			fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+			fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+			fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+			fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_ID"));
+			fb.setCreditorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			// fb.setCdtrContPhone();
+			// fb.setCdtrContEmailAddr();
+			fb.setPaymentPurposeType((String) object.get("PURPOSE_TYPE"));
+			fb.setPaymentPurposeCd((String) object.get("PURPOSE_CODE"));
+			fb.setPaymentPurposeProprietary((String) object.get("PURPOSE_OTHER"));
+			fb.setRemittanceInformation((String) object.get("REMIT_INFO"));
+
+			if (("C2").equals(mode)) {
+				FFPMsgCTO01Pacs008XMLFILEThread single008Thread = new FFPMsgCTO01Pacs008XMLFILEThread();
+				single008Thread.initSingle008Thread(fb);
+				new Thread(single008Thread).start();
+
+			} else if (("C3").equals(mode)) {
+				C3list.add(fb);
+			}
+		}
+//		List<FFPJbP100> cloneList = new ArrayList<FFPJbP100>();
+//		for (int i = 0; i < C3list.size(); i++) {
+//			cloneList.add(C3list.get(i));
+//		}
+//		for (int i = 0; i < 20000; i++) {
+//			C3list.addAll(cloneList);
+//		}
+		if ((C3list != null) && (C3list.size() != 0)) {
+
+			ArrayList<Integer> resList = packToMulti008Message(C3list);
+			BufferedWriter bw = null;
+			try {
+				int start = 0;
+				for (int i = 0; i < resList.size(); i++) {
+					HashMap<String, String> btchMap = new HashMap<>();
+					btchMap.put("BtchId", "FPSPYCI999201608011215");
+					btchMap.put("NbOfFls", resList.size() + "");
+					btchMap.put("NbOfMsgs", "1");
+					btchMap.put("NbOfTxs", (resList.get(i) - start) + "");
+					btchMap.put("FlSeqNo", (i + 1) + "");
+
+//					FFPMsgCTO01_MutiPacs008 multi008 = new FFPMsgCTO01_MutiPacs008(
+//							C3list.subList(start, resList.get(i)), btchMap);
+//					String mesText = multi008.parseHkiclMessage();
+//
+					int bssn = CreditTransferOutwardBatchFileProcessor.getBatSubSeqNum();
+					SimpleDateFormat fileNameDateForm = new SimpleDateFormat("yyyyMMdd");
+					String fileName = "FPSPCRO" + CLEARING_CODE + fileNameDateForm.format(new Date())
+							+ String.format("%08d", bssn) + ".xml";
+//
+//					bw = new BufferedWriter(new OutputStreamWriter(
+//							new FileOutputStream(new File(BATCH_SUBMISSION_DIRECTORY_PATH + fileName)), "UTF-8"));
+//					bw.write(mesText);
+//					bw.flush();
+					
+					FFPMsgCTO01Pacs008XMLFILEThread multi008Thread= new FFPMsgCTO01Pacs008XMLFILEThread();
+					multi008Thread.initMulti008Thread(C3list.subList(start, resList.get(i)), BATCH_SUBMISSION_DIRECTORY_PATH + fileName, btchMap);
+					
+					new Thread(multi008Thread).start();
+					
+					start = resList.get(i);
+				}
+			} catch (Exception e) {
+				_logger.error(e.getMessage());
+			} finally {
+				if (bw != null) {
+					try {
+						bw.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						_logger.error(e.getMessage());
+					}
+				}
+			}
+
+		}
+	}
+
+	/*
+	 * 首先塞入eachMesItemMaxNum条数据，模拟生成一份报文，计算出报文的大小，
+	 * 若小于或等于eachMesMaxSize则把这份报文的字符串保存起来，
+	 * 若大于eachMesMaxSize则使用公式(end-start)/mesTextSize*eachMesMaxSize
+	 * 计算出eachMesMaxSize的报文包含多少条数据，用新的数据条数tempEachMesItemNum
+	 * 去模拟生成报文，计算报文大小，循环以上步骤，直至报文大小小于或等于eachMesMaxSize
+	 */
+	public ArrayList<Integer> packToMulti008Message(List<FFPJbP100> list){
+		messageFileList = new ArrayList<>();
+		ArrayList<Integer> resList = new ArrayList<>();
+		HashMap<String, String> btchMap = new HashMap<>();
+		btchMap.put("NbOfMsgs", "1");
+		btchMap.put("BtchId", "1");
+		btchMap.put("FlSeqNo", "1");
+		btchMap.put("NbOfFls", "1");
+		if (list != null) {
+			boolean isFin = false;
+			int eachMesMaxSize = DEFAULT_EACH_MESSAGE_MAX_SIZE;
+			int eachMesItemMaxNum = DEFAULT_EACH_MESSAGE_ITEM_MAX_NUM;
+			int start = 0;
+			int totalListSize = list.size();
+			String mesText = "";
+			int tempEachMesItemNum = eachMesItemMaxNum; // 临时item数，item<=eachMesItemMaxNum
+			int end = start + tempEachMesItemNum;
+			_logger.info("Start To Generate PACS008_PAYC03 Message");
+			while (!isFin) {
+				if (totalListSize <= end) {
+					// 全部装配成报文，totalListSize
+					end = totalListSize;
+				}
+				// 序列化list.subList(start, end);
+				FFPMsgCTO01_MutiPacs008 multi008_1 = new FFPMsgCTO01_MutiPacs008(list.subList(start, end), btchMap);
+				int mesTextSize = 0;
+				try {
+					mesText = multi008_1.parseHkiclMessage();
+					mesTextSize = mesText.getBytes("UTF-8").length;
+					while (mesTextSize > eachMesMaxSize) {
+						tempEachMesItemNum = (int) Math
+								.floor(((double) (end - start)) / ((double) mesTextSize) * eachMesMaxSize);
+						end = start + tempEachMesItemNum;
+						
+						FFPMsgCTO01_MutiPacs008 multi008_2 = new FFPMsgCTO01_MutiPacs008(list.subList(start, end), btchMap);
+						mesText = multi008_2.parseHkiclMessage();
+						mesTextSize = mesText.getBytes("UTF-8").length;
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					_logger.error(e.getMessage());
+				}
+
+				_logger.info(String.format("Generate A Message: messageItemNum=%d messageSize=%d ", (end - start), mesTextSize));
+				resList.add(end);
+				messageFileList.add(mesText);
+				// 下一个报文
+				start = end;
+				end = start + eachMesItemMaxNum;
+
+				if (totalListSize <= start) {
+					// 全部装配成报文，totalListSize
+					isFin = true;
+				}
+			}
+			_logger.info("Finish Generating PACS008_PAYC03 Message");
+		}
+
+		return resList;
+	}
+
+	public synchronized static int getBatSubSeqNum() {
+		batSubSeqNum++;
+		return batSubSeqNum;
+	}
+
+}

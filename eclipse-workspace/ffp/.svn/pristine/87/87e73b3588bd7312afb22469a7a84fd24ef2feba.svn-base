@@ -1,0 +1,61 @@
+package com.forms.ffp.bussiness.iclfps.fpscel001;
+
+import java.util.Date;
+
+import com.forms.ffp.bussiness.FFPVOBase;
+
+public class FFPVOFpscel001 extends FFPVOBase{
+	
+	private String msgId;
+	
+	private Date creDtTm;
+	
+	private String totalRevokedCert;
+	
+	//RecokedCerts
+	private Date recocetionDate;
+	
+	private String eCert;
+
+	public String getMsgId() {
+		return msgId;
+	}
+
+	public void setMsgId(String msgId) {
+		this.msgId = msgId;
+	}
+
+	public Date getCreDtTm() {
+		return creDtTm;
+	}
+
+	public void setCreDtTm(Date creDtTm) {
+		this.creDtTm = creDtTm;
+	}
+
+	public String getTotalRevokedCert() {
+		return totalRevokedCert;
+	}
+
+	public void setTotalRevokedCert(String totalRevokedCert) {
+		this.totalRevokedCert = totalRevokedCert;
+	}
+
+	public Date getRecocetionDate() {
+		return recocetionDate;
+	}
+
+	public void setRecocetionDate(Date recocetionDate) {
+		this.recocetionDate = recocetionDate;
+	}
+
+	public String geteCert() {
+		return eCert;
+	}
+
+	public void seteCert(String eCert) {
+		this.eCert = eCert;
+	}
+	
+
+}

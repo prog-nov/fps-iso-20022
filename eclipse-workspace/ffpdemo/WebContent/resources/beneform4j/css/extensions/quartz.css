@@ -1,0 +1,16 @@
+
+.ALLSUCCESS{
+	background:url(../images/quartz/ALLSUCCESS.png) no-repeat;
+}
+.ALLEXCEPTION{
+	background:url(../images/quartz/ALLEXCEPTION.png) no-repeat;
+}
+.UNSTART_UNREACH{
+	background:url(../images/quartz/UNSTART_UNREACH.png) no-repeat;
+}
+.UNSTART_REACHED{
+	background:url(../images/quartz/UNSTART_REACHED.png) no-repeat;
+}
+.PARTSUCCESS{
+	background:url(../images/quartz/PARTSUCCESS.png) no-repeat;
+}

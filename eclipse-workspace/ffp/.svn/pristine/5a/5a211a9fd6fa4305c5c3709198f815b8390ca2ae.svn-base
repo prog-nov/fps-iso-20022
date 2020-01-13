@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.ss.FFPIDao_System">
+	
+	<!-- 系统表查询 -->
+	<select id="inquiry" resultType="com.forms.ffp.persistents.bean.ss.FFPSsSystem">
+		SELECT * FROM TB_SS_SYSTEM A
+		WHERE A.DATA_KEY = '0000'
+	</select>
+	
+	<update id="update">
+		UPDATE TB_SS_SYSTEM A
+		SET A.BATCH_ACDT = #{batchAcdt, jdbcType=VARCHAR},
+			A.RUNNING_MODE = #{runningMode, jdbcType=VARCHAR},
+			A.FPS_RECEIVE_MODE = #{fpsReceiveMode, jdbcType=VARCHAR},
+			A.REALTIME_LISTENER_STAT = #{realtimeListenerStat, jdbcType=VARCHAR},
+			A.BATCH_LISTENER_STAT = #{batchListenerStat, jdbcType=VARCHAR}
+		WHERE A.DATA_KEY = '0000'
+	</update>
+	
+	<update id="updateFpsReceiveMode">
+		UPDATE TB_SS_SYSTEM A
+		SET A.FPS_RECEIVE_MODE = #{fpsReceiveMode, jdbcType=VARCHAR}
+		WHERE A.DATA_KEY = '0000'
+	</update>
+	
+	<update id="updateRealtimeListenerStat">
+		UPDATE TB_SS_SYSTEM A
+		SET A.REALTIME_LISTENER_STAT = #{realtimeListenerStat, jdbcType=VARCHAR}
+		WHERE A.DATA_KEY = '0000'
+	</update>
+	
+	<update id="updateBatchListenerStat">
+		UPDATE TB_SS_SYSTEM A
+		SET A.BATCH_LISTENER_STAT = #{updateBatchListenerStat, jdbcType=VARCHAR}
+		WHERE A.DATA_KEY = '0000'
+	</update>
+</mapper>

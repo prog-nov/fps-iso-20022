@@ -1,0 +1,87 @@
+[ERRO] [2018/03/21 20:30:36]  Process inward file errorjava.lang.Exception: ffpdbProperty HASN'T SETTING IN batchResourceManagerSetting.xml
+	at com.forms.framework.util.ResourceUtil.getResource(ResourceUtil.java:59)
+	at com.forms.framework.persistence.ConnectionManager.getInstance_ffp(ConnectionManager.java:167)
+	at com.forms.batch.job.inward.InwardBatchFileProcessor.processor(InwardBatchFileProcessor.java:145)
+	at com.forms.batch.job.inward.InwardBatchFileProcessor.main(InwardBatchFileProcessor.java:1068)
+] 
+[ERRO] [2018/03/22 11:02:14]  [FPSPYCI  java.lang.Exception: dbProperty HASN'T SETTING IN batchResourceManagerSetting.xmlcom.forms.framework.exception.BatchFrameworkException: java.lang.Exception: dbProperty HASN'T SETTING IN batchResourceManagerSetting.xml
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:325)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:109)
+	at com.forms.batch.MainApp.main(MainApp.java:13)
+Caused by: java.lang.Exception: dbProperty HASN'T SETTING IN batchResourceManagerSetting.xml
+	at com.forms.framework.util.ResourceUtil.getResource(ResourceUtil.java:59)
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:315)
+	... 2 more
+] 
+[ERRO] [2018/03/22 11:47:15]  [FPSPYCI  java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)com.forms.framework.exception.BatchFrameworkException: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:404)
+	at com.forms.framework.persistence.BaseDao.queryBean(BaseDao.java:39)
+	at com.forms.framework.ctrl.BatchJobJnlDao.retrieveLastJnl(BatchJobJnlDao.java:151)
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:397)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:109)
+	at com.forms.batch.MainApp.main(MainApp.java:13)
+Caused by: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at org.apache.commons.dbutils.QueryRunner.rethrow(QueryRunner.java:542)
+	at org.apache.commons.dbutils.QueryRunner.query(QueryRunner.java:399)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:400)
+	... 5 more
+] 
+[ERRO] [2018/03/22 11:53:42]  [FPSPYCI  java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)com.forms.framework.exception.BatchFrameworkException: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:404)
+	at com.forms.framework.persistence.BaseDao.queryBean(BaseDao.java:39)
+	at com.forms.framework.ctrl.BatchJobJnlDao.retrieveLastJnl(BatchJobJnlDao.java:151)
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:397)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:109)
+	at com.forms.batch.MainApp.main(MainApp.java:13)
+Caused by: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at org.apache.commons.dbutils.QueryRunner.rethrow(QueryRunner.java:542)
+	at org.apache.commons.dbutils.QueryRunner.query(QueryRunner.java:399)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:400)
+	... 5 more
+] 
+[ERRO] [2018/03/22 14:02:35]  [FPSPYCI  java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)com.forms.framework.exception.BatchFrameworkException: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:404)
+	at com.forms.framework.persistence.BaseDao.queryBean(BaseDao.java:39)
+	at com.forms.framework.ctrl.BatchJobJnlDao.retrieveLastJnl(BatchJobJnlDao.java:151)
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:397)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:109)
+	at com.forms.batch.MainApp.main(MainApp.java:12)
+Caused by: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (null, FPSPYCI)
+	at org.apache.commons.dbutils.QueryRunner.rethrow(QueryRunner.java:542)
+	at org.apache.commons.dbutils.QueryRunner.query(QueryRunner.java:399)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:400)
+	... 5 more
+] 
+[ERRO] [2018/03/22 14:51:26]  [FPSPYCI  java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (2018-03-22, FPSPYCI)com.forms.framework.exception.BatchFrameworkException: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (2018-03-22, FPSPYCI)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:404)
+	at com.forms.framework.persistence.BaseDao.queryBean(BaseDao.java:39)
+	at com.forms.framework.ctrl.BatchJobJnlDao.retrieveLastJnl(BatchJobJnlDao.java:151)
+	at com.forms.framework.RunBatchJob.init(RunBatchJob.java:397)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:109)
+	at com.forms.batch.MainApp.main(MainApp.java:12)
+Caused by: java.sql.SQLException: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'fetch first 1 row only' at line 1 Query: select BATCH_AC_DATE as batchAcDate,       JOB_ID as jobId,       JNL_SEQ as jnlSeq,       JOB_STAT as jobStat,       RESULT as result,       START_TS as startTs,       END_TS as endTs,       BREAK_POINT as breakPoint  from ffp.TB_BH_JOB_JNL where BATCH_AC_DATE = ?   and JOB_ID = ? order by JNL_SEQ desc fetch first 1 row only Parameters: (2018-03-22, FPSPYCI)
+	at org.apache.commons.dbutils.QueryRunner.rethrow(QueryRunner.java:542)
+	at org.apache.commons.dbutils.QueryRunner.query(QueryRunner.java:399)
+	at com.forms.framework.persistence.BaseDao.query(BaseDao.java:400)
+	... 5 more
+] 
+[ERRO] [2018/03/22 15:24:12]  [FPSPYCI isbDownload com.forms.framework.exception.BatchFrameworkException: java.lang.ClassNotFoundException: com.forms.batch.job.commom.FFPDownloadJobcom.forms.framework.exception.BatchJobException: com.forms.framework.exception.BatchFrameworkException: java.lang.ClassNotFoundException: com.forms.batch.job.commom.FFPDownloadJob
+	at com.forms.framework.RunBatchJob.processAction(RunBatchJob.java:678)
+	at com.forms.framework.RunBatchJob.processJob(RunBatchJob.java:530)
+	at com.forms.framework.RunBatchJob.execute(RunBatchJob.java:111)
+	at com.forms.batch.MainApp.main(MainApp.java:12)
+Caused by: com.forms.framework.exception.BatchFrameworkException: java.lang.ClassNotFoundException: com.forms.batch.job.commom.FFPDownloadJob
+	at com.forms.framework.RunBatchJob.runJavaSysCall(RunBatchJob.java:798)
+	at com.forms.framework.RunBatchJob.processAction(RunBatchJob.java:634)
+	... 3 more
+Caused by: java.lang.ClassNotFoundException: com.forms.batch.job.commom.FFPDownloadJob
+	at java.net.URLClassLoader.findClass(Unknown Source)
+	at java.lang.ClassLoader.loadClass(Unknown Source)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Unknown Source)
+	at java.lang.ClassLoader.loadClass(Unknown Source)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Unknown Source)
+	at com.forms.framework.RunBatchJob.runJavaAction(RunBatchJob.java:812)
+	at com.forms.framework.RunBatchJob.runJavaSysCall(RunBatchJob.java:795)
+	... 4 more
+] 

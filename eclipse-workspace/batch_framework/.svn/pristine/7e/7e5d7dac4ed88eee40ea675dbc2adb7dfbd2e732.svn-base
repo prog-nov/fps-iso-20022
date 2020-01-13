@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<!-- MUST SETTING -->
+	<!-- XML File Resource -->
+	<resource name="DataTypeConfig">datatype-config.xml</resource>
+	<resource name="SystemConfig">system-config.xml</resource>
+	<resource name="SystemEnvParameters">system-parameters.xml</resource>
+	<!-- Properties Resource -->
+	<resource name="cibdbProperty">cibdb.properties</resource>
+	<resource name="cibftpProperty">cibftp.properties</resource>
+	<resource name="cibisbProperty">cibisb.properties</resource>
+	<resource name="cibhttpProperty">cibhttp.properties</resource>
+	<resource name="outwardBatchProperty">outwardBatch.properties</resource>
+	<resource name="outwardFromICLFileFolderProperty">outwardFromICLFileFolder.properties</resource>
+	<resource name="DirectDebitBatchResponseProperty">DirectDebitBatchResponse.properties</resource>
+	
+	<!-- FFP DB CONFIG -->
+	<resource name="ffpdbProperty">ffpdb.properties</resource>
+	
+	<!-- ====================================================================================================== -->
+	<!-- FFP Batch process config -->
+	
+	<!-- Inward Credit Transfer config -->
+	<resource name="ffpInwardProperty">inwardFile.properties</resource>
+	<!-- Shell Script Resource
+	<resource name="exportSqlData">exportSqlData.sh</resource> -->
+	<!-- USER EDIT -->
+	<!-- XML File Resource -->
+	
+	<!-- Properties Resource -->
+	
+</resources>

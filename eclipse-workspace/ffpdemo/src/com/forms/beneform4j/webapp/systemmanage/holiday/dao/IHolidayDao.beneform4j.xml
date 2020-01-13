@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.holiday.dao.IHolidayDao" >
+	<!-- 节假日信息查询 欧林海 20160526 -->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.holiday.bean.HolidayBean">
+		SELECT
+		  T.SOLAR_DATE        
+		  T.LUNAR_YEAR        
+		  T.LUNAR_MONTH       
+		  T.LUNAR_DAY         
+		  T.LUNAR_DESC        
+		  T.WEEK              
+		  T.CONSTELLATION     
+		  T.MONTH_BEGIN       
+		  T.MONTH_END         
+		  T.YEAR_DAYS         
+		  T.MONTH_DAYS        
+		  T.IS_HOLIDAY_DAY    
+		  T.HOLIDAY_DESC      
+		  T.IS_MONTH_END      
+		FROM {{BF}}_DAY_INFO T
+		<where>
+			<if test="null != date and '' != date">
+	     		AND T.SOLAR_DATE = #{date, jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != month and '' != month">
+	     		AND substr(T.SOLAR_DATE,0,6) = #{month, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+	</select>
+	
+	<update id="dUpdate">
+	   update {{BF}}_DAY_INFO
+	      set IS_HOLIDAY_DAY = #{isHoliday,jdbcType=VARCHAR},
+	          HOLIDAY_DESC = #{holidayName,jdbcType=VARCHAR}
+	   where SOLAR_DATE IN  
+		   	<foreach item="date" collection="dates" separator="," open="(" close=")">
+				#{date, jdbcType=VARCHAR}
+			</foreach>
+	</update>
+</mapper>

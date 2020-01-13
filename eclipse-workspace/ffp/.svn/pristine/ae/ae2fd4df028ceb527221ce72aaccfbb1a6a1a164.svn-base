@@ -1,0 +1,11 @@
+package com.forms.ffp.persistents.service.addressing;
+
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.bean.addressing.FFPJbAddressing;
+
+public interface FFPIDaoService_Addressing_Acct {
+	
+	int[] sInsertAndDelete(FFPJbA100 form);
+	
+	int[] sDelete(FFPJbAddressing jbAdrs);
+}

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<mvc:default-servlet-handler/>
+	<mvc:view-controller path="/" view-name="forward:/index" />
+	
+	<!-- 主题与样式 -->
+	<bean id="modeAndlocaleAndThemeResolver" class="com.forms.beneform4j.webapp.common.web.WebModeAndLocaleAndThemeResolver"/>
+	<bean id="localeResolver" parent="modeAndlocaleAndThemeResolver"/>
+	<bean id="themeResolver" parent="modeAndlocaleAndThemeResolver"/>
+	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/uiholder/changeLocale"/>
+			<bean class="com.forms.beneform4j.webapp.authority.login.service.interceptor.UserLocaleChangeInterceptor" p:paramName="locale"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/uiholder/changeTheme"/>
+			<bean class="org.springframework.web.servlet.theme.ThemeChangeInterceptor" p:paramName="theme"/>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<bean class="com.forms.beneform4j.web.springmvc.handlerinterceptor.RequestHandlerInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 对静态资源文件的访问 -->
+	<mvc:resources mapping="/**/*.js" location="/WEB-INF/view/" order="-7" cache-period="" >
+		<mvc:resource-chain resource-cache="true">
+			<mvc:resolvers>
+				<ref bean="modeAndlocaleAndThemeResolver"/>
+<!-- 				<bean class="com.forms.beneform4j.web.springmvc.resourceresolver.StaticResourceResolver"/> -->
+			</mvc:resolvers>
+		</mvc:resource-chain>
+	</mvc:resources>
+	<mvc:resources mapping="/resources/**" location="/resources/" order="-8">
+		<mvc:resource-chain resource-cache="true">
+			<mvc:resolvers>
+				<ref bean="modeAndlocaleAndThemeResolver"/>
+<!-- 				<bean class="com.forms.beneform4j.web.springmvc.resourceresolver.StaticResourceResolver"/> -->
+			</mvc:resolvers>
+		</mvc:resource-chain>
+	</mvc:resources>
+	<bean p:order="-9" class="com.forms.beneform4j.web.springmvc.handlermapping.ProxyHandlerMapping">
+		<property name="proxyHandlers">
+			<list>
+				<bean class="com.forms.beneform4j.web.springmvc.handlermapping.impl.DirectViewnameProxyHandler"/>
+				<bean class="com.forms.beneform4j.webapp.authority.access.filter.SecurityProxyHandler">
+					<property name="defaultView" value="common/deny"/>
+					<property name="ajaxDefaultView" value="JsonView"/>
+<!-- 					<property name="viewMapping"> -->
+<!-- 						<map> -->
+<!-- 							<entry key="0001" value=""/> -->
+<!-- 							<entry key="0002" value=""/> -->
+<!-- 							<entry key="0003" value=""/> -->
+<!-- 						</map> -->
+<!-- 					</property> -->
+				</bean>
+			</list>		
+		</property>
+	</bean>
+	
+	<!-- 格式化和数据校验 -->
+	<mvc:annotation-driven validator="validator">
+		<mvc:argument-resolvers>
+			<bean class="com.forms.beneform4j.web.springmvc.argumentresolver.PageArgumentResolver"/>
+			<bean class="com.forms.beneform4j.webapp.common.web.UserPropertyArgumentResolver"/>
+			<bean class="com.forms.beneform4j.web.springmvc.argumentresolver.UploadFileArgumentResolver"/>
+			<bean class="com.forms.beneform4j.web.springmvc.argumentresolver.RequestInfoArgumentResolver"/>
+		</mvc:argument-resolvers>
+		<mvc:message-converters register-defaults="true">
+			<bean class="com.forms.beneform4j.web.springmvc.messageconverter.JsonBodyHttpMessageConverter">
+				<property name="jsonContentType" value="text/html"/>
+			</bean>
+			<bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter" />
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes" value="text/plain;charset=UTF-8"/>
+			</bean>
+			<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes" value="text/plain;charset=UTF-8"/>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">    
+	    <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>    
+	    <property name="validationMessageSource" ref="messageSource"/>    
+	</bean>  
+	
+	<!-- 视图 -->
+	<bean id="JsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" />
+	<bean id="TextJsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" p:contentType="text/html"/>
+
+	<!-- 视图解析器 -->
+	<!-- beanName解析器 -->
+	<bean id="BeanNameViewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver" p:order="2" />
+	<!-- 配置JSP视图解析器 -->
+	<bean id="jspViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+		p:contentType="text/html"
+		p:prefix="/WEB-INF/view/"
+		p:suffix=".jsp"
+	/>
+	
+	
+	
+	<!-- 上传 
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+		p:defaultEncoding="UTF-8" p:resolveLazily="true"/>-->
+	<bean id="multipartResolver" class="com.forms.beneform4j.webapp.common.kindeditor.KindEditorMultipartResolver">
+	    <property name="defaultEncoding" value="utf-8"></property>
+	</bean>
+	<!-- 控制器异常处理 -->
+	<bean class="com.forms.beneform4j.web.springmvc.exceptionresolver.Beneform4jHandlerExceptionResolver">
+		<property name="exceptionAttribute" value="exception"/>
+		<property name="exceptionHandlerResultsAttribute" value="exceptionHandlerResults"/>
+		<property name="jsonContentType" value="text/html"/>
+	</bean>
+	
+</beans>

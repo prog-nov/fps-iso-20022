@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-input-config>
+	<databaseName>dbtest</databaseName>
+	<query-sql>
+		SELECT	CASE WHEN B.NO IS NULL THEN 'N'
+					ELSE 'U'
+				END deltaFlag,
+				A.NO	NOA,
+				A.STAT1	STAT1A,
+				A.STAT2	STAT2A,
+				B.NO	NOB,
+				B.STAT1	STAT1B,
+				B.STAT2	STAT2B
+		FROM #{schema}.TB_BATCH_TEST A
+		JOIN #{schema}.TB_BATCH_TEST B
+		ON A.NO=B.NO
+		WHERE A.ACDATE = '2012-09-05'
+			AND B.ACDATE = '2012-09-04'
+ 	</query-sql>
+	<field-definition>
+		<field name="deltaFlag"		 data-type="StringType" />
+		<field name="NOA"		         data-type="StringType" />
+		<field name="STAT1A"		         data-type="StringType" />
+		<field name="STAT2A"		         data-type="StringType" />
+		<field name="NOB"		         data-type="StringType" />
+		<field name="STAT1B"		         data-type="StringType" />
+		<field name="STAT2B"		         data-type="StringType" />
+	</field-definition>
+</database-input-config>

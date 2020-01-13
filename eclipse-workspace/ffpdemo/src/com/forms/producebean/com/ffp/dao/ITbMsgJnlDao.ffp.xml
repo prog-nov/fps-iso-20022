@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ffp.dao.ITbMsgJnlDao" >
+  <resultMap id="BaseResultMap" type="com.ffp.dao.TbMsgJnl" >
+    <id column="MSG_JNL" property="msgJnl" jdbcType="INTEGER" />
+    <result column="MSG_TRAN_ID" property="msgTranId" jdbcType="VARCHAR" />
+    <result column="END_TO_END_ID" property="endToEndId" jdbcType="VARCHAR" />
+    <result column="MSG_REASON" property="msgReason" jdbcType="VARCHAR" />
+    <result column="MSG_TRANS_STATUS" property="msgTransStatus" jdbcType="VARCHAR" />
+    <result column="MSG_INST_DATE" property="msgInstDate" jdbcType="TIMESTAMP" />
+    <result column="MSG_ACCE_DATE" property="msgAcceDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    MSG_JNL, MSG_TRAN_ID, END_TO_END_ID, MSG_REASON, MSG_TRANS_STATUS, MSG_INST_DATE, 
+    MSG_ACCE_DATE
+  </sql>
+  <select id="dList" resultMap="BaseResultMap" parameterType="int" >
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from tb_msg_jnl
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </select>
+  <delete id="dDelete" parameterType="int" >
+    delete from tb_msg_jnl
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </delete>
+  <insert id="dInsert" parameterType="com.ffp.dao.TbMsgJnl" >
+    insert into tb_msg_jnl (MSG_JNL, MSG_TRAN_ID, END_TO_END_ID, 
+      MSG_REASON, MSG_TRANS_STATUS, MSG_INST_DATE, 
+      MSG_ACCE_DATE)
+    values (#{msgJnl,jdbcType=INTEGER}, #{msgTranId,jdbcType=VARCHAR}, #{endToEndId,jdbcType=VARCHAR}, 
+      #{msgReason,jdbcType=VARCHAR}, #{msgTransStatus,jdbcType=VARCHAR}, #{msgInstDate,jdbcType=TIMESTAMP}, 
+      #{msgAcceDate,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="dUpdate" parameterType="com.ffp.dao.TbMsgJnl" >
+    update tb_msg_jnl
+    set MSG_TRAN_ID = #{msgTranId,jdbcType=VARCHAR},
+      END_TO_END_ID = #{endToEndId,jdbcType=VARCHAR},
+      MSG_REASON = #{msgReason,jdbcType=VARCHAR},
+      MSG_TRANS_STATUS = #{msgTransStatus,jdbcType=VARCHAR},
+      MSG_INST_DATE = #{msgInstDate,jdbcType=TIMESTAMP},
+      MSG_ACCE_DATE = #{msgAcceDate,jdbcType=TIMESTAMP}
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </update>
+</mapper>

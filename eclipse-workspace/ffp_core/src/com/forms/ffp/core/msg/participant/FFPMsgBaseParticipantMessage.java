@@ -1,0 +1,183 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.util.Date;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+
+public class FFPMsgBaseParticipantMessage
+{
+
+	private Date createDate;
+
+	// for sub class
+	protected String msgType;
+	protected String reqRefNo;
+	protected String resRefNo;
+	protected String requestID;
+	protected String responseID;
+	protected String rsltCd;
+	protected String rejCd;
+	protected String rejMsg;
+	protected String responseSts;
+
+	public FFPMsgBaseParticipantMessage()
+	{
+		this.createDate = new Date();
+	}
+
+	public HEAD marshalMsgReqHead()
+	{
+		HEAD head = new HEAD();
+		// RequestID
+		// TransactionDate
+		// TransactionTime
+		// RequestRefno
+		// ResponseID
+		// MessageType
+
+		// optional
+		// SystemRefno
+		// AccountingDate
+		head.setRequestID(this.requestID);
+		head.setResponseID(this.responseID);
+		head.setRequestRefno(this.reqRefNo);
+		head.setTransactionDate(FFPDateUtils.getDateStr(this.createDate, FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(this.createDate), FFPDateUtils.INT_TIME_FORMAT));
+		head.setMessageType(this.msgType);
+
+		return head;
+	}
+
+	public BODY marshalMsgReqBody()
+	{
+		return null;
+	}
+
+	public String parseParticipantMessage() throws Exception
+	{
+		String message = null;
+		Object obj = this.marshalMsgRoot();
+		ROOT root = (ROOT) obj;
+		message = FFPParticipantMessageConverter.packageRequestObject2Xml(root);
+		return message;
+	}
+
+	public ROOT marshalMsgRoot()
+	{
+
+		ROOT root = new ROOT();
+		HEAD reqHead = this.marshalMsgReqHead();
+		BODY reqBody = this.marshalMsgReqBody();
+		root.setHEAD(reqHead);
+		root.setBODY(reqBody);
+		return root;
+	}
+
+	public void unmarshalResponseMsg(String ip_responseMsg) throws Exception
+	{
+		return;
+	}
+
+	public String getReqRefNo()
+	{
+		if(this.reqRefNo == null){
+			this.reqRefNo = FFPIDUtils.getRefno();
+		}
+		return this.reqRefNo;
+	}
+
+	public void setReqRefNo(String reqRefNo)
+	{
+		this.reqRefNo = reqRefNo;
+	}
+
+	public String getResRefNo()
+	{
+		if(this.resRefNo == null){
+			this.resRefNo = FFPIDUtils.getRefno();
+		}
+		return this.resRefNo;
+	}
+
+	public void setResRefNo(String resRefNo)
+	{
+		this.resRefNo = resRefNo;
+	}
+
+	public String getMsgType()
+	{
+		return msgType;
+	}
+
+	public void setMsgType(String msgType)
+	{
+		this.msgType = msgType;
+	}
+
+	public Date getCreateDate()
+	{
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate)
+	{
+		this.createDate = createDate;
+	}
+
+	public String getRequestID()
+	{
+		return requestID;
+	}
+
+	public void setRequestID(String requestID)
+	{
+		this.requestID = requestID;
+	}
+
+	public String getResponseID()
+	{
+		return responseID;
+	}
+
+	public void setResponseID(String responseID)
+	{
+		this.responseID = responseID;
+	}
+
+	public String getRsltCd() {
+		return rsltCd;
+	}
+
+	public void setRsltCd(String rsltCd) {
+		this.rsltCd = rsltCd;
+	}
+
+	public String getRejCd() {
+		return rejCd;
+	}
+
+	public void setRejCd(String rejCd) {
+		this.rejCd = rejCd;
+	}
+
+	public String getRejMsg() {
+		return rejMsg;
+	}
+
+	public void setRejMsg(String rejMsg) {
+		this.rejMsg = rejMsg;
+	}
+
+	public String getResponseSts() {
+		return responseSts;
+	}
+
+	public void setResponseSts(String responseSts) {
+		this.responseSts = responseSts;
+	}
+
+}

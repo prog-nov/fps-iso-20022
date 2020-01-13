@@ -1,0 +1,22 @@
+/*
+ * Copy Right Information : Forms Syntron 
+ * Project : 需要开发者配置的样式 <br>
+ * Description : 主要用于框架上的样式处理的，可以添加到此文档当中
+ 			例如1、头部的logo，各项目需要用到自己的logo图标。
+ 			
+ 			注意：对于右下方的内联展示区域需要用到的样式不要写在此文件当中，写了也不会生效。
+ 				如果是内联页面的CSS样式或是JS，多数应用在各自的页面中，非公共的内容，正确的做法是在自己的的jsp页面当中去写自己的样式或是引入自己的样式。
+ 				
+ * Author : lw <br>
+ * Version : 1.0.0 <br>
+ * Since : 1.0.0 <br>
+ * Date : 2016-09-06<br>
+ */
+.top-websit .left{
+	/* 设置台头页面的logo
+		1、图片大小建议400 X 60（长 X 宽）,可以小于上面的长或是宽，不要超过就行。
+		2、 换上自己的logo图片后，打开下面的注释，以使用自己的logo图标
+	*/
+	/* background: transparent;
+    background:url(images/xxx_logo.png) no-repeat;  */
+}

@@ -1,0 +1,61 @@
+package com.forms.batch.job.unit.transactioncheck.message;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpchk01.FFPCHK01;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseParticipantMessage;
+import com.forms.ffp.core.utils.FFPIDUtils;
+
+public class FFPMsg_REQ_CHK01 extends FFPMsgBaseParticipantMessage {
+	private static String ALL_TYPE_TRANSACTION_IDENTIFIER = "A";
+	private static String FINANCIAL_TRANSACTION_IDENTIFIER = "F";
+	private static String QUERY_TRANSACTION_IDENTIFIER = "I";
+
+	private String transactionType;
+	private String transactionDate;
+	private String transactionStartTime;
+	private String transactionEndTime;
+	
+	private String timeReg = "[0-9]{6}";
+
+	public FFPMsg_REQ_CHK01(String transactionType, String transactionDate, String transactionStartTime, String transactionEndTime) throws Exception {
+		super();
+		this.requestID = FFPConstants.MSG_CODE_FFP;
+		this.responseID = FFPConstants.MSG_CODE_AGENT;
+		this.reqRefNo = FFPIDUtils.getRefno();
+		this.msgType = "FFPCHK01";
+
+		if (!(transactionType.equals(ALL_TYPE_TRANSACTION_IDENTIFIER)
+				|| transactionType.equals(FINANCIAL_TRANSACTION_IDENTIFIER)
+				|| transactionType.equals(QUERY_TRANSACTION_IDENTIFIER))) {
+			throw new Exception("The Value Of transactionType Should Be Uppercase Identifer A, F Or I.");
+		}
+		
+		if(!transactionStartTime.matches(timeReg)){
+			throw new Exception("The Format Of transactionStartTime Should Be A Six-sized Numeric String.");
+		}
+		
+		if(!transactionEndTime.matches(timeReg)){
+			throw new Exception("The Format Of transactionEndTime Should Be A Six-sized Numeric String.");
+		}
+
+		this.transactionType = transactionType;
+		this.transactionDate = transactionDate;
+		this.transactionStartTime = transactionStartTime;
+		this.transactionEndTime = transactionEndTime;
+
+	}
+
+	public BODY marshalMsgReqBody() {
+		BODY body = null;
+		FFPCHK01 ffpchk01 = new FFPCHK01();
+
+		ffpchk01.setTransactionType(this.transactionType);
+		ffpchk01.setTransactionDate(this.transactionDate);
+		ffpchk01.setTransactionStartTime(transactionStartTime);
+		ffpchk01.setTransactionEndTime(transactionEndTime);
+
+		body = ffpchk01;
+		return body;
+	}
+}

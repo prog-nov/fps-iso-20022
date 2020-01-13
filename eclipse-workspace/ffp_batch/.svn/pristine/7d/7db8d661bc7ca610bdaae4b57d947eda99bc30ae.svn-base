@@ -1,0 +1,328 @@
+package com.forms.batch.job.unit.participant.returnorrefund;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpcto01.FFPMsgCTO01_Pacs004;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsServiceCode;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class ReturnOrRefundOutwardBatchFileProcessor extends BatchBaseJob {
+
+	private static String batSubSeqNum = "";// Message Sequence Number nnnnnnnn
+
+	private static int eachMessageMaxSize;
+	private static int eachMessageItemMaxNum;
+	private static String batchSubmissionDirectoryPath;
+
+	private static ArrayList<String> messageFileList;
+	public static final String OUTWARD_BATCH_FILE_NAME = "outwardBatch";
+	public static final String DEFAULT_ENCODING = "UTF-8";
+	private static Connection loc_conn = null;
+
+	@Override
+	public void init() throws BatchJobException {
+		try {
+			eachMessageMaxSize = Integer.parseInt(
+					this.actionElement.element("parameters").element("parameter").elementText("eachMessageMaxSize"))
+					* 1024 * 1024;
+			eachMessageItemMaxNum = Integer.parseInt(
+					this.actionElement.element("parameters").element("parameter").elementText("eachMessageItemMaxNum"));
+			batchSubmissionDirectoryPath = this.batchData + this.actionElement.element("parameters")
+					.element("parameter").elementText("batchSubmissionDirectoryPath");
+			this.batchLogger.info(String.format(
+					"Read Parameters From file %s.xml, eachMessageMaxSize=%s, eachMessageItemMaxNum=%s, batchSubmissionDirectoryPath=%s, clearingCode=%s",
+					OUTWARD_BATCH_FILE_NAME, eachMessageMaxSize, eachMessageItemMaxNum, batchSubmissionDirectoryPath,
+					this.clearingCode));
+
+			if (loc_conn == null) {
+				loc_conn = ConnectionManager.getInstance().getConnection();
+				this.batchLogger.info("Database is connected");
+			}
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		}
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		getPacs004Dat();
+		return true;
+	}
+
+	private List<Map<String, Object>> getQueryResult() {
+		List<Map<String, Object>> listResult = null;
+		try {
+
+			String sql = "SELECT A.TRANSACTION_ID,A.END_TO_END_ID,B.* "
+					+ "FROM tb_tx_jnl A LEFT JOIN tb_tx_p300dat B ON A.JNL_NO = B.JNL_NO " + "WHERE "
+					+ "A.TX_STAT = ? AND " + "A.TX_CODE = ? AND " + "A.TX_SRC = ? AND " + "A.TX_MODE = ?";
+
+			ArrayList<String> list = new ArrayList<>();
+			list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+			list.add(FFPConstantsTxJnl.TX_CODE.TX_CODE_P300.getCode());
+			list.add(FFPConstants.TX_SOURCE_AGENT);
+			list.add("B");
+			listResult = EntityManager.queryMapList(loc_conn, sql, list.toArray());
+
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		}
+
+		return listResult;
+	}
+
+	private void getPacs004Dat() {
+		List<Map<String, Object>> queryResult = getQueryResult();
+		if (queryResult == null) {
+			this.batchLogger.error("No Data Is Found");
+			throw new RuntimeException("No Data Is Found");
+		}
+		List<FFPJbP300> r3List = new ArrayList<FFPJbP300>();
+
+		for (Map<String, Object> object : queryResult) {
+
+			FFPJbP300 fb = new FFPJbP300();
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setJnlNo((String) object.get("JNL_NO"));
+			txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+			txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+			fb.setTxJnl(txJnl);
+			fb.setSrcRefNm((String) object.get("SRC_REF_NM"));
+
+			fb.setSrvcMode(FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYR01);
+
+			fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+			fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+			fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+			fb.setSettlementAmount(new BigDecimal((String) object.get("SETTLEMENT_AMT")));
+			fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+			fb.setInstructedAmount(new BigDecimal((String) object.get("INSTRUCTED_AMT")));
+
+			fb.setReasonCode((String) object.get("PRTRY_CD"));
+
+			fb.setChargersCurrency((String) object.get("CHG_CUR"));
+			fb.setChargersAmount(new BigDecimal((String) object.get("CHG_AMT")));
+			fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+			fb.setDebtorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+			fb.setDebtorAccountNumber((String) object.get("DEBTOR_ACCTNO"));
+			fb.setDebtorAccountNumberType((String) object.get("DEBTOR_ACCTNO_TYPE"));
+			fb.setDbtrContPhone((String) object.get("DEBTOR_CONT_PHONE"));
+			fb.setDbtrContEmailAddr((String) object.get("DEBTOR_CONT_EMAIL"));
+			fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+			fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+			fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+			fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_ID"));
+			fb.setCreditorAgentBic((String) object.get("CREDITOR_AGT_BIC"));
+			fb.setCdtrContPhone((String) object.get("CREDITOR_CONT_PHONE"));
+			fb.setCdtrContEmailAddr((String) object.get("CREDITOR_CONT_EMAIL"));
+			fb.setPytPurp((String) object.get("PYTPURP"));
+			fb.setRemInfo((String) object.get("REMIT_INFO"));
+
+			r3List.add(fb);
+		}
+		if ((r3List != null) && (r3List.size() != 0)) {
+			generateMulti004Message(r3List);
+
+		}
+		if (loc_conn != null) {
+			try {
+				loc_conn.close();
+			} catch (SQLException e) {
+				this.batchLogger.error(e.getMessage());
+			}
+		}
+	}
+
+	private void generateMulti004Message(List<FFPJbP300> multi004List) {
+		ArrayList<Integer> resList = packToMulti004Message(multi004List);
+
+		int start = 0;
+		for (int i = 0; i < resList.size(); i++) {
+			try {
+				HashMap<String, String> btchMap = new HashMap<>();
+				btchMap.put("BtchId", "FPSPYCI999201608011215");
+				btchMap.put("NbOfFls", resList.size() + "");
+				btchMap.put("NbOfMsgs", "1");
+				btchMap.put("NbOfTxs", (resList.get(i) - start) + "");
+				btchMap.put("FlSeqNo", (i + 1) + "");
+
+				FFPMsgCTO01_Pacs004 multi004 = new FFPMsgCTO01_Pacs004(multi004List.subList(start, resList.get(i)),
+						btchMap);
+				String mesText = multi004.parseHkiclMessage();
+
+				String fileName = writeMulti004ToFile(mesText);
+				if (fileName != null) {
+					for (int j = start; j < resList.get(i); j++) {
+						updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus(), fileName,
+								multi004List.get(j).getTxJnl().getJnlNo());
+					}
+				} else {
+					for (int j = start; j < resList.get(i); j++) {
+						updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus(), fileName,
+								multi004List.get(j).getTxJnl().getJnlNo());
+					}
+				}
+
+			} catch (Exception e) {
+				for (int j = start; j < resList.get(i); j++) {
+					updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus(), null,
+							multi004List.get(j).getTxJnl().getJnlNo());
+				}
+				this.batchLogger.error("Fail To Generate PACS008_PAYC03 Message");
+			}
+			start = resList.get(i);
+		}
+	}
+
+	public ArrayList<Integer> packToMulti004Message(List<FFPJbP300> list) {
+		messageFileList = new ArrayList<>();
+		ArrayList<Integer> resList = new ArrayList<>();
+		HashMap<String, String> btchMap = new HashMap<>();
+		btchMap.put("BtchId", "FPSPYCI000000000000000");
+		btchMap.put("NbOfMsgs", "1");
+		btchMap.put("FlSeqNo", "1");
+		btchMap.put("NbOfFls", "1");
+		btchMap.put("NbOfTxs", "1");
+		if (list != null) {
+			boolean isFin = false;
+			int eachMesMaxSize = eachMessageMaxSize;
+			int eachMesItemMaxNum = eachMessageItemMaxNum;
+			int start = 0;
+			int totalListSize = list.size();
+			String mesText = "";
+			int tempEachMesItemNum = eachMesItemMaxNum; // temporary item
+														// number，item<=eachMesItemMaxNum
+			int end = start + tempEachMesItemNum;
+			this.batchLogger.info("Start To Calculate PACS004_PAYR01 Message");
+			while (!isFin) {
+				if (totalListSize <= end) {
+					// package to message，totalListSize
+					end = totalListSize;
+				}
+				// serialize list.subList(start, end);
+				FFPMsgCTO01_Pacs004 multi004_1 = new FFPMsgCTO01_Pacs004(list.subList(start, end), btchMap);
+				int mesTextSize = 0;
+				try {
+					mesText = multi004_1.parseHkiclMessage();
+					mesTextSize = mesText.getBytes(DEFAULT_ENCODING).length;
+					while (mesTextSize > eachMesMaxSize) {
+						tempEachMesItemNum = (int) Math
+								.floor(((double) (end - start)) / ((double) mesTextSize) * eachMesMaxSize);
+						end = start + tempEachMesItemNum;
+
+						FFPMsgCTO01_Pacs004 multi004_2 = new FFPMsgCTO01_Pacs004(list.subList(start, end), btchMap);
+						mesText = multi004_2.parseHkiclMessage();
+						mesTextSize = mesText.getBytes(DEFAULT_ENCODING).length;
+					}
+				} catch (Exception e) {
+					this.batchLogger.error(e.getMessage());
+				}
+
+				this.batchLogger.info(
+						String.format("Calculate A PACS004_PAYR01 Message Size: messageItemNum=%d messageSize=%d ",
+								(end - start), mesTextSize));
+				resList.add(end);
+				messageFileList.add(mesText);
+				// next message
+				start = end;
+				end = start + eachMesItemMaxNum;
+
+				if (totalListSize <= start) {
+
+					isFin = true;
+				}
+			}
+			this.batchLogger.info("Finish Calculate PACS004_PAYR01 Message");
+		}
+
+		return resList;
+	}
+
+	private String writeMulti004ToFile(String message) {
+		BufferedWriter bw = null;
+		SimpleDateFormat fileNameDateForm = new SimpleDateFormat("yyyyMMdd");
+		String fileName = "FPSPCRO" + this.clearingCode + fileNameDateForm.format(new Date())
+				+ String.format("%08d", ReturnOrRefundOutwardBatchFileProcessor.getBatSubSeqNum(loc_conn)) + ".xml";
+		String path = batchSubmissionDirectoryPath + fileName;
+
+		this.batchLogger.info(String.format("Start To Write PACS004_PAYR01 File %s", path));
+
+		try {
+
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(path)), DEFAULT_ENCODING));
+			bw.write(message);
+			bw.flush();
+			this.batchLogger.info(String.format("Finish Writing PACS004_PAYR01 File %s", path));
+			return fileName;
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+			return null;
+		} finally {
+			if (bw != null) {
+				try {
+					bw.close();
+				} catch (IOException e) {
+					this.batchLogger.error(e.getMessage());
+				}
+			}
+		}
+	}
+
+	private void updateJnlTable(String state, String fileName, String jnlNo) {
+		try {
+			loc_conn.setAutoCommit(false);
+			this.batchLogger.info("Database Transaction Open");
+			String sql = "UPDATE tb_tx_jnl SET TX_STAT = ?, TX_FILE_NAME = ?, LAST_UPDATE_TS = ? WHERE JNL_NO  = ? ";
+			Timestamp lastUpdateTs = new Timestamp(new Date().getTime());
+			ArrayList<Object> list = new ArrayList<>();
+			list.add(state);
+			list.add(fileName);
+			list.add(lastUpdateTs);
+			list.add(jnlNo);
+
+			EntityManager.update(loc_conn, sql, list.toArray());
+			loc_conn.commit();
+			this.batchLogger.info("Database Transaction Commit");
+		} catch (Exception e) {
+			e.printStackTrace();
+			this.batchLogger.error(e.getMessage());
+		}
+	}
+
+	public synchronized static String getBatSubSeqNum(Connection loc_conn) {
+		String query_Sql = "SELECT ffp.get_fpspcro_trans_num() as SEQNUM ";
+		Map<String, Object> queryMap = null;
+		try {
+			queryMap = EntityManager.queryMap(loc_conn, query_Sql);
+			if (queryMap != null && !queryMap.isEmpty()) {
+				batSubSeqNum = (String) queryMap.get("SEQNUM");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return batSubSeqNum;
+	}
+
+}

@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+encoding//resources/sql/BENEFORM4J-TABLE-ORACLE.sql=gbk
+encoding//src/com/forms/ffp/persistents/common/txjnl/dao/FFPIDao_TxJnl.java=UTF-8
+encoding//src/com/forms/ffp/persistents/common/txjnlaction/dao/FFPIDao_TxJnlAction.java=UTF-8
+encoding//src/com/forms/ffp/persistents/participant/ffpcto01/dao/FFPIDao_FFPCTO01.java=UTF-8

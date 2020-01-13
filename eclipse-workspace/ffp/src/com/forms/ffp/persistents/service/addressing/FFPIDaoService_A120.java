@@ -1,0 +1,19 @@
+package com.forms.ffp.persistents.service.addressing;
+
+import java.util.List;
+
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA120;
+
+public interface FFPIDaoService_A120
+{
+	int updateA120Status(String status,String jnlNo);
+	
+	int insertA120Msg(List<FFPJbA120> list);
+	
+	int[] updateJnlStat(FFPJbBase form);
+	
+	FFPTxJnl iqueryTXJNL(String jnlNo);
+	
+}

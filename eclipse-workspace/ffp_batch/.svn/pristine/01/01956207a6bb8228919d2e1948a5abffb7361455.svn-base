@@ -1,0 +1,65 @@
+package com.forms.batch.job.ris;
+
+import java.util.List;
+
+import org.dom4j.Element;
+
+import com.forms.batch.util.RisCreatBackupTable;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class RisCreateOneYearHistoryTable extends BatchBaseJob
+{
+
+	//  @SuppressWarnings("unchecked")
+	//  @Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			int thisyear = Integer.valueOf(this.batchAcDate.substring(0, 4)).intValue();
+			String agoyear = String.valueOf(thisyear - 1);
+			RisCreatBackupTable rcbt = new RisCreatBackupTable();
+//			List<Element> eles = this.actionElement.element("table-list").elements("table");
+			List eles = this.actionElement.element("table-list").elements("table");
+			if(null != eles)
+			{
+				for(int i=0;i<eles.size();i++)
+				{
+					Element ele = (Element) eles.get(i);
+					if(rcbt.createHistoryTable(ele.getTextTrim(), agoyear))
+					{
+						initHistoryData(ele.getTextTrim(), agoyear);
+					}
+				}
+			}
+			return true;
+		}catch(Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+	}
+
+	private void initHistoryData(String tableName, String subfix) throws Exception
+	{
+		String schema = ConnectionManager.getInstance().getDefaultSchema();
+		String type = "";
+		if(subfix.equals("2011"))
+		{
+			type = "A";
+		}else if(subfix.compareTo("2011") > 0)
+		{
+			type = "N";
+		}else
+		{
+			type = "O";
+		}
+		String initsql = "INSERT INTO " + schema + ".D_OVERSEAS_HISTORY			" +
+						 "(TABLE_NAME, YEAR, DATA_FLAG)							" +
+						 "		VALUES											" +
+						 "('" + tableName + "','" + subfix + "','" + type + "')	";
+		EntityManager.update(initsql);
+	}
+}

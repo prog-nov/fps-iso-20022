@@ -1,0 +1,36 @@
+package com.forms.ffp.persistents.service.m101;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.forms.ffp.persistents.bean.m101.FFPJbM101;
+import com.forms.ffp.persistents.dao.m101.FFPIDao_M101;
+
+@Service("FFPDaoService_M101")
+public class FFPDaoService_M101 implements FFPIDaoService_M101
+{
+	@Resource(name = "FFPIDao_M101")
+	private FFPIDao_M101 dao;
+
+	@Override
+	public int sInsert(FFPJbM101 form) throws Exception
+	{
+		int[] rs = dao.dInsert(form);
+		return rs[0];
+	}
+
+	@Override
+	public FFPJbM101 inquiryM101ByJnlNoOrMsgId(String jnlNo, String msgId)
+	{
+		return dao.inquiryM101ByJnlNoOrMsgId(jnlNo, msgId);
+	}
+
+	@Override
+	public int update(FFPJbM101 form)
+	{
+		int[] update = dao.update(form);
+		return update[0];
+	}		
+
+}

@@ -1,0 +1,19 @@
+<ROOT>
+	<HEAD>
+		<RequestID>29</RequestID>
+		<TransactionDate>20180427</TransactionDate>
+		<TransactionTime>153716</TransactionTime>
+		<RequestRefno>201804271519369128077163000001</RequestRefno>
+		<ResponseID>30</ResponseID>
+		<MessageType>FFPCTO01</MessageType>
+		<ResponseRefno>201804271537103151525324000001</ResponseRefno>
+		<ResponseStatus>N</ResponseStatus>
+		<FinalNode>2</FinalNode>
+	</HEAD>
+	<BODY>
+		<SrcRefNm>REFNM2018042511395737200002222</SrcRefNm>
+		<FFPTransactionId>T01220180314143242453000004</FFPTransactionId>
+		<RsltCd>R</RsltCd>
+		<RejCd>PAY10003</RejCd>
+	</BODY>
+</ROOT>

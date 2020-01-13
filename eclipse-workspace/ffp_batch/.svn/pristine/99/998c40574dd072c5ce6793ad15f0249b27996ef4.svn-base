@@ -1,0 +1,88 @@
+package com.forms.batch.util;
+
+import java.util.HashMap;
+
+public class MessageValidation {
+	private static final String NUMBERIC_ACCOUNT_PATTERN = "\\d{1,35}";
+	private static final String EMAIL_PATTERN = "[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]+";
+	private static final String MOBIL_PATTERN = "(\\+\\d{3}-\\d{8})|([1-9]{1}\\d{10})";
+	private static final String SVID_PATTERN = "\\d{1,35}";
+	private static final String CUSTOMER_IDENTIFICATION_PATTERN = "[a-zA-Z0-9]{1,35}";
+
+	public static HashMap<String, String> validateAccountWithType(String account, String type) {
+		String reg = null;
+		HashMap<String, String> resMap = new HashMap<>();
+		switch (type) {
+		case "BBAN":
+		case "AIIN":
+			reg = NUMBERIC_ACCOUNT_PATTERN;
+			break;
+		case "EMAL":
+			reg = EMAIL_PATTERN;
+			break;
+		case "MOBN":
+			reg = MOBIL_PATTERN;
+			break;
+		case "SVID":
+			reg = SVID_PATTERN;
+			break;
+		case "CUST":
+			reg = CUSTOMER_IDENTIFICATION_PATTERN;
+			break;
+		default:
+			break;
+		}
+
+		if(reg == null){
+			resMap.put("result", "0");
+			resMap.put("msg", "Invalid Account Type!");
+		} else if (account.matches(reg)) {
+			resMap.put("result", "1");
+			resMap.put("msg", "");
+		} else {
+			resMap.put("result", "0");
+			resMap.put("msg", "Account No Is Not Matched With Account Type!");
+		}
+
+		return resMap;
+	}
+
+	public static HashMap<String, String> custIdRequired(String type, String orgId, String prvId) {
+		HashMap<String, String> resMap = new HashMap<>();
+		switch (type) {
+		case "BBAN":
+		case "AIIN":
+			resMap.put("result", "1");
+			resMap.put("msg", "");
+			return resMap;
+		case "EMAL":
+		case "MOBN":
+		case "SVID":
+		case "CUST":
+			if (orgId == null && prvId == null) {
+				resMap.put("result", "0");
+				resMap.put("msg", "Customer ID Required!");
+			} else {
+				resMap.put("result", "1");
+				resMap.put("msg", "");
+			}
+			return resMap;
+		default:
+			resMap.put("result", "0");
+			resMap.put("msg", "Invalid Account Type!");
+			return resMap;
+		}
+	}
+
+	public static HashMap<String, String> doMix(String orgId, String prvtId) {
+		HashMap<String, String> resMap = new HashMap<>();
+		if (orgId != null && prvtId != null) {
+			resMap.put("result", "0");
+			resMap.put("msg", "Organization Info And Private Info Could Not Mix!");
+		} else {
+			resMap.put("result", "1");
+			resMap.put("msg", "");
+		}
+		return resMap;
+	}
+}

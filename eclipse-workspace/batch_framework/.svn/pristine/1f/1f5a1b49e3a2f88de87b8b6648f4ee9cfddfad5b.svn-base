@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CIB Batch Job Configuration　Files　-->
+<!-- 
+	updateDate:2012-03-21
+	ModifiedBy:LYZ
+	ModifiedReason:FXC02JOB
+	updateVersion:7 month
+ -->
+<job-config>
+	<fixed-settings>	
+		<job-id>HTTPDOWNLOAD</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<private-settings>
+		<interface-xml-file>INF/IN/clrrate.xml</interface-xml-file>
+		<property-resource>httpProperty</property-resource>
+		<xml-url-path>cibfxc02xml</xml-url-path>
+		<connectTime>3</connectTime>
+	</private-settings>
+	<action-flow>
+		<action>                                                                                   
+		    <action-name>download http file</action-name>                          
+		    <action-type>JavaAction</action-type>                                                   
+		    <processor>com.boc.cib.batch.batchjob.unit.cibfxc02.CibFxc02DownloadFile</processor>
+		</action>
+	</action-flow>
+</job-config>

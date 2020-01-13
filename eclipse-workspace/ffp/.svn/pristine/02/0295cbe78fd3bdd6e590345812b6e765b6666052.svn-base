@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.forms.beneform4j.webapp.systemmanage.param.define.dao.IParamDefineDao"><!--查询参数定义 李芸 20170323 -->
+
+	<select id="dList"
+		resultType="com.forms.beneform4j.webapp.systemmanage.param.define.bean.ParamDefineBean">
+		SELECT A.PARAM_CODE,
+		A.PARAM_NAME,
+		A.STORE_TYPE,
+		B.DATA_TEXT AS STORE_TYPE_NAME,
+		A.PARAM_GROUP,
+		C.DATA_TEXT AS PARAM_GROUP_NAME,
+		A.DATA_TYPE,
+		D.DATA_TEXT AS DATA_TEXT_NAME,
+		A.EDITABLE,
+		E.DATA_TEXT AS EDITABLE_NAME,
+		A.DEFAULT_VALUE,
+		A.VALUE_RULE,
+		A.VALUE_RULE_PARAM,
+		A.SEQNO,
+		A.DES
+		FROM BF_PARAM_DEF A
+		JOIN BF_PARAM_ENUM_DATA B
+		ON A.STORE_TYPE = B.DATA_CODE
+		AND B.PARAM_CODE = 'STORE_TYPE'
+		JOIN BF_PARAM_TREE_DATA C
+		ON A.PARAM_GROUP = C.DATA_CODE
+		AND C.PARAM_CODE = 'PARAM_GROUP'
+		JOIN BF_PARAM_ENUM_DATA D
+		ON A.DATA_TYPE = D.DATA_CODE
+		AND D.PARAM_CODE = 'DATA_TYPE'
+		JOIN BF_PARAM_ENUM_DATA E
+		ON A.EDITABLE = E.DATA_CODE
+		AND E.PARAM_CODE = 'BOOLEAN'
+		<where>
+			<if test="null != paramCode and '' != paramCode">
+				AND A.PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+			</if>
+			<if test="null != paramName and '' != paramName">
+				AND A.PARAM_NAME LIKE #{concat('%' paramName '%'), jdbcType=VARCHAR}
+			</if>
+			<if test="null != paramGroup and '' != paramGroup">
+				AND A.PARAM_GROUP in
+				{{@@paramService.getTreeParamCondition('PARAM_GROUP', paramGroup)}}
+			</if>
+			<if test="null != storeType and '' != storeType">
+				AND A.STORE_TYPE = #{storeType, jdbcType=VARCHAR}
+			</if>
+			<if test="null != dataType and '' != dataType">
+				AND A.DATA_TYPE = #{dataType, jdbcType=VARCHAR}
+			</if>
+			<if test="null != editable and '' != editable">
+				AND A.EDITABLE = #{editable, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+
+	<!--添加单值参数 李芸 20170323 -->
+	<insert id="dInsert">
+		INSERT INTO BF_PARAM_DEF
+		(PARAM_CODE,
+		PARAM_NAME,
+		STORE_TYPE,
+		PARAM_GROUP,
+		DATA_TYPE,
+		EDITABLE,
+		DEFAULT_VALUE,
+		VALUE_RULE,
+		VALUE_RULE_PARAM,
+		SEQNO,
+		DES)
+		VALUES
+		(#{paramCode, jdbcType=VARCHAR},
+		#{paramName, jdbcType=VARCHAR},
+		#{storeType, jdbcType=VARCHAR},
+		#{paramGroup, jdbcType=VARCHAR},
+		#{dataType, jdbcType=VARCHAR},
+		#{editable, jdbcType=VARCHAR},
+		#{defaultValue, jdbcType=VARCHAR},
+		#{valueRule, jdbcType=VARCHAR},
+		#{valueRuleParam, jdbcType=VARCHAR},
+		0,
+		<!-- #{seqno, jdbcType=INTEGER}, -->
+		#{des, jdbcType=VARCHAR})
+	</insert>
+	
+	<!--修改更新单值参数 李芸 20170323 -->
+	<update id="dUpdate">
+		UPDATE BF_PARAM_DEF
+		SET PARAM_NAME = #{paramName, jdbcType=VARCHAR},
+		STORE_TYPE = #{storeType, jdbcType=VARCHAR},
+		PARAM_GROUP = #{paramGroup, jdbcType=VARCHAR},
+		DATA_TYPE = #{dataType, jdbcType=VARCHAR},
+		EDITABLE = #{editable, jdbcType=VARCHAR},
+		DEFAULT_VALUE = #{defaultValue, jdbcType=VARCHAR},
+		VALUE_RULE = #{valueRule, jdbcType=VARCHAR},
+		VALUE_RULE_PARAM = #{valueRuleParam, jdbcType=VARCHAR},
+		<!-- SEQNO = V_SEQNO, -->
+		DES = #{des, jdbcType=VARCHAR}
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</update>
+	
+	<!--删除单值参数 李芸 20170323 -->
+	<delete id="dDelete">
+		DELETE FROM {{BF}}_PARAM_DEF
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

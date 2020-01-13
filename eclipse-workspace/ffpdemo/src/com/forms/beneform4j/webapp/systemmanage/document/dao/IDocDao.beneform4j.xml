@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.document.dao.IDocDao" >
+	<!-- 查列表 -->
+   	<select id="dList" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+    	select DOC_ID, DOC_NAME, SUFFIX, CHECK_SUM_TYPE, CHECK_SUM, DOC_SIZE, DOC_TYPE,DOC_STATE,
+	   		 case
+		         when t.DOC_STATE = '0' then
+		          '锁定'
+		         when t.DOC_STATE = '1' then
+		          '启用'
+		         else
+		          ''
+		      end as DOC_STATE_NAME, 
+		      case
+		         when t.DOC_TYPE = '1' then
+		          '系统文档'
+		         when t.DOC_TYPE = '2' then
+		          '用户文档'
+		         else
+		          ''
+		      end as DOC_TYPE_NAME, 
+	    	  STORE_PATH, INST_DATE, INST_TIME, INST_OPER, MODI_DATE, MODI_TIME, MODI_OPER
+			 from {{BF}}_DOC T
+    	<where>
+	     	<if test="null != doc.docName and '' != doc.docName">
+	     		AND T.DOC_NAME LIKE #{concat('%' doc.docName '%'), jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != doc.suffix and '' != doc.suffix">
+	     		AND T.SUFFIX = replace(#{doc.suffix, jdbcType=VARCHAR}, '-' , '')
+	     	</if>
+	     	<if test="null != doc.docType and '' != doc.docType">
+	     		AND T.DOC_TYPE = #{doc.docType, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != doc.docState and '' != doc.docState">
+	     		AND T.DOC_STATE = #{doc.docState, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+  	</select>
+  	<!-- 根据id查对应的消息 -->
+	<select id="dFind" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+		SELECT * FROM {{BF}}_DOC T WHERE  T.DOC_ID = #{docId}
+	</select>
+	<!-- 根据id查对应的消息 -->
+	<select id="dFindMd5" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+		SELECT * FROM {{BF}}_DOC T WHERE  T.CHECK_SUM = #{md5}
+	</select>
+	<insert id="dInsert" parameterType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean" >
+	    insert into {{BF}}_DOC (DOC_ID, DOC_NAME, SUFFIX, 
+	      CHECK_SUM_TYPE, CHECK_SUM, DOC_SIZE, 
+	      DOC_TYPE, DOC_STATE, STORE_PATH, 
+	      INST_DATE, INST_TIME, INST_OPER
+	      )
+	    values (#{doc.docId,jdbcType=VARCHAR}, #{doc.docName,jdbcType=VARCHAR}, #{doc.suffix,jdbcType=VARCHAR}, 
+	      #{doc.checkSumType,jdbcType=VARCHAR}, #{doc.checkSum,jdbcType=VARCHAR}, #{doc.docSize,jdbcType=INTEGER}, 
+	      #{doc.docType,jdbcType=VARCHAR}, #{doc.docState,jdbcType=VARCHAR}, #{doc.storePath,jdbcType=VARCHAR}, 
+	      #{doc.instDate,jdbcType=CHAR}, #{doc.instTime,jdbcType=CHAR}, #{doc.instOper,jdbcType=VARCHAR}
+	      )
+  	</insert>
+	<update id="dUpdate" parameterType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean" >
+	    update {{BF}}_DOC
+		    set DOC_NAME = #{doc.docName,jdbcType=VARCHAR},
+		      SUFFIX = #{doc.suffix,jdbcType=VARCHAR},
+		      CHECK_SUM = #{doc.checkSum,jdbcType=VARCHAR},
+		      DOC_SIZE = #{doc.docSize,jdbcType=INTEGER},
+		      DOC_TYPE = #{doc.docType,jdbcType=VARCHAR},
+		      STORE_PATH = #{doc.storePath,jdbcType=VARCHAR},
+		      MODI_DATE = #{doc.modiDate,jdbcType=CHAR},
+		      MODI_TIME = #{doc.modiTime,jdbcType=CHAR},
+		      MODI_OPER = #{doc.modiOper,jdbcType=VARCHAR}
+	    where DOC_ID = #{doc.docId,jdbcType=VARCHAR}
+  	</update>
+  	<update id="dLock" parameterType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean" >
+	    update {{BF}}_DOC
+		    set DOC_STATE = #{doc.docState,jdbcType=VARCHAR}
+	    where DOC_ID = #{doc.docId,jdbcType=VARCHAR}
+  	</update>
+  	<!-- 批量删除操作 -->
+	<delete id="dDelete">
+		delete from {{BF}}_DOC where DOC_ID = #{docId}
+	</delete>
+</mapper>

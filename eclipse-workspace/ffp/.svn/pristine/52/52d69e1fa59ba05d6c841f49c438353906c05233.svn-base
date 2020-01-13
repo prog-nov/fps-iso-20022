@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.authority.login.dao.ILoginDao">
+	
+	
+	<delete id="dTruncateKey" >
+		DELETE FROM {{BF}}_KEY_CFG 
+	</delete>
+	
+	<insert id="dInitKey" parameterType="com.forms.beneform4j.core.util.rsa.impl.KeyProperty">
+		INSERT INTO {{BF}}_KEY_CFG  VALUES (#{module,jdbcType=VARCHAR},#{publicEmpoent,jdbcType=VARCHAR},#{privateEmpoent,jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="dGetKey" resultType="com.forms.beneform4j.core.util.rsa.impl.KeyProperty">
+		SELECT * FROM  {{BF}}_KEY_CFG
+	</select>
+	
+	<select id="dGetLoginUser" resultType="com.forms.beneform4j.webapp.systemmanage.user.bean.UserInfo">
+		select a.*,b.org_name from {{BF}}_user a left join {{BF}}_org b on a.org_id = b.org_id 
+		<where>
+			<if test="null != userId and '' != userId">
+			and user_id = #{userId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	
+	<update id="dAfterLoginSuccess">
+		update {{BF}}_user set 
+			online_session_num = #{onlineSessionNum, jdbcType=INTEGER},
+			lock_flag=#{lockFlag, jdbcType=INTEGER},
+			last_login_ip=#{lastLoginIp, jdbcType=VARCHAR},
+			last_login_time=#{lastLoginTime, jdbcType=VARCHAR},
+			last_login_date=#{lastLoginDate, jdbcType=VARCHAR},
+			login_num=#{loginNum,jdbcType=INTEGER}
+		where user_id=#{userId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dAfterLoginOut">
+		update {{BF}}_user set 
+			online_session_num = case when (online_session_num - 1)  <![CDATA[<=]]>  0 then 0 else online_session_num - 1 end 
+				<!-- online_session_num = 0 -->
+		where user_id=#{userId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dAfterLoginFailure">
+		update {{BF}}_user set 
+			lock_flag = #{lockFlag,jdbcType=INTEGER},
+			login_num = #{loginNum,jdbcType=INTEGER},
+			lock_date = #{lockDate,jdbcType=VARCHAR},
+			lock_time = #{lockTime,jdbcType=VARCHAR}
+		where user_id=#{userId,jdbcType=VARCHAR}
+	</update>
+	
+	<insert id="dRecordLoginLog">
+		insert into {{BF}}_log_login (key_id,session_id,user_id,client_ip,server_ip,browser,os,lio_flag,opt_date,opt_time) values 
+		(#{keyId, jdbcType=VARCHAR},#{sessionId, jdbcType=VARCHAR},#{userId, jdbcType=VARCHAR},#{clientIp, jdbcType=VARCHAR},#{serverIp, jdbcType=VARCHAR},#{browser, jdbcType=VARCHAR},#{os, jdbcType=VARCHAR},#{lioFlag, jdbcType=VARCHAR},#{optDate, jdbcType=VARCHAR},#{optTime, jdbcType=VARCHAR})
+	</insert>
+	
+	<delete id="dDeleteLoginLog">
+		DELETE FROM {{BF}}_log_login where OPT_DATE <![CDATA[<]]> #{dateBefore}
+	</delete>
+	
+	<select id="dGetUserDefaultRole">
+		select param_value from {{BF}}_user_cfg a where a.param_code = 'USER_DEFAULT_ROLE'
+		<if test="null != userId and '' != userId">
+			and a.user_id = #{userId, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="dGetPermissionIds" resultType="Integer">
+		select distinct b.perm_id from {{BF}}_user_role a join {{BF}}_role_perm b on a.role_id = b.role_id 
+		<where>
+			<if test="null != user.userId and '' != user.userId">
+				and a.user_id = #{user.userId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != user.currentRoleId and -1 != user.currentRoleId and 'MULTI' != userRoleMode">
+				and b.role_id = #{user.currentRoleId, jdbcType=INTEGER}
+			</if>
+		</where>
+	</select>
+	
+	<select id="dGetAddOnMenu" resultType="com.forms.beneform4j.security.core.access.permission.impl.MenuPermission">
+		SELECT  a.MENU_ID AS CODE,
+		                case when c.menu_name is null then a.MENU_NAME else c.menu_name end AS TEXT,
+		                a.PARENT_MENU_ID AS PARENT_CODE,
+		                a.MENU_URL AS URL,
+		                a.TARGET_PAGE,
+		                a.DISPLAY_AREA,
+		                a.SEQNO,
+		                a.DEPEND_MENU_ID,
+		                a.author_level,
+		                a.menu_flag,
+		                a.perm_tree_flag,
+		                a.des,
+		                '1' as PERM_ATTR,
+		                b.PERM_ID,
+		                'fasle' AS disable,
+		                a.DISPLAY_ICON AS ICON
+		                 from {{BF}}_menu a
+		  join {{BF}}_perm b on a.menu_id = b.perm_type_key
+		                and b.perm_type = 'MENU'
+		                and a.author_level in ('0', '1')
+		                and a.menu_flag='0'
+		  left join {{BF}}_MENU_I18N c on a.menu_id = c.menu_id and locale = #{locale}
+
+	</select>
+	
+	<select id="dGetRoleIds" resultType="Integer">
+		select role_id from {{BF}}_user_role a 
+		<where>
+			<if test="null != user.userId and '' != user.userId">
+				and a.user_id = #{user.userId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != currentRoleId and -1 != currentRoleId and 'MULTI' != userRoleMode">
+				and a.role_id = #{user.currentRoleId, jdbcType=INTEGER}
+			</if>
+		</where>
+	</select>
+	
+	<select id="dGetMenuNodes" resultType="com.forms.beneform4j.security.core.access.permission.impl.MenuPermission">
+		SELECT DISTINCT MM.MENU_ID AS CODE,
+		                case when z.menu_name is null then MM.MENU_NAME else z.menu_name end AS TEXT,
+		                MM.PARENT_MENU_ID AS PARENT_CODE,
+		                MM.MENU_URL AS URL,
+		                MM.TARGET_PAGE,
+		                MM.DISPLAY_AREA,
+		                MM.SEQNO,
+		                MM.DEPEND_MENU_ID,
+		                MM.author_level,
+		                MM.menu_flag,
+		                MM.perm_tree_flag,
+		                MM.des,
+		                P.PERM_ATTR,
+		                P.PERM_ID,
+		                CASE
+		                  WHEN P.PERM_ATTR = '1' THEN
+		                   'fasle'
+		                  ELSE
+		                   'true'
+		                END AS disable,
+		                MM.DISPLAY_ICON AS ICON
+		  FROM {{BF}}_USER_ROLE B
+		  JOIN {{BF}}_ROLE_PERM P
+		    ON B.ROLE_ID = P.ROLE_ID
+		  JOIN {{BF}}_PERM M
+		    ON P.PERM_ID = M.PERM_ID
+		  JOIN {{BF}}_MENU MM
+		    ON M.PERM_TYPE = 'MENU'
+		   AND M.PERM_TYPE_KEY = MM.MENU_ID
+		   AND MM.MENU_FLAG = 0 <!--  AND ( MM.PARENT_MENU_ID=0 OR ( MM.PARENT_MENU_ID != 0  AND MM.DISPLAY_AREA = '0') )  -->
+		   left join {{BF}}_MENU_I18N z on MM.MENU_ID = z.menu_id and locale = #{locale}
+		    
+		<where>
+			<if test="null != user.userId and '' != user.userId">
+				and b.user_id = #{user.userId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != user.currentRoleId and -1 != user.currentRoleId  and 'MULTI' != userRoleMode">
+				and b.role_id = #{user.currentRoleId, jdbcType=INTEGER}
+			</if>
+		</where>
+		order by mm.seqno
+	</select>
+	
+	<select id="dGetShortMenuNodes" resultType="com.forms.beneform4j.security.core.access.permission.impl.MenuPermission">
+		select bfm.text, bfm.icon, bfm.des, bfm.target_page, bfm.url,bfm.code,bfm.parent_code
+		from (
+			select case when a.short_menu_name is null then b.menu_name else a.short_menu_name end as text,
+			       case when a.display_icon is null then b.display_icon else a.display_icon end as icon,
+			       case when a.des is null then b.des else a.des end as des,
+			       case when b.target_page is null then 'tab' else b.target_page end as target_page,
+			       a.seqno,
+			       b.menu_url as url,
+			       b.menu_id  as code,
+			       b.parent_menu_id as parent_code
+			  from {{BF}}_SHORT_MENU a
+			  join {{BF}}_menu b on a.menu_id = b.menu_id
+			  where a.user_id = #{user.userId, jdbcType=VARCHAR}
+			union
+			select b.menu_name      text,
+			       b.display_icon   icon,
+			       b.des,
+			       case when b.target_page is null then 'tab' else b.target_page end as target_page,
+			       null as seqno,
+			       b.menu_url       as url,
+			       b.menu_id        as code,
+			       b.parent_menu_id as parent_code
+			  from {{BF}}_menu b
+			 where b.display_area = 2
+			   and not exists (select 1
+			          from {{BF}}_SHORT_MENU a
+			         where a.menu_id = b.menu_id
+			           and a.user_id = #{user.userId, jdbcType=VARCHAR})
+		) bfm order by seqno
+	</select>
+	
+	<!-- 获取顶部滚动消息接口  20140425黄钟 -->
+	<select id="dGetTopMessage" resultType="com.forms.beneform4j.webapp.authority.login.bean.TopMessageBean">
+		select msg_id,
+	       msg_title,
+	       msg_content,
+	       target_url,
+	       case
+	         when msg_type = '1' then
+	          '公告'
+	         when msg_type = '2' then
+	          '通知'
+	         when msg_type = '3' then
+	          '信函'
+	         else
+	          ''
+	       end as msg_type
+	  from {{BF}}_news t
+	 where t.msg_type = '2' 
+	 and #{form.currentDateTime, jdbcType=VARCHAR} <![CDATA[>=]]>  effective_start_date || effective_start_time  
+	 and #{form.currentDateTime, jdbcType=VARCHAR} <![CDATA[<=]]>  effective_end_date || effective_end_time    
+	 order by t.send_date desc
+	</select>
+	
+	<insert id="dSetUserOnline">
+		insert into {{BF}}_online_user (session_id,user_id,client_ip,server_ip,browser,os,login_date,login_time) values 
+		(#{sessionId, jdbcType=VARCHAR},#{userId, jdbcType=VARCHAR},#{clientIp, jdbcType=VARCHAR},#{serverIp, jdbcType=VARCHAR},#{browser, jdbcType=VARCHAR},#{os, jdbcType=VARCHAR},#{optDate, jdbcType=VARCHAR},#{optTime, jdbcType=VARCHAR})
+	</insert>
+	
+	<delete id="dSetUserOffline">
+		delete from  {{BF}}_online_user where session_id=#{sessionId, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="dGetSessionInfo" resultType="com.forms.beneform4j.webapp.authority.login.bean.BaseLoginLogBean">
+		select session_id, user_id, client_ip, server_ip, browser, os, login_date, login_time from {{BF}}_online_user where session_id=#{sessionId, jdbcType=VARCHAR}
+	</select>
+	
+	<delete id="dTruncateServerSessions">
+		delete from {{BF}}_online_user where server_ip=#{serverIp, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="dGetSessionNum" resultType="int">
+		select count(1) as n from {{BF}}_online_user where user_id=#{userId, jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

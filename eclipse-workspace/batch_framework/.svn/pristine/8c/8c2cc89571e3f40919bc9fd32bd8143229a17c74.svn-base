@@ -1,0 +1,220 @@
+package com.forms.framework.persistence;
+
+/**
+ * ConnectionManager manage all database connections used in batch system.<br>
+ * There can be more databases managed in this class.<br>
+ * One database one connection manager instance.<br>
+ * But only on default database,when we call getInstance(), it return a manager intance to the default database.
+ * 
+ * Note:we must register the database before useing it.
+ */
+
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+
+import com.forms.framework.exception.BatchFrameworkException;
+
+public class ConnectionManager
+{
+	private static HashMap<String, ConnectionManager> connMgrMap = null;
+
+	private static String defaultDatabase = null;
+
+	private DataSource dataSource = null;
+
+	private String databaseName = null;
+
+	private String url = null;
+
+	private String driverClassName = null;
+
+	private String userName = null;
+
+	private String password = null;
+
+	private String defaultSchema = null;
+
+	public static String getDefaultDatabase()
+	{
+		return defaultDatabase;
+	}
+
+	public static void setDefaultDatabase(String ip_a_defaultDatabase)
+	{
+
+		defaultDatabase = ip_a_defaultDatabase;
+	}
+
+	public DataSource getDataSource()
+	{
+		return dataSource;
+	}
+
+	public String getDatabaseName()
+	{
+		return databaseName;
+	}
+
+	public String getUrl()
+	{
+		return url;
+	}
+
+	public String getDriverClassName()
+	{
+		return driverClassName;
+	}
+
+	public void setUrl(String ip_a_url)
+	{
+		url = ip_a_url;
+	}
+
+	public String getUserName()
+	{
+		return userName;
+	}
+
+	public String getPassword()
+	{
+		return password;
+	}
+
+	public String getDefaultSchema()
+	{
+		return defaultSchema;
+	}
+
+	/**
+	 * return a manager intance to the specified database.
+	 * 
+	 * @param a_databaseName:the
+	 *            specified database.
+	 */
+	public static synchronized ConnectionManager getInstance(
+			String ip_a_databaseName) throws BatchFrameworkException
+	{
+		if (ip_a_databaseName == null)
+		{
+			throw new BatchFrameworkException(
+					"Database name can not be null");
+		}
+		if (connMgrMap == null)
+		{
+			throw new BatchFrameworkException(
+					"No database registered in ConnectionManager");
+		}
+		ConnectionManager loc_connMgr = connMgrMap.get(ip_a_databaseName.trim()
+				.toUpperCase());
+		if (loc_connMgr == null)
+		{
+			throw new BatchFrameworkException(
+					"No database registered with name:" + ip_a_databaseName);
+		}
+		return loc_connMgr;
+	}
+
+	/**
+	 * return a manager intance to the default database.
+	 */
+	public static synchronized ConnectionManager getInstance()
+			throws BatchFrameworkException
+	{
+		if (defaultDatabase == null)
+		{
+			throw new BatchFrameworkException(
+					"No default database name registered");
+		}
+		return getInstance(defaultDatabase);
+	}
+
+	/**
+	 * Register the database properties.<br>
+	 * We must register the database before useing it.
+	 */
+	public static void registerDatabase(Properties ip_a_prop)
+			throws BatchFrameworkException
+	{
+		if (ip_a_prop == null)
+		{
+			throw new BatchFrameworkException(
+					"Can not register a database with null properties");
+		}
+		if (ip_a_prop.getProperty("databaseName") == null)
+		{
+			throw new BatchFrameworkException(
+					"Can not register a database with null database name");
+		}
+		ConnectionManager loc_connMgr = new ConnectionManager(ip_a_prop);
+		if (connMgrMap == null)
+		{
+			connMgrMap = new HashMap<String, ConnectionManager>();
+		}
+		connMgrMap.put(ip_a_prop.getProperty("databaseName").trim().toUpperCase(),
+				loc_connMgr);
+	}
+
+	/**
+	 * Create a new connection manager instance through properties.<br>
+	 * One database one connection manager instance.
+	 */
+	private ConnectionManager(Properties ip_a_prop)
+			throws BatchFrameworkException
+	{
+		try
+		{
+			dataSource = BasicDataSourceFactory.createDataSource(ip_a_prop);
+			this.databaseName = ip_a_prop.getProperty("databaseName");
+			this.url = ip_a_prop.getProperty("url");
+			this.driverClassName = ip_a_prop.getProperty("driverClassName");
+			this.userName = ip_a_prop.getProperty("username");
+			this.password = ip_a_prop.getProperty("password");
+			this.defaultSchema = ip_a_prop.getProperty("defaultSchema");
+		} catch (Exception ip_ex)
+		{
+			ip_ex.printStackTrace();
+			throw new BatchFrameworkException(ip_ex);
+		}
+	}
+
+	public Connection getConnection() throws BatchFrameworkException
+	{
+		Connection loc_conn = null;
+		try
+		{
+			loc_conn = dataSource.getConnection();
+		} catch (Exception ip_ex)
+		{
+			throw new BatchFrameworkException(ip_ex);
+		}
+		return loc_conn;
+	}
+
+	public static void main(String[] a_agrs)
+	{
+		Properties loc_prop = new Properties();
+		loc_prop.put("databaseName", "db");
+		loc_prop.put("url", "jdbc:db2://10.102.247.130:50001/db");
+		loc_prop.put("driverClassName", "com.ibm.db2.jcc.DB2Driver");
+		loc_prop.put("username", "test");
+		loc_prop.put("password", "test");
+		try
+		{
+			ConnectionManager.registerDatabase(loc_prop);
+			ConnectionManager.setDefaultDatabase("db");
+			ConnectionManager loc_connMgr = ConnectionManager.getInstance();
+			Connection loc_conn = loc_connMgr.getConnection();
+			loc_conn.close();
+		} catch (Exception ip_ex)
+		{
+			ip_ex.printStackTrace();
+		}
+
+	}
+
+}

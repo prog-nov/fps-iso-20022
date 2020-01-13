@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>DirectDebitOutwardBatchResponseFileProcessor</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>responseResultProcessor</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.iclfps.payment.directdebit.DirectDebitOutwardBatchResponseFileProcessor</processor>
+			<parameters>
+					<parameter>
+						<xmlPath>D:/GCL</xmlPath>
+						<address>172.21.21.200</address>
+						<port>40404</port>
+					</parameter>
+			</parameters>
+		</action>
+
+	 </action-flow>
+</job-config>

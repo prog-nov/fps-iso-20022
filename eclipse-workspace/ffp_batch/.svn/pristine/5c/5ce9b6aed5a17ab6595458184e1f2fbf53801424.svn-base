@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<csvfile-input-config>
+	<file-name>#{inputFilePath}/0175040D.p21</file-name>
+	<encoding>GBK</encoding>
+	<!-- <header-bytes>0</header-bytes> -->
+	<!-- <footer-bytes>0</footer-bytes> -->
+	<footer-lines>14</footer-lines>
+	<!-- <header-handle-class>com.forms.datapipe.input.header.FixedFileInputHeaderHandler</header-handle-class> -->
+	<footer-handle-class>com.forms.batch.job.commom.headfoot.CsvFileInputFooterHandler</footer-handle-class>
+	<buffer-size>500</buffer-size>
+	<delimiter>#{space}|#{space}</delimiter><!-- 分隔符 -->
+	<line-feed>\n</line-feed>
+	<field-definition>
+		<field name="CP03_APPG_MODE"			data-type="StringTypeRT"	/>
+		<field name="CP03_APPG_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_INST"					data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_MSG_SEQ_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_PROS_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_SRC_SYS"				data-type="StringTypeRT"	/>
+		<field name="CP03_MSG_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP03_DSTN_SYS"				data-type="StringTypeRT"	/>
+		<field name="CP03_SPYI_VER"				data-type="StringTypeRT"	/>
+		<field name="DP03_VALU_DATE"			data-type="StringTypeRT"	/>
+		<field name="DP03_RCPT_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_RCPT_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP03_REJ_ERR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_JRNLNO"			data-type="StringTypeRT"	/>
+		<field name="DP03_REJ_DATE"				data-type="StringTypeRT"	/>
+		<field name="CP03_REJ_TIME"				data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_CURR"				data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_AMT"				data-type="StringTypeRT"	/>
+		<field name="CP03_EXTN_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_RETR"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_DEAD"			data-type="StringTypeRT"	/>
+		<field name="DP03_CHAS_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_ATMP"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_FREQ"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_UNIT"			data-type="StringTypeRT"	/>
+		<field name="CP03_ACCT_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_BENF_DETL"			data-type="StringTypeRT"	/>
+		<field name="CP03_TRAN_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_BTCH_ID"				data-type="StringTypeRT"	/>
+		<field name="CP03_NOST_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_MUR"					data-type="StringTypeRT"	/>
+		<field name="CP03_NOST_UPD_FLAG"		data-type="StringTypeRT"	/>
+		<field name="CP03_CR_DR_IND"			data-type="StringTypeRT"	/>
+		<field name="CP03_REMIT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHANNEL_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_TO_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_PAYMNT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_FEE_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP03_SPYI_FEE"				data-type="StringTypeRT"	/>
+		<field name="CP03_FISC_FEE"				data-type="StringTypeRT"	/>
+		<field name="CP03_CREDIT_CODE"			data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_SPN_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_CHK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_SDN_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP03_IN_CHK_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP03_FISC_SEQ"				data-type="StringTypeRT"	/>
+		<field name="CP03_INTERBANK_SEQ"		data-type="StringTypeRT"	/>
+		<field name="CP03_RETURN_REASON"		data-type="StringTypeRT"	/>
+		<field name="CP03_ORG_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_ORG_FISC_SEQ"			data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_PRINT_TIME"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_PRINT_TIMES"		data-type="StringTypeRT"	/>
+		<field name="CP03_TELLER_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_TELLER_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP03_SENDER_NAME"			data-type="StringTypeRT"	/>
+		<field name="CP03_RECEIVER_NAME"		data-type="StringTypeRT"	/>
+		<field name="CP03_SENDER_DESC"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR2_NO"			data-type="StringTypeRT"	/>
+		<field name="DP03_RESTORED_DATE"		data-type="StringTypeRT"	/>
+		<field name="DP03_SUSP_FIN_DATE"		data-type="StringTypeRT"	/>
+		<field name="CP03_ACCT_OWNER_REF_NO"	data-type="StringTypeRT"	/>
+		<field name="CP03_SUP_ID"				data-type="StringTypeRT"	/>
+		<field name="DP03_REL_DATE"				data-type="StringTypeRT"	/>
+		<field name="CP03_REL_TIME"				data-type="StringTypeRT"	/>
+		<field name="CP03_REDIR_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_REDIR_BANK_ID"		data-type="StringTypeRT"	/>
+		<field name="CP03_BUSINESS_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_REGION"				data-type="StringTypeRT"	/>
+		<field name="CP03_BRANCH"				data-type="StringTypeRT"	/>
+		<field name="CP03_SUB_STATUS"			data-type="StringTypeRT"	/>
+		<field name="CP03_URGENCY"				data-type="StringTypeRT"	/>
+		<field name="CP03_PRIORITY_WEIGHT"		data-type="StringTypeRT"	/>
+		<field name="CP03_RETURN_RSN"			data-type="StringTypeRT"	/>
+		<field name="CP03_PREV_STATUS"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_CASE_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_TEMP_ID"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_INV_PURP"			data-type="StringTypeRT"	/>
+		<!-- <field name="CP03_FIL01"				data-type="StringTypeRT"	/> -->
+		<field name="CP03_FX_55067_PMCODE"		data-type="StringTypeRT"	/>
+		<field name="CP03_FX_SAFE_DEC"			data-type="StringTypeRT"	/>
+		<field name="CP03_FX_LOCAL_AMT"			data-type="StringTypeRT"	/>
+		<field name="CP03_TRAN_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_POST_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_FILLER"				data-type="StringTypeRT"	/>
+		<field name="CP03_TXN_DATE"				data-type="StringTypeRT"	/>
+		<field name="LAST_MAINT_DATE1"			data-type="StringTypeRT"	/>
+		<field name="LAST_MAINT_FLAG1"			data-type="StringTypeRT"	/>
+		<field name="filler"					data-type="StringTypeRT"	/>
+	</field-definition>
+</csvfile-input-config>

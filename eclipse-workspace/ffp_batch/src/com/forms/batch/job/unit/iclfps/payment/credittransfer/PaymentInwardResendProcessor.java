@@ -1,0 +1,342 @@
+package com.forms.batch.job.unit.iclfps.payment.credittransfer;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.addresssevice.AddressService;
+import com.forms.batch.job.unit.iclfps.payment.message.FFPBatchMsg_CTI01;
+import com.forms.batch.util.CuttoffUtils;
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.core.utils.FFPStringUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP110;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class PaymentInwardResendProcessor extends BatchBaseJob
+{
+	private int retry_interval_time = 0;
+	private final static String RESEND_RESPONSE_HEAD_STATUS_N = "N";
+	private final static String RESEND_RESPONSE_HEAD_STATUS_E = "E";
+	//private static String RESEND_RESPONSE_RESULT_CODE_R = "R";
+	//private static String RESEND_RESPONSE_RESULT_CODE_S = "S";
+	private final static String MESSAGE_DIRECTION_INWARD = "I";
+	private final static String MESSAGE_DIRECTION_OUTWARD = "O";
+	
+	public void init() throws BatchJobException
+	{
+		try
+		{
+			String times = this.actionElement.element("parameters").elementText("resend-interval-time");
+			retry_interval_time = Integer.valueOf(times);
+			
+			batchLogger.info(String.format("The interval times of retry send inward credit transfer is : %s", times));
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error("Init retry config error, please check!", ex);
+			throw new BatchJobException(ex);
+		}
+	}	
+	
+	@Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			FFPAdaptorMgr ffpMgr = FFPAdaptorMgr.getInstance();
+			this.process(ffpMgr);
+			return true;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Process resend credit transfer data error", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+
+	
+	public void process(FFPAdaptorMgr ffpMgr) throws Exception
+	{
+		batchLogger.info("Started processor resend inward credti transfer data cause timeout.");
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		
+		Connection con = null;
+		Calendar cl = Calendar.getInstance();
+		cl.add(Calendar.SECOND, -retry_interval_time);
+		//case 1: yesterday timeout, and then Agent cut off, today resent it
+		String sql = "SELECT JNL.JNL_NO, JNL.SRC_REF_NM, JNL.RESEND_COUNT FROM TB_TX_JNL JNL JOIN TB_TX_JNLACTION ACTION ON JNL.JNL_NO = ACTION.JNL_NO "
+					+"WHERE JNL.TX_STAT = ? AND JNL.TX_CODE = ? AND JNL.TX_MODE = ? AND JNL.TX_SRC = ? AND JNL.LAST_UPDATE_TS <= ? "
+					+"AND JNL.RESEND_COUNT < 3 AND ACTION.MSG_STATUS = ? AND ACTION.MSG_SYSTEMID = ? AND ACTION.MSG_TYPE = ? "
+					+"AND ACTION.MSG_DIRECTION = ? GROUP BY JNL.JNL_NO, JNL.RESEND_COUNT";
+		List<Object> list = new ArrayList<>();
+		
+		Date retryTime = cl.getTime();
+		
+		try
+		{
+			con = ConnectionManager.getInstance().getConnection();
+			
+			list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus());
+			list.add(FFPConstantsTxJnl.TX_CODE.TX_CODE_P110.getCode());
+			list.add("BTCH");	//just for batch mode right now!
+			list.add("FFP");
+			list.add(retryTime);
+			list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus());//add for check action flow
+			list.add(FFPConstants.MSG_CODE_AGENT);
+			list.add("FFPCTI01");
+			list.add("O");
+			
+			//1.Get retry data
+			List<Object[]> retryDatas = EntityManager.queryArrayList(con, sql, list.toArray());
+			if(retryDatas != null)
+			{
+				for(int i=0; i<retryDatas.size(); i++)
+				{
+					try
+					{
+						Object[] jnlInfo = retryDatas.get(i);
+						String jnlNo = (String)jnlInfo[0];
+						String srcRefNm = (String)jnlInfo[1];
+						long resentCount = (long)jnlInfo[2];
+						//2.Process retry transaction data
+						processRetryTxData(jnlNo, srcRefNm, resentCount, ffpMgr, con);
+					}
+					catch(Exception ex)
+					{
+						ex.printStackTrace();
+						batchLogger.error(ex.getMessage());
+					}
+				}
+			}
+			else
+			{
+				batchLogger.info(String.format("Not found re-try data at this time[%s]", format1.format(cl.getTime())));
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Error on processing resend inward credit transfer data", ex);
+			throw new BatchJobException(ex);
+		}
+		finally
+		{
+			if(con != null)
+				con.close();
+		}
+		batchLogger.info("Ended processor resend inward credti transfer data cause timeout.");
+	}
+	
+	private void processRetryTxData(String jnlNo, String srcRefNm, long resentCount, FFPAdaptorMgr ffpMgr, Connection con) throws BatchJobException
+	{
+		FFPJbP110 p110 = new FFPJbP110();
+		FFPTxJnl txJnl = new FFPTxJnl();
+		try
+		{
+			String sql = String.format("SELECT CATEGORY_PURPOSE, SETTLEMENT_DATE, SETTLEMENT_AMT, SETTLEMENT_CUR, CREDITOR_NAME, CREDITOR_ORGID_OTHRID, CREDITOR_PRVTID_OTHRID, "
+					+ "CREDITOR_CONT_PHONE, CREDITOR_CONT_EMADDR, CREDITOR_ACCTNO_TYPE, CREDITOR_ACCTNO FROM TB_TX_P110DAT WHERE JNL_NO = '%s'", jnlNo);
+			
+			Object[] obj = EntityManager.queryArray(sql);//just one record
+			if(obj != null && obj.length == 11)
+			{
+				p110.setPymtCatPrps((String)obj[0]);
+				p110.setSettlementDate((Date)obj[1]);
+				p110.setSettlementAmount(new BigDecimal((String)obj[2]));
+				p110.setSettlementCurrency((String)obj[3]);
+				p110.setCreditorName((String)obj[4]);
+				String prvCustId = (String)obj[5];
+				String orgCustId = (String)obj[6];
+				//phone number
+				//email address
+				p110.setCreditorContPhone((String)obj[7]);
+				p110.setCreditorContEmailAddr((String)obj[8]);
+				String proxyType = (String)obj[9];
+				String proxyId = (String)obj[10];
+				
+				txJnl.setSrcRefNm(srcRefNm);
+				p110.setTxJnl(txJnl);
+				//p110.setSrcRefNm(srcRefNm);
+				
+				Map<String, String> addAcc = 
+						AddressService.getAccountNo(FFPStringUtils.isEmptyOrNull(prvCustId) ? orgCustId : prvCustId, proxyId, proxyType, "CR", p110.getSettlementCurrency());
+				
+				p110.setCreditorAccountNumber(addAcc.get("ACCT_NUM"));
+				p110.setCreditorAccountNumberType(addAcc.get("ACCT_TP"));
+				
+				String reqRefNo = FFPIDUtils.getRefno();//Get new request refNo
+				FFPBatchMsg_CTI01 cti01 = new FFPBatchMsg_CTI01(p110);
+				cti01.setReqRefNo(reqRefNo);
+				
+				//2a. Check Agent cut-off or not
+				boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+				if(agentCutOff)
+				{
+					batchLogger.info(String.format("FFP Agent CUT OFF right now in processing transaction data[FFP SRC_REF_NO:%s]!", srcRefNm));
+					return;
+				}
+				
+				//2b.Insert Action flow of FFPCIT01 for resend request message
+				insertAcitonFlow(con, jnlNo, reqRefNo, MESSAGE_DIRECTION_OUTWARD, FFPConstants.MSG_CODE_AGENT, FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTI01, 
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), null, null, null, null, "N");
+				
+				//2c.Send message to FFP Agent
+				FFPBaseResp result = ffpMgr.execute(cti01);
+				
+				//2d.Synchronously update FFP DB status according to the response message
+				//2e.Update message id for the original data in TB_TX_JNLACTION after send message to Agent successfully
+				if(result != null)
+				{
+					FFPSendTcpMessageResp cti01_reply = (FFPSendTcpMessageResp)result;
+					if(cti01_reply.isTimeOut())
+					{
+						//timeout again
+						batchLogger.info(String.format("Retry update FFP Transaction status[%s] and retry count[%s] and Action status[%s] with FFP JnlNo[%s] and Source Reference number[%s] and Request MsgId[%s]", 
+									FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), ++resentCount, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), jnlNo, srcRefNm, reqRefNo));
+						updateResultSts(con, FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), null, null, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), 
+								null, null, null, jnlNo, reqRefNo, srcRefNm, resentCount);
+						
+						//if retry count = 3, shall we update status of jnl and jnlAction?
+					}
+					else
+					{
+						cti01.unmarshalResponseMsg(cti01_reply.getRespMessage());
+						
+						String resultSts;
+						String res_action_sts;
+						if(RESEND_RESPONSE_HEAD_STATUS_E.compareTo(cti01.getResponseSts()) == 0)
+						{
+							//resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_UNHANDLE.getStatus();//FFP Agent didn't handle this business data
+							resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_AGENTREJCT.getStatus();
+							res_action_sts = FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus();
+						}
+						else if(RESEND_RESPONSE_HEAD_STATUS_N.compareTo(cti01.getResponseSts()) == 0)
+						{
+							resultSts = "S".equals(cti01.getRsltCd()) ? FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus() : FFPConstantsTxJnl.TX_STATUS.TX_STAT_AGENTREJCT.getStatus();
+							res_action_sts = "S".equals(cti01.getRsltCd()) ? FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus() : FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus();
+						}
+						else
+						{
+							batchLogger.warn(String.format("Invalid response head status[%s] with resultCode[%s] from FFP Agent.", cti01.getResponseSts(), cti01.getRsltCd()));
+							throw new BatchJobException(String.format("Invalid response head status[%s] from FFP Agent.", cti01.getResponseSts()));
+						}
+						
+						batchLogger.info(String.format("Retry update FFP Transaction Final status[%s]  and retry count[%s] and Action status[%s] with Credit Transfer Result[%s] and Source Reference number[%s]", 
+								resultSts, ++resentCount, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), cti01.getRsltCd(), srcRefNm));
+						updateResultSts(con, resultSts, cti01.getRejCd(), cti01.getRejMsg(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), null, null, new Date(), 
+								jnlNo, reqRefNo, srcRefNm, resentCount);
+						
+						insertAcitonFlow(con, jnlNo, cti01.getResRefNo(), MESSAGE_DIRECTION_INWARD, FFPConstants.MSG_CODE_AGENT, FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTI01, 
+								res_action_sts, cti01.getResponseMsgCode(), cti01.getResponseMsg(), new Date(), reqRefNo, "N");
+					}
+				}
+				else
+				{
+					//this case may not exist.
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error(String.format("Error on resending inward credit transfer data[FFP JNL_NO:%s]", jnlNo), ex);
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void updateResultSts(Connection conn, String tx_status, String tx_rejCd, String tx_rejRsn, String action_msgStatus, String action_msgCode, String action_msgResult, 
+			Date action_msgCompleDate, String jnlNo, String action_msgId, String srcRefNm, long tx_resendCnt) throws Exception
+	{
+		String jnl_sql = "UPDATE TB_TX_JNL SET TX_STAT = ?, RESEND_COUNT = ?, TX_REJ_CODE = ?, TX_REJ_REASON = ?, LAST_UPDATE_TS = ? WHERE JNL_NO = ? AND SRC_REF_NM = ?";
+		String action_sql = "UPDATE TB_TX_JNLACTION SET MSG_STATUS = ?, MSG_CODE = ?, MSG_RESULT = ?, MSG_COMPL_TS = ? WHERE JNL_NO = ? AND MSG_ID = ?";
+		try
+		{
+			conn.setAutoCommit(false);
+			
+			List<Object> jnl_params = new ArrayList<Object>();
+			List<Object> action_params = new ArrayList<Object>();
+			jnl_params.add(tx_status);
+			jnl_params.add(tx_resendCnt);
+			jnl_params.add(tx_rejCd);
+			jnl_params.add(tx_rejRsn);
+			jnl_params.add(new java.sql.Timestamp(new Date().getTime()));
+			jnl_params.add(jnlNo);
+			jnl_params.add(srcRefNm);
+			
+			action_params.add(action_msgStatus);
+			action_params.add(action_msgCode);
+			action_params.add(action_msgResult);
+			action_params.add(action_msgCompleDate);
+			action_params.add(jnlNo);
+			action_params.add(action_msgId);
+			EntityManager.update(conn, jnl_sql, jnl_params.toArray());
+			EntityManager.update(conn, action_sql, action_params.toArray());
+			
+			conn.commit();
+			conn.setAutoCommit(true);
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error(String.format("Update TX_STATUS[%s] and MSG_STATUS[%s] with JNL_NO[%s] and MSG_ID failed", tx_status, action_msgStatus, jnlNo, action_msgId), ex);
+			ex.printStackTrace();
+			if(conn != null)
+			{
+				conn.rollback();
+			}
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void insertAcitonFlow(Connection conn, String jnlNo, String msgId, String msgDirection, String msgSystemId, String msgType, String msgStatus, 
+			String msgCode, String msgResult, Date comDate, String refMsgId, String is_check) throws BatchJobException
+	{
+		//String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, "
+		//		+ "REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		//String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, REQUEST_MSG_ID, REQUEST_MSG_TYPE, REQUEST_MSG_DIRECTION, REQUEST_SYSTEMID, REQUEST_MSG_CREATE_TS, REQUEST_MSG_STAT,"
+		//		+ 	 "REQUEST_MSG_REJ_CODE, REQUEST_MSG_REJ_RSN, RESPONSE_MSG_ID, RESPONSE_MSG_TYPE, RESPONSE_MSG_DIRECTION, RESPONSE_SYSTEMID, "
+		//		+ 	 "RESPONSE_MSG_STAT, RESPONSE_MSG_REJ_CODE, RESPONSE_MSG_REJ_RSN) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		
+		String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_DIRECTION, MSG_SYSTEMID, MSG_TYPE, MSG_STATUS, MSG_CODE, MSG_RESULT, MSG_CREAT_TS, "
+				+ 	 "MSG_PROCE_TS, MSG_COMPL_TS, REF_MSG_ID, IS_AUTOCHECK) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(jnlNo);								//JNL_NO
+			list.add(msgId);								//MSG_ID
+			list.add(msgDirection);							//MSG_DIRECTION
+			list.add(msgSystemId);							//MSG_SYSTEMID
+			list.add(msgType);								//MSG_TYPE
+			list.add(msgStatus);							//MSG_STATUS
+			list.add(msgCode);								//MSG_CODE
+			list.add(msgResult);							//MSG_RESULT
+			list.add(new java.sql.Timestamp(new Date().getTime()));//MSG_CREAT_TS
+			list.add(new java.sql.Timestamp(new Date().getTime()));//MSG_PROCE_TS
+			list.add(comDate);								//MSG_COMPL_TS
+			list.add(refMsgId);								//REF_MSG_ID
+			list.add(is_check);								//IS_AUTOCHECK
+			
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Error on adding action flow", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+}

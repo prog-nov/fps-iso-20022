@@ -1,0 +1,8 @@
+package com.forms.fps.jms;
+
+import javax.jms.Destination;
+
+public interface ProducerMessage 
+{
+	void sendMessager(Destination destination);
+}

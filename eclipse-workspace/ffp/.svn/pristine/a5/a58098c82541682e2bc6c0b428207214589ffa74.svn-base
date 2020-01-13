@@ -1,0 +1,5 @@
+#Notice:Access to check the value need to use ${validatedValue} garmmar (dollar sign), to obtain annotations parameter using similar {min} (without the dollar sign) grammar
+NotBlank.roleForm.roleName=Character name cannot be empty
+Size.orgForm.orgId=Institutions ID"${validatedValue}" do not conform to the requirements,length must be between [{min},{max}]
+Size.orgForm.orgName=Institutions name "${validatedValue}" do not conform to the requirements,length must be greater than {min}
+Size.orgForm.supOrgId=The parent institutions ID"${validatedValue}" do not conform to the requirements,length must be between[{min},{max}]

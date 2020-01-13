@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exception-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://www.formssi.com/schema/beneform4j/exception"
+	xsi:schemaLocation="http://www.formssi.com/schema/beneform4j/exception beneform4j-exception.xsd">
+	
+	<exception code="BF040000" description="安全层异常" messageKey="beneform4j.core.security">
+		<exception code="BF040001" description="未找到请求的功能" messageKey="beneform4j.core.security.not_found"/>
+		<exception code="BF040002" description="会话超时" messageKey="beneform4j.core.security.timeout"/>
+		<exception code="BF040003" description="没有访问权限" messageKey="beneform4j.core.security.no_authority"/>
+	</exception>
+</exception-config>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_A120">
+
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<update id="updateA120Status">
+		UPDATE TB_TX_A120DAT 
+			SET STAT=#{status,jdbcType=VARCHAR}
+		WHERE
+			JNL_NO=#{jnlNo,jdbcType=VARCHAR}
+	</update>
+	
+	<insert id="insertA120Msg" parameterType="java.util.List">
+		INSERT TB_TX_A120DAT(
+				JNL_NO,		STAT,
+				ADR_REQ_ID,	PROXY_ID,	PROXY_ID_TP,
+				PURP_CD,	MMBID)
+		VALUES
+			<foreach collection="list" item="a120" index= "index" separator =",">
+				(
+						#{a120.jnlNo, jdbcType=VARCHAR},		#{a120.stat, jdbcType=VARCHAR},	
+						#{a120.adrReqId, jdbcType=VARCHAR},		#{a120.proxyId, jdbcType=VARCHAR},	#{a120.proxyIdTp, jdbcType=VARCHAR}, 
+						#{a120.purpCd, jdbcType=VARCHAR},		#{a120.mmbId, jdbcType=VARCHAR} 
+				)
+	    	</foreach>
+	</insert>
+	<!-- if we get message from ICL,the status will be Y -->
+	<select id="iqueryA120MsgStat">
+		SELECT 
+			STAT
+		FROM 
+			TB_TX_A120DAT
+		WHERE 
+			JNL_NO=#{jnlNo,jdbcType=VARCHAR}
+		LIMIT 1
+	</select>
+
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+</mapper>

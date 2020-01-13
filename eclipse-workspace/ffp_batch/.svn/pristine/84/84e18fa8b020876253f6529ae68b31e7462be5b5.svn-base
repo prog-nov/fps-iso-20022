@@ -1,0 +1,36 @@
+package com.forms.batch.util;
+
+import com.forms.framework.persistence.EntityManager;
+
+public class DateUtil
+{
+	/**
+	 * getacdate add day
+	 * @throws Exception 
+	 */
+	public static String getAcDate() throws Exception
+	{
+		try
+		{
+			String sql = "VALUES(CHAR(Current Date,ISO))";
+			Object[] obj = EntityManager.queryArray(sql);
+			return (String)obj[0];
+		}catch(Exception e)
+		{
+			throw e;
+		}
+	}
+	
+	public static String getUpAcDate() throws Exception
+	{
+		try
+		{
+			String sql = "VALUES(CHAR(Current Date - 1 DAYS,ISO))";
+			Object[] obj = EntityManager.queryArray(sql);
+			return (String)obj[0];
+		}catch(Exception e)
+		{
+			throw e;
+		}
+	}
+}

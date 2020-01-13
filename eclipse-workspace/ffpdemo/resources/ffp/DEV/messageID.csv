@@ -1,0 +1,1 @@
+Condition (Expression),Message Definition,Response Template,Sleep Time (Second),Status (${status}),Reason (${reason}),Additional Information (${additInfo})

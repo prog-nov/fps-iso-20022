@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.dt.FFPIDao_FpsParticipantMode">
+	
+	<select id="dList" resultType="com.forms.ffp.persistents.bean.dt.FFPDtFpsParticipantMode">
+		SELECT *
+		FROM TB_DT_FPS_PARTICIPANT_MODE A
+		ORDER BY CLEARING_CODE
+	</select>
+	
+	<update id="insertUpdate">
+		INSERT INTO TB_DT_FPS_PARTICIPANT_MODE
+		(
+			CLEARING_CODE, RECEIPT_MODE, LAST_UPDATE_TS,
+			REF_MSG_ID
+		)
+		VALUES
+		(
+			#{clearingCode, jdbcType=VARCHAR}, #{receiptMode, jdbcType=VARCHAR}, #{lastUpdateTs, jdbcType=TIMESTAMP},
+			#{refMsgId, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY UPDATE
+			RECEIPT_MODE=#{receiptMode, jdbcType=VARCHAR},
+			LAST_UPDATE_TS=#{lastUpdateTs, jdbcType=TIMESTAMP},
+			REF_MSG_ID=#{refMsgId, jdbcType=VARCHAR}
+	</update>
+</mapper>

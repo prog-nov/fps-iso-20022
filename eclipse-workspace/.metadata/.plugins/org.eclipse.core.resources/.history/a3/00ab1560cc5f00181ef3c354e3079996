@@ -1,0 +1,368 @@
+package com.forms.batch;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpcto01.FFPMsgCTO01_MutiPacs008;
+import com.forms.batch.job.unit.participant.message.ffpcto01.FFPMsgCTO01_Pacs008;
+import com.forms.ffp.core.utils.FFPStringUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+
+public class GenerateUATTestFile 
+{
+	/**
+	 * Generate UAT : HK-SPDB Test
+	 */
+	
+	public static void main(String args[])
+	{
+		Map<String,String> btchMap =  new HashMap<String, String>();
+		btchMap.put("BtchId", "FPSPYCI345201805251130");
+		int fileSeq = 1;
+		int fileNameSeqNm = 1;
+		try
+		{
+			int c3FileNm = 0;
+			int c2FileNm = 0;
+			List<FFPJbP100> txJb = preC2TestData();
+			List<FFPJbP100> c3Jb = preC3TestData();
+			  
+			c2FileNm = txJb.size();
+			
+			if(c3Jb.size() > 0)
+			{
+				if(c3Jb.size()/1000 > 0 && c3Jb.size()%1000 == 0)
+				{
+					c3FileNm = c3Jb.size()/1000;//1000
+				}
+				else if(c3Jb.size()/1000 > 0 && c3Jb.size()%1000 > 0)
+				{
+					c3FileNm = c3Jb.size()/1000 + 1;//1001 - 1999
+				}
+				else
+				{
+					c3FileNm = 1;// 1 - 999
+				}
+			}
+			
+			int fileNm =  c3FileNm + c2FileNm;
+			
+			System.out.println(fileNm);
+			//C2 data
+			for(int i=0; i<txJb.size(); i++)
+			{
+				btchMap.put("FlSeqNo", String.valueOf(fileSeq++));
+				btchMap.put("NbOfFls", String.valueOf(fileNm));
+				btchMap.put("NbOfMsgs", "1");
+				btchMap.put("NbOfTxs", "1");
+				
+				//signle C2
+				FFPMsgCTO01_Pacs008 sigle008 = new FFPMsgCTO01_Pacs008(txJb.get(i), btchMap);
+				
+				String c2Str = sigle008.parseHkiclMessage();
+				String fileName = "FPSPYCI345201805251130" + FFPStringUtils.lpad(String.valueOf(fileNameSeqNm++), '0', 4) + ".xml";
+				writeMulti008ToFile(c2Str, fileName);
+			}
+			
+
+			//C3 data
+			btchMap.put("NbOfFls", String.valueOf(fileNm));
+			btchMap.put("NbOfMsgs", "1");
+			if(c3Jb.size() > 0)
+			{
+				if(c3Jb.size() <= 1000)
+				{
+					btchMap.put("FlSeqNo", String.valueOf(fileSeq++));
+					btchMap.put("NbOfTxs", String.valueOf(c3Jb.size()));
+					FFPMsgCTO01_MutiPacs008 multi008 = new FFPMsgCTO01_MutiPacs008(c3Jb, btchMap);
+					String c3Str = multi008.parseHkiclMessage();
+					String fileName = "FPSPYCI345201805251100" + FFPStringUtils.lpad(String.valueOf(fileNameSeqNm++), '0', 4) + ".xml";
+					writeMulti008ToFile(c3Str, fileName);
+				}
+				else
+				{
+					int subCnt = c3Jb.size() % 1000 == 0 ? c3Jb.size()/1000 : c3Jb.size()/1000 + 1;
+					for(int i=1; i<=subCnt; i++)
+					{
+						btchMap.put("FlSeqNo", String.valueOf(fileSeq++));
+						if(i == subCnt)
+						{
+							List<FFPJbP100> subList = c3Jb.subList((i - 1) * 1000, c3Jb.size());
+							btchMap.put("NbOfTxs", String.valueOf(subList.size()));
+							FFPMsgCTO01_MutiPacs008 multi008 = new FFPMsgCTO01_MutiPacs008(subList, btchMap);
+							String c3SubStr = multi008.parseHkiclMessage();
+							String fileName = "FPSPYCI345201805251100" + FFPStringUtils.lpad(String.valueOf(fileNameSeqNm++), '0', 4) + ".xml";
+							writeMulti008ToFile(c3SubStr, fileName);
+						}
+						else
+						{
+							List<FFPJbP100> subList = c3Jb.subList((i - 1) * 1000, 1000 * i);
+							btchMap.put("NbOfTxs", String.valueOf(subList.size()));
+							FFPMsgCTO01_MutiPacs008 multi008 = new FFPMsgCTO01_MutiPacs008(subList, btchMap);
+							String c3SubStr = multi008.parseHkiclMessage();
+							String fileName = "FPSPYCI345201805251100" + FFPStringUtils.lpad(String.valueOf(fileNameSeqNm++), '0', 4) + ".xml";
+							writeMulti008ToFile(c3SubStr, fileName);
+						}
+					}
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
+	
+	private static List<FFPJbP100> preC2TestData()
+	{
+		List<FFPJbP100> txJb = new ArrayList<FFPJbP100>();
+		for(int i = 1; i<= 3; i++)
+		{
+			FFPJbP100 p100 = new FFPJbP100();
+			FFPTxJnl jnl = new FFPTxJnl();
+			p100.setTxJnl(jnl);
+			
+			jnl.setEndToEndId("E34520180525113000001" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			jnl.setTransactionId("T34520180525113000001" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			jnl.setFpsRefNm("FPSREF20180525" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			
+			p100.setPymtCatPrps("CXSALA");
+			p100.setAccountVerification("IMD_STTL");
+			p100.setSettlementAmount(new BigDecimal("1873.53"));
+			p100.setSettlementDate(new Date());
+			if(i< 500)
+			{
+				p100.setDebtorName("Andy");
+			}
+			else if(i > 500 && i < 700)
+			{
+				p100.setDebtorName("韦辉");
+			}
+			else
+			{
+				p100.setDebtorName("Andy");
+			}
+			p100.setDebtorAccountNumber("01287534980043");
+			p100.setDebtorAccountNumberType("BBAN");
+			p100.setDebtorAgentId("012");
+			if(i< 2)
+			{
+				//BBAN - HKD
+				p100.setSettlementCurrency("HKD");
+				p100.setCreditorName("HK SXXXXXXX");		//SPDB-HK test
+				p100.setCreditorAccountNumber("28880111902354");		//SPDB-HK test
+			}
+			else if(i >=2 && i < 3)
+			{
+				//BBAN - CNY
+				p100.setSettlementCurrency("CNY");
+				p100.setCreditorName("GREAXXXXXXX");
+				p100.setCreditorAccountNumber("28880131214462");
+			}
+			else
+			{
+				p100.setSettlementCurrency("HKD");
+				p100.setCreditorName("STAFXXXXXXX");
+				p100.setCreditorAccountNumber("28880012202374");
+			}
+			p100.setCreditorAccountNumberType("BBAN");
+			p100.setCreditorAgentId("345");
+			txJb.add(p100);
+		}
+		
+		return txJb;
+	}
+	
+	
+	private static List<FFPJbP100> preC3TestData()
+	{
+		List<FFPJbP100> txJb = new ArrayList<FFPJbP100>();
+		for(int i = 1; i<= 17; i++)
+		{
+			FFPJbP100 p100 = new FFPJbP100();
+			FFPTxJnl jnl = new FFPTxJnl();
+			p100.setTxJnl(jnl);
+			
+			jnl.setEndToEndId("E34520180525120000001" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			jnl.setTransactionId("T34520180525120000001" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			jnl.setFpsRefNm("FPSREF20180525" + FFPStringUtils.lpad(String.valueOf(i), '0', 6));
+			
+			p100.setPymtCatPrps("CXSALA");
+			p100.setAccountVerification("IMD_STTL");
+			
+			p100.setSettlementAmount(new BigDecimal("13456.53"));
+			p100.setSettlementDate(new Date());
+			if(i< 2)
+			{
+				p100.setDebtorName("Kris");
+			}
+			else if(i >=2 && i < 3)
+			{
+				p100.setDebtorName("韦辉");
+			}
+			else if(i >= 3 && i<4)
+			{
+				p100.setDebtorName("Andy");
+			}
+			else if(i >= 4 && i <5)
+			{
+				p100.setDebtorName("Elise");
+			}
+			else
+			{
+				p100.setDebtorName("韋輝");
+			}
+			p100.setDebtorAccountNumber("01287500673434");
+			p100.setDebtorAccountNumberType("BBAN");
+			p100.setDebtorAgentId("012");
+			if(i< 3)
+			{
+				p100.setCreditorName("夏建XXXXXXX");
+				p100.setCreditorAccountNumber("28880112902349"); //
+				
+				p100.setSettlementCurrency("HKD");
+			}
+			else if(i >=3 && i < 4)
+			{
+				p100.setCreditorName("王洪XXXXXXX");
+				p100.setCreditorAccountNumber("28880112902349");
+				
+				p100.setSettlementCurrency("HKD");
+			}
+			else if(i >= 4 && i<6)
+			{
+				p100.setCreditorName("XIA XXXXXXX");
+				p100.setCreditorAccountNumber("28880112902349");
+				
+				p100.setSettlementCurrency("HKD");
+			}
+			else if(i >= 6 && i <7)
+			{
+				p100.setCreditorName("WANGXXXXXXX");
+				p100.setCreditorAccountNumber("28880112902349");
+				
+				p100.setSettlementCurrency("HKD");
+			}
+			else if(i>= 7 && i<8)
+			{
+				p100.setCreditorName("STAFXXXXXXX");
+				p100.setCreditorAccountNumber("28880132202507");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 8 && i<9)
+			{
+				p100.setCreditorName("XXXXXXX");
+				p100.setCreditorAccountNumber("28880132202507");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 9 && i<10)
+			{
+				p100.setCreditorName("㤲炁粦");
+				p100.setCreditorAccountNumber("28880011214468");
+				
+				p100.setSettlementCurrency("HKD");
+			}
+			else if(i>= 10 && i<11)
+			{
+				p100.setCreditorName("力嘉XXXXXXX");
+				p100.setCreditorAccountNumber("28880131200526");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 11 && i<12)
+			{
+				p100.setCreditorName("嘉XXXXXXX");
+				p100.setCreditorAccountNumber("28880131200526");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 12 && i<13)
+			{
+				p100.setCreditorName("LUK XXXXXXX");
+				p100.setCreditorAccountNumber("28880131200526");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 13 && i<14)
+			{
+				p100.setCreditorName("UK XXXXXXX");
+				p100.setCreditorAccountNumber("28880131200526");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 14 && i<15)
+			{
+				p100.setCreditorName("力嘉XXXXXXX");
+				p100.setCreditorAccountNumber("2888-013-120052-6");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 15 && i<16)
+			{
+				p100.setCreditorName("嘉XXXXXXX");
+				p100.setCreditorAccountNumber("2888-013-120052-6");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else if(i>= 16 && i<17)
+			{
+				p100.setCreditorName("LUK XXXXXXX");
+				p100.setCreditorAccountNumber("2888-013-120052-6");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			else
+			{
+				p100.setCreditorName("UK XXXXXXX");
+				p100.setCreditorAccountNumber("2888-013-120052-6");
+				
+				p100.setSettlementCurrency("CNY");
+			}
+			p100.setCreditorAccountNumberType("BBAN");
+			p100.setCreditorAgentId("345");
+			txJb.add(p100);
+		}
+		
+		return txJb;
+	}
+	
+	private static String writeMulti008ToFile(String message, String fileName) throws Exception 
+	{
+		BufferedWriter bw = null;
+
+		try 
+		{
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("C:\\Users\\user\\Desktop\\test", fileName)), "utf-8"));
+			bw.write(message);
+			bw.flush();
+			return fileName;
+		}
+		catch (Exception e) 
+		{
+			throw e;
+		} 
+		finally 
+		{
+			if (bw != null) {
+				try {
+					bw.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+	
+}

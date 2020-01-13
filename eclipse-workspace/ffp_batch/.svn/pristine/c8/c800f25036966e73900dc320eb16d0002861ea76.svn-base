@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RIS_HUS_M_OVERSEAS_RECV_FOR_D_1</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>Sql Job Call01</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<databaseName>risdb</databaseName>
+			<parameters>
+				<parameter>d1job/moverseasrecv/rishus-m-overseas-recv-archives-sql-job-config.xml</parameter>
+				<parameter>d1job/moverseasrecv/rishus-m-overseas-recv-sql-job-config.xml</parameter>
+			</parameters>
+		</action>
+	</action-flow>
+</job-config>

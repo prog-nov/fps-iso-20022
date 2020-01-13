@@ -1,0 +1,586 @@
+-- --------------- create DB myfps B.8.1-----------------
+CREATE DATABASE IF NOT EXISTS ffp DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+use ffp;
+
+-- create table tb_bh_inward_fpspyci-----------------
+
+DROP TABLE IF EXISTS `tb_bh_inward_fpspyci`; 
+CREATE TABLE `tb_bh_inward_fpspyci` (
+  `ID` int(11) NOT NULL,
+  `BATCH_ID` varchar(35) DEFAULT NULL,
+  `STATUS` varchar(1) DEFAULT NULL,
+  `FILE_NAME` varchar(30) DEFAULT NULL,
+  `TRANSACTION_ID` varchar(35) DEFAULT NULL,
+  `END_TO_END_ID` varchar(35) DEFAULT NULL,
+  `FPS_REF` varchar(35) DEFAULT NULL,
+  `INSTRUCTION_ID` varchar(35) DEFAULT NULL,
+  `CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `ACCT_VERF` varchar(15) DEFAULT NULL,
+  `SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `SETTLEMENT_DATE` timestamp NULL DEFAULT NULL,
+  `INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CHG_CUR` varchar(3) DEFAULT NULL,
+  `CHG_AMT` varchar(16) DEFAULT NULL,
+  `DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `PURPOSE_TYPE` varchar(1) DEFAULT NULL,
+  `PURPOSE_CODE` varchar(4) DEFAULT NULL,
+  `PURPOSE_OTHER` varchar(140) DEFAULT NULL,
+  `REMIT_INFO` varchar(140) DEFAULT NULL,
+  `MSG_INST_DATE` date DEFAULT NULL,
+  `LAST_MODI_DATE` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `BIZ_SVC_TYPE` varchar(35) DEFAULT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_bh_job_jnl-----------------
+DROP TABLE IF EXISTS `tb_bh_job_jnl`; 
+CREATE TABLE `tb_bh_job_jnl` (
+  `BATCH_AC_DATE` varchar(10) NOT NULL,
+  `JOB_ID` varchar(64) NOT NULL,
+  `JNL_SEQ` int(11) NOT NULL,
+  `JOB_STAT` varchar(1) DEFAULT NULL,
+  `RESULT` varchar(1) DEFAULT NULL,
+  `START_TS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ACTION_JNL` varchar(1500) DEFAULT NULL,
+  `END_TS` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `BREAK_POINT` varchar(1500) DEFAULT NULL,
+  PRIMARY KEY (`BATCH_AC_DATE`,`JOB_ID`,`JNL_SEQ`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_bh_processed_file-----------------
+
+DROP TABLE IF EXISTS `tb_bh_processed_file`; 
+CREATE TABLE `tb_bh_processed_file` (
+  `FILE_NAME` varchar(30) NOT NULL,
+  `PROCESSED_TS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`FILE_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_ss_cutoff-----------------
+
+DROP TABLE IF EXISTS `tb_ss_cutoff`; 
+CREATE TABLE `tb_ss_cutoff` (
+  `CUTOFF_TYPE` varchar(5) NOT NULL,
+  `WORKDAY_START` time NOT NULL,
+  `WORKDAY_END` time NOT NULL,
+  `SAT_START` time NOT NULL,
+  `SAT_END` time NOT NULL,
+  `HOLIDAY_START` time NOT NULL,
+  `HOLIDAY_END` time NOT NULL,
+  PRIMARY KEY (`CUTOFF_TYPE`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_ss_system-----------------
+
+DROP TABLE IF EXISTS `tb_ss_system`; 
+CREATE TABLE `tb_ss_system` (
+  `DATA_KEY` varchar(4) NOT NULL,
+  `BATCH_ACDT` date DEFAULT NULL,
+  `RUNNING_MODE` varchar(1) DEFAULT NULL,
+  `REALTIME_LISTENER_STAT` varchar(1) DEFAULT NULL,
+  `BATCH_LISTENER_STAT` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`DATA_KEY`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_tx_jnl-----------------
+
+DROP TABLE IF EXISTS `tb_tx_jnl`;
+CREATE TABLE `tb_tx_jnl` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `SRC_REF_NM` varchar(30) NOT NULL,
+  `TX_STAT` varchar(15) DEFAULT NULL,
+  `TX_CODE` varchar(5) DEFAULT NULL,
+  `TX_SRC` varchar(10) DEFAULT NULL,
+  `TX_MODE` varchar(8) DEFAULT NULL,
+  `TRANSACTION_ID` varchar(35) DEFAULT NULL,
+  `END_TO_END_ID` varchar(35) DEFAULT NULL,
+  `TX_FILE_NAME` varchar(30) DEFAULT NULL,
+  `FPS_REF_NUM` varchar(35) DEFAULT NULL,
+  `RESEND_COUNT` int(1) unsigned DEFAULT '0',
+  `TX_REJ_CODE` varchar(20) DEFAULT NULL,
+  `TX_REJ_REASON` varchar(1000) DEFAULT NULL,
+  `CREATE_TS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LAST_UPDATE_TS` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`JNL_NO`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_tx_jnlaction-----------------
+
+DROP TABLE IF EXISTS `tb_tx_jnlaction`; 
+CREATE TABLE `tb_tx_jnlaction` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `MSG_ID` varchar(35) NOT NULL,
+  `MSG_DIRECTION` varchar(1) NOT NULL,
+  `MSG_SYSTEMID` varchar(11) DEFAULT NULL,
+  `MSG_TYPE` varchar(50) DEFAULT NULL,
+  `MSG_STATUS` varchar(15) DEFAULT NULL,
+  `MSG_CODE` varchar(15) DEFAULT NULL,
+  `MSG_RESULT` varchar(255) DEFAULT NULL,
+  `MSG_CREAT_TS` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `MSG_PROCE_TS` timestamp NULL DEFAULT NULL,
+  `MSG_COMPL_TS` timestamp NULL DEFAULT NULL,
+  `REF_MSG_ID` varchar(35) DEFAULT NULL,
+  `IS_AUTOCHECK` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`,`MSG_ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+-- create table tb_tx_p110dat-----------------
+
+DROP TABLE IF EXISTS `tb_tx_p110dat`; 
+CREATE TABLE `tb_tx_p110dat` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `ACCT_VERF` varchar(15) DEFAULT NULL,
+  `SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `SETTLEMENT_DATE` date DEFAULT NULL,
+  `INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CHG_CUR` varchar(3) DEFAULT NULL,
+  `CHG_AMT` varchar(16) DEFAULT NULL,
+  `DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `PURPOSE_TYPE` varchar(1) DEFAULT NULL,
+  `PURPOSE_CODE` varchar(4) DEFAULT NULL,
+  `PURPOSE_OTHER` varchar(140) DEFAULT NULL,
+  `REMIT_INFO` varchar(140) DEFAULT NULL,
+  `SRVC_MODE` varchar(6) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_tx_p100dat-----------------
+
+DROP TABLE IF EXISTS `tb_tx_p100dat`; 
+CREATE TABLE `tb_tx_p100dat` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `ACCT_VERF` varchar(15) DEFAULT NULL,
+  `SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `SETTLEMENT_DATE` date DEFAULT NULL,
+  `INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CHG_CUR` varchar(3) DEFAULT NULL,
+  `CHG_AMT` varchar(16) DEFAULT NULL,
+  `DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `PURPOSE_TYPE` varchar(1) DEFAULT NULL,
+  `PURPOSE_CODE` varchar(4) DEFAULT NULL,
+  `PURPOSE_OTHER` varchar(140) DEFAULT NULL,
+  `REMIT_INFO` varchar(140) DEFAULT NULL,
+  `SRVC_MODE` varchar(6) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_tx_check_temp-----------------
+
+DROP TABLE IF EXISTS `tb_tx_check_temp`; 
+CREATE TABLE `tb_tx_check_temp` (
+  `CID` varchar(21) NOT NULL,
+  `FILE_NAME` varchar(255) DEFAULT NULL,
+  `CHECK_STATUS` varchar(1) DEFAULT NULL,
+  `CREATE_TIME` timestamp NULL DEFAULT NULL,
+  `REQUEST_ID` varchar(255) DEFAULT NULL,
+  `TRANSACTION_DATE` varchar(255) DEFAULT NULL,
+  `TRANSACTION_TIME` varchar(255) DEFAULT NULL,
+  `REQUEST_REF_NO` varchar(255) DEFAULT NULL,
+  `ACCOUNTING_DATE` varchar(255) DEFAULT NULL,
+  `RESPONSE_ID` varchar(255) DEFAULT NULL,
+  `MESSAGE_TYPE` varchar(255) DEFAULT NULL,
+  `SYSTEM_REF_NO` varchar(255) DEFAULT NULL,
+  `SYSTEM_BEGIN_TIME` varchar(255) DEFAULT NULL,
+  `SYSTEM_END_TIME` varchar(255) DEFAULT NULL,
+  `RESPONSE_REF_NO` varchar(255) DEFAULT NULL,
+  `RESPONSE_BEGIN_TIME` varchar(255) DEFAULT NULL,
+  `RESPONSE_END_TIME` varchar(255) DEFAULT NULL,
+  `RESPONSE_STATUS` varchar(255) DEFAULT NULL,
+  `FINAL_NODE` varchar(255) DEFAULT NULL,
+  `SYSTEM_MESSAGE_CODE` varchar(255) DEFAULT NULL,
+  `RESPONSE_MESSAGE_CODE` varchar(255) DEFAULT NULL,
+  `RESPONSE_MESSAGE` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`CID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table bf_holiday-----------------
+
+DROP TABLE IF EXISTS `bf_holiday`; 
+CREATE TABLE `bf_holiday` (
+  `SOLAR_DATE` char(8) NOT NULL,
+  `IS_HOLIDAY_DAY` char(1) DEFAULT NULL,
+  `HOLIDAY_DESC` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`SOLAR_DATE`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_bh_inward_return_fpspyci-----------------
+
+DROP TABLE IF EXISTS `tb_bh_inward_return_fpspyci`; 
+CREATE TABLE `tb_bh_inward_return_fpspyci` (
+  `ID` int(11) NOT NULL,
+  `RETURN_ID` varchar(35) DEFAULT NULL,
+  `BATCH_ID` varchar(35) DEFAULT NULL,
+  `STATUS` varchar(1) DEFAULT NULL,
+  `FILE_NAME` varchar(30) DEFAULT NULL,
+  `SETTLEMENT_METHOD` varchar(4) DEFAULT NULL,
+  `CLEARING_SYSTEM` varchar(3) DEFAULT NULL,
+  `RETURN_SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_SETTLEMENT_DATE` date DEFAULT NULL,
+  `RETURN_INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `RETURN_CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `RETURN_CHG_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_CHG_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_CODE` varchar(8) DEFAULT NULL,
+  `RETURN_REASON` varchar(500) DEFAULT NULL,
+  `BIZ_SVC_TYPE` varchar(6) DEFAULT NULL,
+  `ORIG_INSTRUCTION_ID` varchar(35) DEFAULT NULL,
+  `ORIG_END_TO_END_ID` varchar(35) DEFAULT NULL,
+  `ORIG_TRANSACTION_ID` varchar(35) DEFAULT NULL,
+  `ORIG_FPS_REF` varchar(35) DEFAULT NULL,
+  `ORIG_SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `ORIG_SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `ORIG_SETTLEMENT_DATE` date DEFAULT NULL,
+  `ORIG_CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `ORIG_MANDATE_INFO` varchar(35) DEFAULT NULL,
+  `ORIG_REM_INFO` varchar(140) DEFAULT NULL,
+  `ORIG_DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `ORIG_DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `ORIG_DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `ORIG_DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `ORIG_DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `ORIG_CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `ORIG_CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `ORIG_CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `ORIG_CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `ORIG_CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `MSG_INST_DATE` date DEFAULT NULL,
+  `LAST_MODI_DATE` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_tx_p300dat-----------------
+
+DROP TABLE IF EXISTS `tb_tx_p300dat`; 
+CREATE TABLE `tb_tx_p300dat` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `JNL_REF` varchar(35) NOT NULL,
+  `RETURN_ID` varchar(35) DEFAULT NULL,
+  `RETURN_SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_SETTLEMENT_DATE` date DEFAULT NULL,
+  `RETURN_INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `RETURN_CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `RETURN_CHG_CUR` varchar(3) DEFAULT NULL,
+  `RETURN_CHG_AMT` varchar(16) DEFAULT NULL,
+  `RETURN_CODE` varchar(8) DEFAULT NULL,
+  `RETURN_REASON` varchar(500) DEFAULT NULL,
+  `BIZ_SVC_TYPE` varchar(6) DEFAULT NULL,
+  `ORIG_SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `ORIG_SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `ORIG_SETTLEMENT_DATE` date DEFAULT NULL,
+  `ORIG_CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `ORIG_MANDATE_INFO` varchar(35) DEFAULT NULL,
+  `ORIG_REM_INFO` varchar(140) DEFAULT NULL,
+  `ORIG_DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `ORIG_DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `ORIG_DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `ORIG_DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `ORIG_DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `ORIG_CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `ORIG_CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `ORIG_CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `ORIG_CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `ORIG_CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`,`JNL_REF`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_dt_fps_payment_notification-----------------
+
+DROP TABLE IF EXISTS `tb_dt_fps_payment_notification`; 
+CREATE TABLE `tb_dt_fps_payment_notification` (
+  `MSG_ID` varchar(35) NOT NULL,
+  `MSG_Create_Ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `ntfctnId` varchar(35) NOT NULL,
+  `ntfctnCreateTs` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `ntfctnAcctId` varchar(3) DEFAULT NULL,
+  `ntfctnAcctType` varchar(4) DEFAULT NULL,
+  `ntryAmt` decimal(15,2) DEFAULT NULL,
+  `ntryAmtCcy` varchar(3) DEFAULT NULL,
+  `ntryCdtDbtInd` varchar(4) DEFAULT NULL,
+  `ntryStatus` varchar(4) DEFAULT NULL,
+  `ntryBankTransCode` varchar(6) DEFAULT NULL,
+  `ntryDetailEndToEndId` varchar(35) DEFAULT NULL,
+  `ntryDetailTxId` varchar(35) DEFAULT NULL,
+  `ntryDetailMandateId` varchar(35) DEFAULT NULL,
+  `ntryDetailClrSysRef` varchar(35) DEFAULT NULL,
+  `ntryDetailAmt` decimal(15,2) DEFAULT NULL,
+  `ntryDetailAmtCcy` varchar(3) DEFAULT NULL,
+  `ntryDetailCdtDbtInd` varchar(4) DEFAULT NULL,
+  `ntryDetailChrgsAmt` decimal(15,2) DEFAULT NULL,
+  `ntryDetailChrgsAmtCcy` varchar(3) DEFAULT NULL,
+  `ntryDetailChrgsBr` varchar(4) DEFAULT NULL,
+  `ntryDetailChrgsAgtBic` varchar(11) DEFAULT NULL,
+  `ntryDetailChrgsAgtMmbId` varchar(3) DEFAULT NULL,
+  `RltdPtiesDbtrName` varchar(420) DEFAULT NULL,
+  `RltdPtiesDbtrOrgIdBIC` varchar(11) DEFAULT NULL,
+  `RltdPtiesDbtrOrgIdOthrId` varchar(35) DEFAULT NULL,
+  `RltdPtiesDbtrOrgIdOthrSchme` varchar(4) DEFAULT NULL,
+  `RltdPtiesDbtrOrgIdOthrIssr` varchar(35) DEFAULT NULL,
+  `RltdPtiesDbtrPrvtIdOthrId` varchar(35) DEFAULT NULL,
+  `RltdPtiesDbtrPrvtIdOthrSchme` varchar(4) DEFAULT NULL,
+  `RltdPtiesDbtrPrvtIdOthrIssr` varchar(35) DEFAULT NULL,
+  `RltdPtiesDbtrContactMobile` varchar(35) DEFAULT NULL,
+  `RltdPtiesDbtrContactEmail` varchar(254) DEFAULT NULL,
+  `RltdPtiesDbtrAcctId` varchar(34) DEFAULT NULL,
+  `RltdPtiesDbtrAcctScheme` varchar(4) DEFAULT NULL,
+  `RltdPtiesCdtrName` varchar(420) DEFAULT NULL,
+  `RltdPtiesCdtrOrgIdBIC` varchar(11) DEFAULT NULL,
+  `RltdPtiesCdtrOrgIdOthrId` varchar(35) DEFAULT NULL,
+  `RltdPtiesCdtrOrgIdOthrSchme` varchar(4) DEFAULT NULL,
+  `RltdPtiesCdtrOrgIdOthrIssr` varchar(35) DEFAULT NULL,
+  `RltdPtiesCdtrPrvtIdOthrId` varchar(35) DEFAULT NULL,
+  `RltdPtiesCdtrPrvtIdOthrSchme` varchar(4) DEFAULT NULL,
+  `RltdPtiesCdtrPrvtIdOthrIssr` varchar(35) DEFAULT NULL,
+  `RltdPtiesCdtrContactMobile` varchar(35) DEFAULT NULL,
+  `RltdPtiesCdtrContactEmail` varchar(254) DEFAULT NULL,
+  `RltdPtiesCdtrAcctId` varchar(34) DEFAULT NULL,
+  `RltdPtiesCdtrAcctScheme` varchar(4) DEFAULT NULL,
+  `relatedAgentsDbtrBIC` varchar(11) DEFAULT NULL,
+  `relatedAgentsDbtrMmbId` varchar(3) DEFAULT NULL,
+  `relatedAgentsCdtrBIC` varchar(11) DEFAULT NULL,
+  `relatedAgentsCdtrMmbId` varchar(3) DEFAULT NULL,
+  `PurpCode` varchar(4) DEFAULT NULL,
+  `PurpOther` varchar(35) DEFAULT NULL,
+  `remitInfUstrd` varchar(420) DEFAULT NULL,
+  `relatedDatesIntrSettlDate` date DEFAULT NULL,
+  `relatedDatesTransTs` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `returnInfRsn` varchar(4) DEFAULT NULL,
+  `returnInfMsg` varchar(420) DEFAULT NULL,
+  PRIMARY KEY (`MSG_ID`,`ntfctnId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_bh_inward_not_fpspyci-----------------
+
+DROP TABLE IF EXISTS `tb_bh_inward_not_fpspyci`;
+CREATE TABLE `tb_bh_inward_not_fpspyci` (
+  `ID` int(11) NOT NULL,
+  `BATCH_ID` varchar(35) DEFAULT NULL,
+  `STATUS` varchar(1) DEFAULT NULL,
+  `FILE_NAME` varchar(30) DEFAULT NULL,
+  `MSG_ID` varchar(35) DEFAULT NULL,
+  `MSG_CREATE_TS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `NOT_ID` varchar(35) DEFAULT NULL,
+  `NOT_CREATE_TS` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `NOT_ACCT_ID` varchar(3) DEFAULT NULL,
+  `NOT_ACCT_TYPE` varchar(4) DEFAULT NULL,
+  `NOT_ENTRY_AMT` decimal(15,2) DEFAULT NULL,
+  `NOT_ENTRY_CUR` varchar(3) DEFAULT NULL,
+  `NOT_ENTRY_CDT_DBT_IND` varchar(4) DEFAULT NULL,
+  `NOT_ENTRY_STATUS` varchar(4) DEFAULT NULL,
+  `NOT_BANK_TX_CODE` varchar(6) DEFAULT NULL,
+  `NOT_ENTRY_DTL_END_TO_END_ID` varchar(35) DEFAULT NULL,
+  `NOT_ENTRY_DTL_TX_ID` varchar(35) DEFAULT NULL,
+  `NOT_ENTRY_DTL_MANT_ID` varchar(35) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CLS_REF` varchar(35) DEFAULT NULL,
+  `NOT_ENTRY_DTL_AMT` decimal(15,2) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CUR` varchar(3) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CDT_DBT_IND` varchar(4) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CHG_AMT` decimal(15,2) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CHG_CUR` varchar(3) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CHG_BEAR` varchar(4) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `NOT_ENTRY_DTL_CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_NAME` varchar(420) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ORGID_BIC` varchar(11) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ORGID_OTH_ID` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ORGID_OTH_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ORGID_OTH_ISS` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_PRVTID_OTH_ID` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_PRVTID_OTH_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_PRVTID_OTH_ISS` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_CONT_MOBILE` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_CONT_EMAIL` varchar(254) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ACCT_ID` varchar(34) DEFAULT NULL,
+  `RLTD_PTIES_DBTR_ACCT_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_NAME` varchar(420) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ORGID_BIC` varchar(11) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ORGID_OTH_ID` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ORGID_OTH_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ORGID_OTH_ISS` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_PRVTID_OTH_ID` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_PRVTID_OTH_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_PRVTID_OTH_ISS` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_CONT_MOBILE` varchar(35) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_CONT_EMAIL` varchar(254) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ACCT_ID` varchar(34) DEFAULT NULL,
+  `RLTD_PTIES_CDTR_ACCT_SCHME` varchar(4) DEFAULT NULL,
+  `RLTD_DBTR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `RLTD_DBTR_AGT_ID` varchar(3) DEFAULT NULL,
+  `RLTD_CDTR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `RLTD_CDTR_AGT_ID` varchar(3) DEFAULT NULL,
+  `PURP_CODE` varchar(4) DEFAULT NULL,
+  `PURP_OTHER` varchar(35) DEFAULT NULL,
+  `REMI_INFO` varchar(420) DEFAULT NULL,
+  `RLTD_INTER_SETTLE_DATE` date DEFAULT NULL,
+  `RLTD_TX_DATE_TIME` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `RETURN_INFO_CODE` varchar(4) DEFAULT NULL,
+  `RETURN_INFO_RSN` varchar(420) DEFAULT NULL,
+  `BIZ_SVC_TYPE` varchar(6) DEFAULT NULL,
+  `MSG_INST_DATE` date DEFAULT NULL,
+  `LAST_MODI_DATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_bh_outward_fpspcrr-----------------
+
+DROP TABLE IF EXISTS `tb_bh_outward_fpspcrr`;
+CREATE TABLE `tb_bh_outward_fpspcrr` (
+  `ID` int(11) NOT NULL,
+  `BATCH_ID` varchar(35) DEFAULT NULL,
+  `STATUS` varchar(1) DEFAULT NULL,
+  `FILE_NAME` varchar(30) DEFAULT NULL,
+  `MSG_ID` varchar(35) DEFAULT NULL,
+  `MSG_CREATE_TS` timestamp NULL DEFAULT NULL,
+  `ORG_MSG_ID` varchar(35) DEFAULT NULL,
+  `ORG_MSG_NM_ID` varchar(35) DEFAULT NULL,
+  `GRP_STS` varchar(4) DEFAULT NULL,
+  `GRP_REJ_CODE` varchar(8) DEFAULT NULL,
+  `GRP_REJ_RSN` varchar(500) DEFAULT NULL,
+  `ORG_END_TO_END_ID` varchar(35) DEFAULT NULL,
+  `ORG_TRANSACTION_ID` varchar(35) DEFAULT NULL,
+  `TX_STAT` varchar(4) DEFAULT NULL,
+  `TX_REJ_CODE` varchar(8) DEFAULT NULL,
+  `TX_ADD_INFO` varchar(500) DEFAULT NULL,
+  `TX_ACCEPT_TS` timestamp NULL DEFAULT NULL,
+  `TX_CLR_SYS_REF` varchar(35) DEFAULT NULL,
+  `ORG_INTR_BANK_SETT_AMT` decimal(15,2) DEFAULT NULL,
+  `ORG_INTR_BANK_SETT_CUR` varchar(3) DEFAULT NULL,
+  `ORG_INTR_BANK_SETT_DATE` date DEFAULT NULL,
+  `BIZ_SVC_TYPE` varchar(6) DEFAULT NULL,
+  `CREATE_TS` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LAST_MODI_DATE` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- create table tb_tx_p200dat-----------------
+
+DROP TABLE IF EXISTS `tb_tx_p200dat`;
+CREATE TABLE `tb_tx_p200dat` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `SETTLEMENT_DATE` date DEFAULT NULL,
+  `INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CHG_CUR` varchar(3) DEFAULT NULL,
+  `CHG_AMT` varchar(16) DEFAULT NULL,
+  `DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `DEBTOR_RLT_ID` varchar(35) DEFAULT NULL,
+  `CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `PURPOSE_TYPE` varchar(1) DEFAULT NULL,
+  `PURPOSE_CODE` varchar(4) DEFAULT NULL,
+  `PURPOSE_OTHER` varchar(140) DEFAULT NULL,
+  `REMIT_INFO` varchar(140) DEFAULT NULL,
+  `SRVC_MODE` varchar(6) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_tx_p210dat-----------------
+DROP TABLE IF EXISTS `tb_tx_p210dat`;
+CREATE TABLE `tb_tx_p210dat` (
+  `JNL_NO` varchar(35) NOT NULL,
+  `CATEGORY_PURPOSE` varchar(6) DEFAULT NULL,
+  `SETTLEMENT_CUR` varchar(3) DEFAULT NULL,
+  `SETTLEMENT_AMT` varchar(16) DEFAULT NULL,
+  `SETTLEMENT_DATE` date DEFAULT NULL,
+  `INSTRUCTED_CUR` varchar(3) DEFAULT NULL,
+  `INSTRUCTED_AMT` varchar(16) DEFAULT NULL,
+  `CHG_AGT_ID` varchar(3) DEFAULT NULL,
+  `CHG_AGT_BIC` varchar(11) DEFAULT NULL,
+  `CHG_CUR` varchar(3) DEFAULT NULL,
+  `CHG_AMT` varchar(16) DEFAULT NULL,
+  `DEBTOR_NAME` varchar(420) DEFAULT NULL,
+  `DEBTOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `DEBTOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `DEBTOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `DEBTOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `DEBTOR_RLT_ID` varchar(35) DEFAULT NULL,
+  `CREDITOR_NAME` varchar(420) DEFAULT NULL,
+  `CREDITOR_ACCTNO` varchar(34) DEFAULT NULL,
+  `CREDITOR_ACCTNO_TYPE` varchar(4) DEFAULT NULL,
+  `CREDITOR_AGT_ID` varchar(3) DEFAULT NULL,
+  `CREDITOR_AGT_BIC` varchar(11) DEFAULT NULL,
+  `PURPOSE_TYPE` varchar(1) DEFAULT NULL,
+  `PURPOSE_CODE` varchar(4) DEFAULT NULL,
+  `PURPOSE_OTHER` varchar(140) DEFAULT NULL,
+  `REMIT_INFO` varchar(140) DEFAULT NULL,
+  `SRVC_MODE` varchar(6) DEFAULT NULL,
+  PRIMARY KEY (`JNL_NO`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- create table tb_tx_seqnum-----------------
+DROP TABLE IF EXISTS `tb_tx_seqnum`;
+CREATE TABLE `tb_tx_seqnum` (
+  `SEQ_NAME` varchar(32) NOT NULL,
+  `CURRENT_VAL` int(10) NOT NULL,
+  `INCREMENT_VAL` int(3) NOT NULL,
+  PRIMARY KEY (`SEQ_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

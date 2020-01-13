@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.guide.dao.IOperGuideDao">
+
+	
+	<select id="dList">
+		SELECT distinct T.MENU_ID AS ID,
+		                T.MENU_NAME AS TEXT,
+		                T.DISPLAY_ICON AS ICON_CLS,
+		                T.PARENT_MENU_ID AS PID,
+		                CASE
+		                  WHEN S.MENU_ID IS not NULL THEN
+		                   'closed'
+		                  ELSE
+		                   'open'
+		                END as state,
+		                t.seqno,
+		                CASE
+		                  WHEN S.MENU_ID IS not NULL THEN
+		                   '0'
+		                  ELSE
+		                   '1'
+		                END as attributes
+		  FROM {{BF}}_menu T
+		  LEFT JOIN {{BF}}_menu S
+		    ON T.MENU_ID = S.PARENT_MENU_ID and S.MENU_FLAG = '0'
+		   <where>
+			 t.menu_flag = '0'
+			<if test="null != menuId and '' != menuId">
+				and t.PARENT_MENU_ID = #{menuId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != menuName and '' != menuName">
+				and t.menu_name like #{concat('%' menuName '%'), jdbcType=VARCHAR}
+			</if>
+			</where>
+		order by t.seqno
+	</select>
+	<select id="dFindForEdit">
+		SELECT T.menu_id, T.menu_name, f.guide_title, f.guide_content, 
+		     case when t.menu_url is not null and t.menu_flag = '0' then '1' else '0' end as menu_flag
+		  FROM {{BF}}_menu T
+		  left join {{BF}}_FUNCTION_GUIDE f
+		    on T.menu_id = f.menu_id
+	   <where>
+			<if test="null != menuId and '' != menuId">
+				T.MENU_ID = #{menuId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	<update id="dEdit">
+		UPDATE {{BF}}_FUNCTION_GUIDE
+		     SET guide_content = #{menu.guideContent},
+		         modi_date = #{menu.modiDate},
+		         modi_time = #{menu.modiTime},
+		         modi_oper = #{menu.modiOper}
+		<where>
+			<if test="null != menu.menuId and '' != menu.menuId">
+				 MENU_ID = #{menu.menuId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</update>
+	<!-- 添加消息 -->
+	<insert id="dInsert">
+		INSERT INTO {{BF}}_FUNCTION_GUIDE (MENU_ID,MENU_NAME,GUIDE_CONTENT,INST_DATE,INST_TIME,INST_OPER)
+		  VALUES(	#{form.menuId, jdbcType=NUMERIC}, 
+				  	#{form.menuName, jdbcType=VARCHAR}, 
+				  	#{form.guideContent, jdbcType=VARCHAR}, 
+				  	#{form.instDate, jdbcType=VARCHAR}, 
+				  	#{form.instTime, jdbcType=VARCHAR}, 
+				  	#{form.instOper, jdbcType=VARCHAR}
+				 )
+	</insert>
+	<select id="dFind">
+		select t.guide_title , t.guide_content from {{BF}}_FUNCTION_GUIDE t
+	   	<where>
+			<if test="null != menuId and '' != menuId">
+				T.MENU_ID = #{menuId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+</mapper>

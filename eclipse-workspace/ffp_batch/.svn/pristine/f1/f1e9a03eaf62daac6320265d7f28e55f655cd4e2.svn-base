@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<!-- MUST SETTING -->
+	<!-- XML File Resource -->
+	<resource name="DataTypeConfig">datatype-config.xml</resource>
+	<resource name="SystemConfig">system-config.xml</resource>
+	<resource name="SystemEnvParameters">system-parameters.xml</resource>
+	<!-- Properties Resource -->
+	<resource name="dbProperty">ffpdb.properties</resource>
+	<resource name="ftpProperty">ftp.properties</resource>
+	<resource name="isbProperty">isb.properties</resource>
+	<resource name="httpProperty">http.properties</resource>
+	<resource name="outkProperty">outk.Properties</resource>
+	<!-- Shell Script Resource -->
+	<!-- <resource name="exportSqlData">ExportSqlData.sh</resource> -->
+	<!-- USER EDIT -->
+	<!-- XML File Resource -->
+	
+	<!-- Properties Resource -->
+	
+</resources>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch Job Configuration Files -->
+<!-- 
+	updateDate:2012-10-25
+	ModifiedBy:ZT
+	ModifiedReason:ADD JOB RISp31
+	updateVersion:12 month
+ -->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISEC1</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>RISEC1-COPY FILE 0100006D.ec1 TO WORKING AND BACKUP</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.FtpDownloadJob</processor>
+			<parameters>
+				<parameter>
+					<name>transfer-name</name>
+					<value>isb</value>
+				</parameter>
+				<file>
+					<remote-path>RIS/IN/</remote-path>
+					<remote-file-name>0100006D.ec1.gz.#{noSplitAcDate}1</remote-file-name>
+					<local-path>RIS/IN/</local-path>
+					<local-file-name>0100006D.ec1.gz</local-file-name>
+					<backup-file-path>RIS/IN/</backup-file-path>
+					<keep-file-days>$__FILE_KEEP_DAYS</keep-file-days>
+				</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>RISEC1-X FILE 0100006D.ec1 TO WORKING</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.XGzipFileJob</processor>
+			<current-system>$__EXECUTE_SYSTEM</current-system>
+			<parameters>
+				<file>
+					<input-file-path>RIS/IN/</input-file-path>
+					<input-file-name>0100006D.ec1.gz</input-file-name>
+				</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>RISEC1-CHECK FILE 0100006D.ec1</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.CheckFileJob</processor>
+			<check-list>
+				<check filepath="WORKING" file="RIS/IN/0100006D.ec1" encoding="GBK">
+					<class>com.forms.batch.job.ris.CheckFileUtil</class>
+					<method>checkFileDate</method>
+					<check-file-para>DataEndDate</check-file-para>
+					<check-file-para>BATCHACDATE</check-file-para>
+				</check>
+			</check-list>
+		</action>
+		
+		<action>
+			<action-name>RISP21-DELETE TABLE D_OVERSEAS_TX_HISTORY_TEMP</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<parameters>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_TX_HISTORY_TEMP WHERE PADT_APPG_DATE = REPLACE('#{acDate}','-','')</parameter>
+			</parameters>
+		</action>
+		<action>
+			<action-name>RISEC1-READ 0100006D.ec1 IN D_OVERSEAS_TX_HISTORY_TEMP</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/risec1/0100006D.ec1/ris-txhistory-pipe-config.xml</config-file>
+			<input-file-path>RIS/IN/</input-file-path>
+			<output-file-path>RIS/OUT/</output-file-path>
+		</action>
+		<action>
+			<action-name>INSERT INTO D_OVERSEASPAY_TX_HISTORY</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.rishus.RisHousekeepService</processor>
+			<databaseName>risdb</databaseName>
+			<parameters>
+				<parameter>job/risec1/ris-txhistory-sql-job-config.xml</parameter>
+			</parameters>
+		</action>
+	</action-flow>
+</job-config>

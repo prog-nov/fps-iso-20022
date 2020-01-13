@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:e="http://www.formssi.com/schema/beneform4j/exception"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.formssi.com/schema/beneform4j/exception http://www.formssi.com/schema/beneform4j/exception.xsd">
+	<!-- 异常处理器配置 -->
+    <bean id="DetailExceptionHandler" class="com.forms.beneform4j.core.util.exception.handler.impl.DetailExceptionHandler"/>
+	
+	<e:exception code="AP000000" description="应用异常">
+		<e:exception code="AP010000" description="登录异常">
+			<e:exception code="AP010001" description="获取公钥失败" messageKey="login.publickey.error"/>
+		
+			<e:exception code="AP010100" description="公共数据访问异常">
+				<e:exception code="AP010101" description="未找到记录" messageKey="common.dao.data_not_found"/>
+				<e:exception code="AP010102" description="找到多条记录" messageKey="common.dao.has_many_datas"/>
+				<e:exception code="AP010103" description="记录已存在" messageKey="common.dao.data_has_exist"/>
+			</e:exception>
+		</e:exception>
+		
+		<e:exception code="AP020000" description="系统管理">
+			<e:exception code="AP020100" description="用户管理">
+				<e:exception code="AP020101" description="用户角色不符合约束关系" messageKey="systemmanager.user.rolelimit"/>
+				<e:exception code="AP020102" description="超级管理员不允许删除" messageKey="systemmanager.user.deleleAdministratorlimit"/>
+			</e:exception>
+			<e:exception code="AP020200" description="消息管理 ">
+				<e:exception code="AP020201" description="生效天数不能为空" 
+					messageKey="systemmanager.news.effectiveDayCnt.required"/>
+			</e:exception>
+			<e:exception code="AP020300" description="角色管理">
+				<e:exception code="AP020301" description="约束或子约束已经存在" messageKey="systemmanager.role.exist_rolelimit"/>
+			</e:exception>
+			<e:exception code="AP020400" description="文档管理 ">
+				<e:exception code="AP020401" description="文档状态不正确不能下载" messageKey="systemmanager.doc.status.error"/>
+				<e:exception code="AP020402" description="文件不存在，下载失败" messageKey="systemmanager.doc.file.notexists"/>
+				<e:exception code="AP020403" description="没有写入权限" messageKey="systemmanager.doc.file.nowrite"/>
+				<e:exception code="AP020404" description="文件保存失败" messageKey="systemmanager.doc.file.saveerror"/>
+				<e:exception code="AP020405" description="文件已经上传过，不能再次上传" messageKey="systemmanager.doc.file.alreadyexists"/>
+				<e:exception code="AP020406" description="插件返回的fileKey为空，处理失败" messageKey="systemmanager.doc.file.filekey.isnull"/>
+				<e:exception code="AP020407" description="文件下载异常" messageKey="systemmanager.doc.file.download.error"/>
+				<e:exception code="AP020408" description="传入的文件或列表当中文件[{0}]不存在或文件是目录" messageKey="systemmanager.doc.file.param.error"/>
+				<e:exception code="AP020409" description="ftp模式【ftp模式｜sftp模式】参数没有配置" messageKey="systemmanager.doc.file.param.ftpmode"/>
+			</e:exception>
+			<e:exception code="AP020500" description="待办事项管理 ">
+				<e:exception code="AP020501" description="{0}已设置规则，请到修改页面修改。" messageKey="systemmanager.taskrule.alreadysetrule"/>
+				<e:exception code="AP020502" description="参数bean缺失，请联系技术人员" messageKey="systemmanager.taskrule.nullitbean"/>
+				<e:exception code="AP020503" description="参数缺失：业务编号缺失。，请联系技术人员" messageKey="systemmanager.taskrule.validate.nullbusikey"/>
+				<e:exception code="AP020504" description="参数缺失：下一个任务节点缺失。，请联系技术人员" messageKey="systemmanager.taskrule.validate.nullnexttaskid"/>
+				<e:exception code="AP020505" description="参数缺失：该任务节点为进入明细，对应业务参数缺失。，请联系技术人员" messageKey="systemmanager.taskrule.validate.nullparams"/>
+				<e:exception code="AP020506" description="代办任务生成失败，找不到代办任务URL，请联系技术人员" messageKey="systemmanager.taskrule.validate.unfindtargeturl"/>
+			</e:exception>
+			
+			<e:exception code="AP020600" description="机构管理 ">
+				<e:exception code="AP020601" description="机构号和父机构号相同" messageKey="systemmanager.organ.orgid_suporgid_same"/>
+				<e:exception code="AP020602" description="父机构不存在" messageKey="systemmanager.organ.suporg_not_exist"/>
+				<e:exception code="AP020603" description="父机构不能是当前机构的子机构" messageKey="systemmanager.organ.suporg_cannot_child"/>
+			</e:exception>
+		</e:exception>
+	</e:exception>
+	
+</beans>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_A120dtl">
+
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	
+	<insert id="INSERTLIST_TB_TX_A120DAT_DTL" parameterType="java.util.List">
+		INSERT INTO TB_TX_A120DAT_DTL(
+			JNL_NO,			ADR_REQ_ID,
+			STS,			RSN_INF_CD,		PROXY_ID,
+			PROXY_ID_TP,	PURP_CD,		LANG_EN,
+			FULL_NM_EN,		DISP_NM_EN,		LANG_ZH,
+			FULL_NM_ZH,		DISP_NM_ZH,		RSLT_CUS_ID,
+			MMBID,			RSLT_CUS_TP,	SUP_OP_CD
+		)
+		VALUES 
+		<foreach collection="list" item="a120dtl" index= "index" separator =",">
+			(
+				#{a120dtl.jnlNo, jdbcType=VARCHAR},			#{a120dtl.adrReqId, jdbcType=VARCHAR}, 
+				#{a120dtl.sts, jdbcType=VARCHAR},			#{a120dtl.rjCd, jdbcType=VARCHAR},			#{a120dtl.proxyId, jdbcType=VARCHAR}, 
+				#{a120dtl.proxyIdTp, jdbcType=VARCHAR},		#{a120dtl.purpCd, jdbcType=VARCHAR},		#{a120dtl.langEN, jdbcType=VARCHAR}, 
+				#{a120dtl.fullNmEN, jdbcType=VARCHAR},		#{a120dtl.dispNmEN, jdbcType=VARCHAR},		#{a120dtl.langZH, jdbcType=VARCHAR}, 
+				#{a120dtl.fullNmZH, jdbcType=VARCHAR},		#{a120dtl.dispNmZH, jdbcType=VARCHAR},		#{a120dtl.rsltCusId, jdbcType=VARCHAR}, 
+				#{a120dtl.mmbId, jdbcType=VARCHAR},			#{a120dtl.rsltCusTp, jdbcType=VARCHAR},		#{a120dtl.supOpCd, jdbcType=TIMESTAMP}
+			)
+	    </foreach>
+	</insert>
+	
+	<select  id="inqueryAddress_A120Dtl" resultType="com.forms.ffp.persistents.bean.addressing.FFPJbA120dtl">
+		SELECT 	
+				ADR_REQ_ID AS adrReqId,
+				STS AS sts,
+				RSN_INF_CD AS rjCd,
+				PROXY_ID AS proxyId,
+				PROXY_ID_TP AS proxyIdTp,
+				PURP_CD AS purpCd,
+				LANG_EN AS langEN,
+				FULL_NM_EN AS fullNmEN,
+				DISP_NM_EN AS dispNmEN,
+				LANG_ZH AS langZH,
+				FULL_NM_ZH AS fullNmZH,
+				DISP_NM_ZH AS dispNmZH,
+				RSLT_CUS_ID AS rsltCusId,
+				MMBID AS mmbId,
+				RSLT_CUS_TP AS rsltCusTp,
+				SUP_OP_CD AS supOpCd
+		FROM
+			TB_TX_A120DAT_DTL
+		WHERE
+			JNL_NO = #{jnlNo,jdbcType=VARCHAR}				
+	</select>
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+</mapper>

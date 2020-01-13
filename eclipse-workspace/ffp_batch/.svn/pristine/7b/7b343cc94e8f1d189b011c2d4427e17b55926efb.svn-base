@@ -1,0 +1,5 @@
+#The unit of variable defaultEachMessageMaxSize is MB 
+defaultEachMessageMaxSize=69
+defaultEachMessageItemMaxNum=10000
+batchSubmissionDirectoryPath=d:/gcl/xml/
+SPDBClearingCode=888

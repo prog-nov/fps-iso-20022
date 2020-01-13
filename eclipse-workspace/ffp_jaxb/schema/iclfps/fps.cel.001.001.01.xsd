@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2017 Hong Kong Interbank Clearing Limited
+
+Collection: HKICL - Payments - FPS - V1 - FINAL_
+Base Message: fps.cel.001.001.01
+Date of publication: 29 September 2017
+-->
+<xs:schema xmlns="urn:hkicl:fps:xsd:fps.cel.001.001.01"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="urn:hkicl:fps:xsd:fps.cel.001.001.01">
+
+    <xs:simpleType name="ISODateTimeType1">
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])\.\d{3}" />
+        </xs:restriction>
+    </xs:simpleType>
+	<xs:simpleType name="ISODateTimeType2">
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max6NumericText">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{1,6}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max35Text">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z !@#$%^&amp;\*\(\)_+~\{\}|:&quot;&lt;&gt;?`\-=\[\]\\;',\./]{1,35}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="35"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="Document" type="Document"/>
+    <xs:complexType name="Document">
+        <xs:sequence>
+            <xs:element name="CertNoti" type="MessageRoot"/>
+        </xs:sequence>
+    </xs:complexType>
+	<xs:complexType name="RevokedCertificates">
+		<xs:sequence>
+            <xs:element maxOccurs="999" minOccurs="1" name="RevokedCert" type="RevokedCertificate"/>
+        </xs:sequence>
+    </xs:complexType>
+	<xs:complexType name="RevokedCertificate">
+		<xs:sequence>
+            <xs:element name="RevocationDate" type="ISODateTimeType2"/>
+			<xs:element name="eCert" type="xs:base64Binary"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="GroupHeader">
+        <xs:sequence>
+            <xs:element name="MsgId" type="Max35Text"/>
+            <xs:element name="CreDtTm" type="ISODateTimeType1"/>
+			<xs:element name="TotalRevokedCert" type="Max6NumericText"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MessageRoot">
+        <xs:sequence>
+            <xs:element name="GrpHdr" type="GroupHeader"/>
+			<xs:element maxOccurs="1" minOccurs="0" name="RevokedCerts" type="RevokedCertificates"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

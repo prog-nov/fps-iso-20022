@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<fixedfile-output-config>
+	<file-name>#{outputFilePath}/tfibillsac_step1_output_error.txt</file-name>
+	<encoding>GBK</encoding>
+	<flush-rows>5</flush-rows>
+	<line-feed>\r\n</line-feed> 
+	<field-definition>
+		<field name="rowIndex"    bytes="5"    data-type="FixedNumberTypeRJ" />
+		<field name="errRowValue" bytes="1000" data-type="CharTypeLJ"        />
+	</field-definition>
+</fixedfile-output-config>

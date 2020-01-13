@@ -1,0 +1,55 @@
+package com.forms.ffp.adaptor.jaxb.participant.request;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlRegistry;
+import javax.xml.namespace.QName;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffphc001.FFPHC001;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffphc002.FFPHC002;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001;
+
+
+@XmlRegistry
+public class ObjectFactory {
+
+    private final static QName _ROOT_QNAME = new QName("", "ROOT");
+
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.forms.ffp.adaptor.jaxb.participant.request
+     * 
+     */
+    public ObjectFactory() {
+    }
+
+    public ROOT createROOT() {
+        return new ROOT();
+    }
+
+    @XmlElementDecl(namespace = "", name = "ROOT")
+    public JAXBElement<ROOT> createROOT(ROOT value) {
+        return new JAXBElement<ROOT>(_ROOT_QNAME, ROOT.class, null, value);
+    }
+    
+    @XmlElementDecl(namespace = "", name = "BODY")
+    public JAXBElement<?> createBODY(BODY value)
+    {
+    	if(value instanceof FFPCTO01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.ObjectFactory()).createBODY((FFPCTO01)value);
+    	else if(value instanceof FFPCTI01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.ObjectFactory()).createBODY((FFPCTI01)value);
+    	else if(value instanceof FFPCTI02)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.ObjectFactory()).createBODY((FFPCTI02)value);
+    	else if(value instanceof FFPMS001)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.ObjectFactory()).createBODY((FFPMS001)value);
+    	else if(value instanceof FFPHC001)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffphc001.ObjectFactory()).createBODY((FFPHC001)value);
+    	else if(value instanceof FFPHC002)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.request.ffphc002.ObjectFactory()).createBODY((FFPHC002)value);
+    	return null;
+    }
+    
+}

@@ -1,0 +1,270 @@
+package com.forms.framework.job.common.ftpservice;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.dom4j.Element;
+
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.job.common.backupservice.BackupFactory;
+import com.forms.framework.job.common.backupservice.BackupService;
+import com.forms.framework.util.CommonAPI;
+import com.forms.framework.util.DateUtil;
+import com.forms.framework.util.SqlJobUtil;
+import com.forms.framework.util.StringUtil;
+
+/**
+ * FTP upload download JOBBASE
+ * 
+ * @author lyz createDate:2011-04-28 updateDate:2011-04-28
+ */
+public abstract class FtpBaseJob extends BatchBaseJob
+{
+
+	private String transferName = null;
+
+	protected int defaultKeepFileDays = 7;
+
+	protected BackupService backupService = null;
+
+	protected SqlJobUtil sqlJob = null;
+
+	protected final String sftp = "sftp";
+
+	protected final String isb = "isb";
+
+	protected String separator = File.separator;
+
+	public static String isbFlag = "1";
+
+	protected File notSendfile;
+	
+	private final String subfx=".properties";
+
+	public String getTransferName()
+	{
+		return transferName;
+	}
+
+	public void setTransferName(String ip_a_transferName)
+	{
+		transferName = ip_a_transferName;
+	}
+
+	protected Map<String, String> para = new HashMap<String, String>();
+
+	protected List<Map<String, String>> filePara = new ArrayList<Map<String, String>>();
+
+	@SuppressWarnings("unchecked")
+	public void init() throws BatchJobException
+	{
+		backupService = BackupFactory.getBackupService(
+				BackupFactory.file, BackupFactory.file);
+		sqlJob = new SqlJobUtil(this.batchAcDate);
+		super.init();
+		InputStream is = null;
+		Properties notSendPro = null;
+		try
+		{
+			notSendfile = new File(System.getenv(CommonAPI.ENV_BATCH_NOTSEND)+File.separator+this.jobConfiger.getJobId()+subfx);
+			if (notSendfile.exists())
+			{
+				is = new FileInputStream(notSendfile);
+				notSendPro = new Properties();
+				notSendPro.load(is);
+			}
+			Element loc_paras = this.actionElement.element("parameters");
+			if (loc_paras == null)
+			{
+				throw new BatchJobException(
+						"Null configer for FTP action parameters in job configer");
+			}
+
+			List<Element> loc_paraList = loc_paras.elements("parameter");
+			// get parameter config
+			for (Element loc_e : loc_paraList)
+			{
+				para.put(StringUtil.xmlToJavaLow(loc_e.elementText("name")),
+						loc_e.elementText("value"));
+			}
+			this.transferName = para.get("transferName");
+			if (transferName == null)
+			{
+				throw new BatchJobException(
+						"FTPJOB Null transferName config for FTP action parameters in job configer");
+			}
+			Element loc_transferConfiger = null;
+			try
+			{
+				loc_transferConfiger = this.sysConfiger
+						.getTransferElementByName(transferName);
+			} catch (Exception ip_ex)
+			{
+				throw new BatchJobException(ip_ex);
+			}
+			if (loc_transferConfiger == null)
+			{
+				throw new BatchJobException(
+						"FTPJOB  Null configer for transfer node in sys configer:"
+								+ transferName);
+			}
+
+			Properties loc_properties = FtpManager.getFtpProperties(
+					this.sysConfiger, transferName);
+			Iterator loc_iterator = loc_properties.keySet().iterator();
+			String loc_key = null;
+			while (loc_iterator.hasNext())
+			{
+				loc_key = (String) loc_iterator.next();
+				para.put(loc_key, loc_properties.getProperty(loc_key));
+			}
+			List<Element> loc_fileList = loc_paras.elements("file");
+			List<Element> loc_fileParaList = null;
+			String loc_localFileName = null;
+			String loc_remoteFileName = null;
+			String loc_backupPath = null;
+			String loc_backupPattern = null;
+			for (Element loc_e : loc_fileList)
+			{
+				loc_fileParaList = loc_e.elements();
+				Map<String, String> loc_fileParameter = new HashMap<String, String>();
+				loc_fileParameter.put("acDate", this.batchAcDate);
+				for (Element loc_ee : loc_fileParaList)
+				{
+					loc_fileParameter.put(StringUtil.xmlToJavaLow(loc_ee
+							.getName()), loc_ee.getText());
+				}
+				if (notSendPro != null)
+				{
+					if (this.isSend(notSendPro,
+							loc_fileParameter.get("localFileName")).equals("N"))
+					{
+						loc_fileParameter.put("send", "N");
+					}
+				}
+				this.initFilePath(loc_fileParameter);
+				loc_localFileName = loc_fileParameter.get("localFileName");
+				loc_remoteFileName = loc_fileParameter.get("remoteFileName");
+				loc_backupPath = loc_fileParameter.get("backupPath");
+				loc_backupPattern = loc_fileParameter.get("backupPattern");
+				loc_fileParameter.put("localFileName",
+						loc_localFileName == null ? loc_remoteFileName : sqlJob
+								.sqlParaReplace(null, loc_localFileName));
+				loc_fileParameter.put("remoteFileName",
+						loc_remoteFileName == null ? loc_localFileName : sqlJob
+								.sqlParaReplace(null, loc_remoteFileName));
+				loc_fileParameter.put("backupPath",
+						loc_backupPath == null ? batchBackup
+								: batchBackup + this.separator
+										+ loc_backupPath);
+				loc_fileParameter.put("backupPattern",
+						loc_backupPattern == null ? DateUtil.BATCH_DATE_FORMAT
+								: loc_backupPattern);
+				filePara.add(loc_fileParameter);
+			}
+		} catch (Exception ip_ex)
+		{
+			throw new BatchJobException(ip_ex);
+		} finally
+		{
+			if (is != null)
+			{
+				try
+				{
+					is.close();
+				} catch (IOException e)
+				{
+					throw new BatchJobException(e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * set backup properties
+	 * 
+	 * @param ip_fileParameter
+	 * @return
+	 * @throws BatchJobException
+	 */
+	private Map<String, String> getBackupParameter(
+			Map<String, String> ip_fileParameter) throws BatchJobException
+	{
+		Map<String, String> loc_backupParameter = new HashMap<String, String>();
+		try
+		{
+			String loc_fileName = ip_fileParameter.get("localFileName");
+			if (ip_fileParameter.get("backupFilePath") == null)
+			{
+				loc_fileName = batchBackup + this.separator + loc_fileName;
+			} else
+			{
+
+				loc_fileName = batchBackup + this.separator
+						+ ip_fileParameter.get("backupFilePath") + loc_fileName;
+			}
+			loc_backupParameter.put("sourceName", ip_fileParameter
+					.get("localPath")
+					+ ip_fileParameter.get("localFileName"));
+			loc_backupParameter
+					.put(
+							"targetName",
+							loc_fileName
+									+ (ip_fileParameter
+											.get("backupFilePattern") == null ? "#{acDate[yyyyMMdd"
+											+ sqlJob.timePattern + "]}"
+											: ip_fileParameter
+													.get("backupFilePattern")));
+			loc_backupParameter.put("keepFileDays", ip_fileParameter
+					.get("keepFileDays") == null ? String
+					.valueOf(this.defaultKeepFileDays) : ip_fileParameter
+					.get("keepFileDays"));
+			loc_backupParameter.put("acDate", this.batchAcDate);
+		} catch (Exception ip_e)
+		{
+			throw new BatchJobException(ip_e);
+		}
+		return loc_backupParameter;
+	}
+
+	protected boolean backupFile(Map<String, String> ip_fileParameter)
+			throws BatchJobException
+	{
+		if (null == ip_fileParameter.get("backup")
+				|| "Y".equalsIgnoreCase(ip_fileParameter.get("backup")))
+		{
+			return backupService.backup(this
+					.getBackupParameter(ip_fileParameter));
+		}
+		return true;
+	}
+
+	private String isSend(Properties pro, String fileName) throws Exception
+	{
+		String result = "Y";
+		try
+		{
+			if (pro.get(fileName) != null
+					&& pro.get(fileName).equals(this.batchAcDate))
+			{
+				result = "N";
+			}
+
+		} catch (Exception e)
+		{
+			throw e;
+		}
+		return result;
+	}
+
+	protected abstract void initFilePath(Map<String, String> ip_fileParameter);
+}

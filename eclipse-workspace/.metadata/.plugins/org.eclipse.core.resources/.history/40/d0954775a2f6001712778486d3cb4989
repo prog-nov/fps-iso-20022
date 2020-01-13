@@ -1,0 +1,6 @@
+package com.forms.fps.jms;
+
+public interface ProducerMessage 
+{
+	void sendMessager();
+}

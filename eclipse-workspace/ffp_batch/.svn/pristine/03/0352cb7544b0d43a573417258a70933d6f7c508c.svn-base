@@ -1,0 +1,315 @@
+package com.forms.batch.job.unit.participant.message.ffpcto01;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.bind.JAXBElement;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.BatchInformation;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessagePayloads;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.BusinessApplicationHeaderV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.FPSBusinessServiceCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.AccountIdentification4Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.AccountSchemeName1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.BranchAndFinancialInstitutionIdentification51;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CashAccount241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CategoryPurpose1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.ChargeBearerType1Code1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Charges21;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.ClearingSystemIdentification3Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.ClearingSystemMemberIdentification21;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.ContactDetails21;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CreditTransferTransaction251;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FIToFICustomerCreditTransferV06;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FPSAccountTypeCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FPSAccountVerificationOptionCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FPSCategoryPurposeCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FPSClearingSystemCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FPSCurrencyCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.FinancialInstitutionIdentification81;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.GenericAccountIdentification11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.GroupHeader701;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.LocalInstrument2Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.ObjectFactory;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.PartyIdentification431;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.PaymentIdentification31;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.PaymentTypeInformation211;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Purpose2Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.RemittanceInformation111;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Restricted15Digit2DecimalCurrencyAndAmount;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.SettlementInstruction41;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.SettlementMethod1Code1;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsServiceCode;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.iclfps.FFPMsgBaseHkiclMessage;
+import com.forms.ffp.core.utils.FFPStringUtils;
+import com.forms.ffp.core.utils.FFPValidateUtils;
+import com.forms.ffp.core.utils.FFPXMLUtils;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+
+public class FFPMsgCTO01_MutiPacs008 extends FFPMsgBaseHkiclMessage
+{
+	private List<FFPJbP100> txJb = null;
+	
+	private Map<String,String> btchMap = null;
+	
+	private ObjectFactory _objFactory = new ObjectFactory();
+
+	public FFPMsgCTO01_MutiPacs008(List<FFPJbP100> txJb)
+	{
+		super();
+		this.txJb = txJb;
+		this.msgTypeName = FFPJaxbConstants.JAXB_MSG_TYPE_PACS_008;
+		this.msgBizSvc = FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC03;
+		//just for C3
+		
+		/*if (FFPConstantsServiceCode.FFPAGENT_SERVICECODE_C1.equals(txJb.getSrvcMode())){
+			this.msgBizSvc = FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC01;
+			this.priority = "H";
+		}else{
+			this.msgBizSvc = FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC02;
+			this.priority = "M";
+		}*/
+	}
+
+	public  FFPMsgCTO01_MutiPacs008(List<FFPJbP100> txJb,Map<String,String> btchMap) {
+		super();
+		this.txJb = txJb;
+		this.btchMap = btchMap;
+		this.msgTypeName = FFPJaxbConstants.JAXB_MSG_TYPE_PACS_008;
+		this.msgBizSvc = FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC03;
+	}
+	
+	@Override
+	public String parseHkiclMessage() throws Exception {
+		String message = null;
+		FpsMessageEnvelope envelope = new FpsMessageEnvelope();
+		BatchInformation BtchInf = new BatchInformation();
+		
+		BtchInf.setBtchId(btchMap.get("BtchId"));
+		BtchInf.setFlSeqNo(btchMap.get("FlSeqNo"));
+		BtchInf.setNbOfFls(btchMap.get("NbOfFls"));
+		envelope.setBtchInf(BtchInf);
+		envelope.setNbOfMsgs(btchMap.get("NbOfMsgs"));
+		
+		List<ISO20022BusinessDataV01> bizData = this.marshalMsgBizDataList(); ///bizData
+		FpsMessagePayloads payloads = new FpsMessagePayloads();
+		payloads.getBizData().addAll(bizData);
+		envelope.setFpsPylds(payloads);
+
+		message = FFPHkiclMessageConverter.makeupRealTimeXml(FFPHkiclMessageConverter.packageXml(envelope));
+
+		message = FFPHkiclMessageConverter.signXml(message);
+
+		return message;
+	}
+
+
+	public JAXBElement<BusinessApplicationHeaderV01> marshalMsgBizDataHead()
+	{
+		BusinessApplicationHeaderV01 appHdr = new BusinessApplicationHeaderV01();
+		appHdr.setFr(createParty(this.msgFromID));
+		appHdr.setTo(createParty(this.msgToID));
+		appHdr.setBizMsgIdr(this.getMsgID());
+		appHdr.setMsgDefIdr(this.msgTypeName);
+		appHdr.setBizSvc(FPSBusinessServiceCode.fromValue(this.msgBizSvc));
+		appHdr.setCreDt(FFPXMLUtils.toGregorianDt(this.creDt));
+
+		return (new com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.ObjectFactory()).createAppHdr(appHdr);
+	}
+
+	public JAXBElement<?> marshalMsgBizDataDocument()
+	{
+		Document loc_doc = createDocument();
+		return (new ObjectFactory()).createDocument(loc_doc);
+	}
+
+	private Document createDocument()
+	{
+		Document doc = this._objFactory.createDocument();
+		FIToFICustomerCreditTransferV06 fIToFICstmrCdtTrf = this._objFactory.createFIToFICustomerCreditTransferV06();
+
+		//Multi pacs008
+		for(FFPJbP100 p100 : txJb)
+		{
+			CreditTransferTransaction251 sigleTxInf = createCreditTransferTranaction(p100);
+			fIToFICstmrCdtTrf.getCdtTrfTxInf().add(sigleTxInf);
+		}
+		GroupHeader701 loc_gh = this._objFactory.createGroupHeader701();
+		loc_gh.setCreDtTm(FFPXMLUtils.toGregorianDt(this.getCreDt()));
+		loc_gh.setMsgId(this.getMsgID());
+		loc_gh.setNbOfTxs(this.btchMap.get("NbOfTxs"));
+		SettlementInstruction41 loc_si41 = new SettlementInstruction41();
+		loc_si41.setSttlmMtd(SettlementMethod1Code1.CLRG);
+		ClearingSystemIdentification3Choice1 loc_cyi3c1 = new ClearingSystemIdentification3Choice1();
+		loc_cyi3c1.setPrtry(FPSClearingSystemCode.FPS);
+		loc_si41.setClrSys(loc_cyi3c1);
+		loc_gh.setSttlmInf(loc_si41);
+
+		fIToFICstmrCdtTrf.setGrpHdr(loc_gh);
+		doc.setFIToFICstmrCdtTrf(fIToFICstmrCdtTrf);
+		return doc;
+	}
+
+	private CreditTransferTransaction251 createCreditTransferTranaction(FFPJbP100 p100 )
+	{
+		CreditTransferTransaction251 cdtTrfTx = this._objFactory.createCreditTransferTransaction251();
+		PaymentIdentification31 loc_pi31 = new PaymentIdentification31();
+		loc_pi31.setEndToEndId(p100.getTxJnl().getEndToEndId());
+		loc_pi31.setTxId(p100.getTxJnl().getTransactionId());
+		cdtTrfTx.setPmtId(loc_pi31);
+		cdtTrfTx.setPmtTpInf(createPaymentTypeInformation(p100));
+		cdtTrfTx.setIntrBkSttlmAmt(createCurrencyAndAmount(p100.getSettlementCurrency(), p100.getSettlementAmount()));
+		cdtTrfTx.setIntrBkSttlmDt(FFPXMLUtils.toGregorianDtType1(p100.getSettlementDate()));
+		cdtTrfTx.setInstdAmt(createCurrencyAndAmount(p100.getInstructedCurrency(), p100.getInstructedAmount()));
+		cdtTrfTx.setChrgsInf(createCharges(p100));
+		cdtTrfTx.setChrgBr(ChargeBearerType1Code1.SLEV);
+
+		PartyIdentification431 dbtr = createPartyIdentification1(p100.getDebtorName(), p100.getDbtrContPhone(), p100.getDbtrContEmailAddr());
+
+		cdtTrfTx.setDbtr(dbtr);
+		cdtTrfTx.setDbtrAcct(createCashAccount(p100.getDebtorAccountNumber(), p100.getDebtorAccountNumberType()));
+		cdtTrfTx.setDbtrAgt(createBranchAndFinancialInstitutionIdentification1(p100.getDebtorAgentId(), p100.getDebtorAgentBic()));
+		cdtTrfTx.setCdtrAgt(createBranchAndFinancialInstitutionIdentification1(p100.getCreditorAgentId(), p100.getCreditorAgentBic()));
+		PartyIdentification431 cdtr = createPartyIdentification1(p100.getCreditorName(), p100.getCdtrContPhone(), p100.getCdtrContEmailAddr());
+		cdtTrfTx.setCdtr(cdtr);
+		cdtTrfTx.setCdtrAcct(createCashAccount(p100.getCreditorAccountNumber(), p100.getCreditorAccountNumberType()));
+		cdtTrfTx.setPurp(createPurpose2Choice(p100));
+		cdtTrfTx.setRmtInf(createRemittanceInformation(p100));
+		return cdtTrfTx;
+	}
+
+	private PaymentTypeInformation211 createPaymentTypeInformation(FFPJbP100 p100)
+	{
+		PaymentTypeInformation211 pmtTpInf = this._objFactory.createPaymentTypeInformation211();
+		if (p100.getAccountVerification() != null)
+		{
+			LocalInstrument2Choice1 lclInstrm = this._objFactory.createLocalInstrument2Choice1();
+			lclInstrm.setPrtry(FPSAccountVerificationOptionCode.fromValue(p100.getAccountVerification()));
+			pmtTpInf.setLclInstrm(lclInstrm);
+		}
+
+		if (p100.getPymtCatPrps() != null)
+		{
+			CategoryPurpose1Choice1 ctgyPurp = this._objFactory.createCategoryPurpose1Choice1();
+			ctgyPurp.setPrtry(FPSCategoryPurposeCode.fromValue(p100.getPymtCatPrps()));
+			pmtTpInf.setCtgyPurp(ctgyPurp);
+		}
+
+		return pmtTpInf;
+	}
+
+	private PartyIdentification431 createPartyIdentification1(String acctName, String phoneNo, String emailAddr)
+	{
+		PartyIdentification431 pi431 = this._objFactory.createPartyIdentification431();
+		pi431.setNm(acctName);
+		ContactDetails21 details = this._objFactory.createContactDetails21();
+		details.setMobNb(phoneNo);
+		details.setEmailAdr(emailAddr);
+		pi431.setCtctDtls(details);
+		return pi431;
+	}
+
+	private CashAccount241 createCashAccount(String accNum, String accNumType)
+	{
+		CashAccount241 cashAcct = this._objFactory.createCashAccount241();
+
+		AccountSchemeName1Choice1 schmeNm = this._objFactory.createAccountSchemeName1Choice1();
+		schmeNm.setPrtry(FPSAccountTypeCode.fromValue(accNumType));
+
+		GenericAccountIdentification11 othr = this._objFactory.createGenericAccountIdentification11();
+		othr.setId(accNum);
+		othr.setSchmeNm(schmeNm);
+
+		AccountIdentification4Choice1 id = this._objFactory.createAccountIdentification4Choice1();
+		id.setOthr(othr);
+
+		cashAcct.setId(id);
+
+		return cashAcct;
+	}
+
+	private BranchAndFinancialInstitutionIdentification51 createBranchAndFinancialInstitutionIdentification1(String mmbId, String mmbBic)
+	{
+		BranchAndFinancialInstitutionIdentification51 id = this._objFactory.createBranchAndFinancialInstitutionIdentification51();
+		ClearingSystemMemberIdentification21 clrSysMmbId = this._objFactory.createClearingSystemMemberIdentification21();
+		clrSysMmbId.setMmbId(mmbId);
+
+		FinancialInstitutionIdentification81 finInstnId = this._objFactory.createFinancialInstitutionIdentification81();
+		finInstnId.setBICFI(mmbBic);
+		finInstnId.setClrSysMmbId(clrSysMmbId);
+
+		id.setFinInstnId(finInstnId);
+
+		return id;
+	}
+
+	private Restricted15Digit2DecimalCurrencyAndAmount createCurrencyAndAmount(String currency, BigDecimal amount)
+	{
+		String loc_currency = FFPStringUtils.getStringValue(currency);
+		if (FFPValidateUtils.isNullObject(new Object[] { amount }).booleanValue())
+		{
+			return null;
+		}
+
+		Restricted15Digit2DecimalCurrencyAndAmount currencyAndAmount = this._objFactory.createRestricted15Digit2DecimalCurrencyAndAmount();
+		currencyAndAmount.setCcy(FPSCurrencyCode.fromValue(loc_currency));
+		currencyAndAmount.setValue(amount);
+
+		return currencyAndAmount;
+	}
+
+	private Charges21 createCharges(FFPJbP100 p100)
+	{
+		Charges21 charges = this._objFactory.createCharges21();
+		charges.setAgt(createBranchAndFinancialInstitutionIdentification1(p100.getChargersAgentId(), p100.getChargersAgentBic()));
+		charges.setAmt(createCurrencyAndAmount(p100.getChargersCurrency(), p100.getChargersAmount()));
+
+		return charges;
+	}
+
+	private Purpose2Choice1 createPurpose2Choice(FFPJbP100 p100)
+	{
+		if ("CD".equals(p100.getPaymentPurposeType()))
+		{
+			Purpose2Choice1 purp = this._objFactory.createPurpose2Choice1();
+			purp.setCd(p100.getPaymentPurposeCd());
+
+			return purp;
+		}
+		if ("PRTRY".equals(p100.getPaymentPurposeType()))
+		{
+			Purpose2Choice1 purp = this._objFactory.createPurpose2Choice1();
+			purp.setPrtry(p100.getPaymentPurposeProprietary());
+
+			return purp;
+		}
+
+		return null;
+	}
+
+	private RemittanceInformation111 createRemittanceInformation(FFPJbP100 p100)
+	{
+		RemittanceInformation111 rmtInf = this._objFactory.createRemittanceInformation111();
+		rmtInf.setUstrd(p100.getRemittanceInformation());
+		return rmtInf;
+	}
+	
+	@Override
+	public String getSendType()
+	{
+		return FFPConstants.SEND_TYPE_REQ;
+	}
+
+	@Override
+	public String getPriority()
+	{
+		return null;
+	}
+}

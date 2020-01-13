@@ -1,0 +1,10 @@
+mail.debug=false
+mail.transport.protocol=smtp
+mail.smtp.host=smtp.163.com
+mail.smtp.port=25
+mail.smtp.auth=true
+mail.server.account=ffp_test@163.com
+mail.server.password=12345678qwertyu
+mail.server.from=ffp_test@163.com
+mail.maintain.recipients=weihui@formssi.com;317838860@qq.com
+mail.maintain.copies=zhouting@formssi.com

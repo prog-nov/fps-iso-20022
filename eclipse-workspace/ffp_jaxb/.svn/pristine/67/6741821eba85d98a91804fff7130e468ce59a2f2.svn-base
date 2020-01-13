@@ -1,0 +1,47 @@
+package com.forms.ffp.adaptor.jaxb.participant.request;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr01.FFPADR01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr02.FFPADR02;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr03.FFPADR03;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr04.FFPADR04;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpaun01.FFPAUN01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpchk01.FFPCHK01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpddi01.FFPDDI01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpddi02.FFPDDI02;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpddo01.FFPDDO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffphc001.FFPHC001;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffphc002.FFPHC002;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffprri01.FFPRRI01;
+
+
+@XmlSeeAlso({
+    FFPCTI01.class,
+    FFPCTI02.class,
+    FFPCTO01.class,
+    FFPDDI01.class,
+    FFPDDI02.class,
+    FFPDDO01.class,
+    FFPRRI01.class,
+    FFPHC001.class,
+    FFPHC002.class,
+    FFPCHK01.class,
+    FFPADR01.class,
+    FFPADR02.class,
+    FFPADR03.class,
+    FFPADR04.class,
+    FFPAUN01.class,
+    })
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlType(name = "BODY")
+public abstract class BODY {
+
+
+}

@@ -1,0 +1,235 @@
+package com.forms.framework.job.common.husservice;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Element;
+
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.util.DateUtil;
+import com.forms.framework.util.SqlJobUtil;
+import com.forms.framework.util.XmlUtil;
+
+public class HusService
+{
+
+	private static String lockStr = "lock";
+
+	private static HusService service = null;
+	
+	public List<HousekeepRul> allList=new ArrayList<HousekeepRul>();
+	
+	public Map<String, String> runSetting = new HashMap<String, String>();
+	
+	private Map<String, String> loc_paramMap = new HashMap<String, String>();
+	
+	private Map<String, String> loc_argMap = new HashMap<String, String>();
+	
+	private SqlJobUtil loc_sqlUtil=null;
+	
+	private List<HousekeepTable> loc_def_table = new ArrayList<HousekeepTable>();	
+
+	public String sevenWorkingDay;
+	
+	public String fiftyServerDay;
+
+	private String configFile;
+
+	private String batchAcDate;
+	
+	private List<Element> statsRuls;
+
+	public static HusService getInstance(String ip_configFile,
+			String ip_batchAcDate,List<Element> ip_statsRuls) throws BatchFrameworkException
+	{
+		if (service == null)
+		{
+			synchronized (lockStr)
+			{
+				if (service == null)
+				{
+					service = new HusService(ip_configFile, ip_batchAcDate,ip_statsRuls);
+				}
+				return service;
+			}
+		} else
+		{
+			return service;
+		}
+	}
+
+	private HusService(String ip_configFile, String ip_batchAcDate,List<Element> ip_statsRuls)
+			throws BatchFrameworkException
+	{
+		this.configFile = ip_configFile;
+		this.batchAcDate = ip_batchAcDate;
+		this.statsRuls=ip_statsRuls;
+		init();
+	}
+
+	@SuppressWarnings("unchecked")
+	private void init() throws BatchFrameworkException
+	{
+		try
+		{
+			loc_paramMap.put("nextAcDate", DateUtil.addAcDays(
+					this.batchAcDate, DateUtil.BATCH_DATE_FORMAT, 1));
+			loc_paramMap.put("upAcDate", DateUtil.addAcDays(
+					this.batchAcDate, DateUtil.BATCH_DATE_FORMAT, -1));
+			loc_paramMap.put("dateFormat", DateUtil.BATCH_DATE_FORMAT);
+			loc_paramMap.put("acDate", this.batchAcDate);
+			loc_paramMap.put("schema", ConnectionManager.getInstance().getDefaultSchema());
+			
+			Element loc_loc_root = XmlUtil.loadRootElement(configFile);
+			// init housekeep-common config
+			Element loc_housekeep_common = loc_loc_root
+					.element("housekeep-common");
+			List<Element> loc_def_jnl_tables = loc_housekeep_common.element(
+					"common-jnl-table").elements();
+			for (Element loc_def_jnl_table : loc_def_jnl_tables)
+			{
+				HousekeepTable loc_housekeepTable = new HousekeepTable(
+						loc_def_jnl_table.getText(), loc_def_jnl_table
+								.attributeValue("his-jnl-table"));
+				loc_housekeepTable.setJnlColumn("JNL_NO");
+				loc_housekeepTable.setId(loc_def_jnl_table
+						.attributeValue("id"));
+				loc_def_table.add(loc_housekeepTable);
+			}		
+//			 init housekeep-run-setting config
+			Element loc_housekeep_run_setting = loc_loc_root
+					.element("housekeep-run-setting");
+			runSetting.put("housekeep-run", loc_housekeep_run_setting.element(
+					"housekeep-run").getText());
+			runSetting.put("housekeep-run-tx", loc_housekeep_run_setting
+					.element("housekeep-run-tx").getText());
+			
+			int severDay=Integer
+			.parseInt(loc_housekeep_common.element(
+					"sever-day").getText());
+			int stintDay=Integer
+				.parseInt(loc_housekeep_common.element(
+						"stint-date").getText());
+			sevenWorkingDay=DateUtil.addAcDays(this.batchAcDate, -severDay);
+			fiftyServerDay = DateUtil.addDays(this.batchAcDate, DateUtil.BATCH_DATE_FORMAT, -stintDay);
+			loc_sqlUtil= new SqlJobUtil(batchAcDate);
+			loc_argMap.put("schema", ConnectionManager.getInstance()
+					.getDefaultSchema());
+			loc_argMap.put("stintDate", fiftyServerDay);
+			loc_argMap.put("sevenWorkingDay", sevenWorkingDay);
+			
+			for(Element statsRul:statsRuls){
+				HousekeepRul husekeepRul=new HousekeepRul();
+				husekeepRul.setId(statsRul.attributeValue("id"));
+				husekeepRul.setClassName(statsRul.attributeValue("className"));
+				husekeepRul.setDayType(statsRul.attributeValue("day-type"));
+				husekeepRul.setHousekeepDays(statsRul.attributeValue("housekeep-days"));
+				husekeepRul.setHousekeepType(statsRul.attributeValue("housekeepType"));
+				husekeepRul.setIsBackup(statsRul.attributeValue("isBackup"));
+				husekeepRul.setStats(statsRul.getText());
+				husekeepRul.setType(statsRul.attributeValue("type"));
+				husekeepRul.setHuslist(this.initStatsRul(husekeepRul,loc_loc_root));
+				allList.add(husekeepRul);
+			}
+		} catch (Exception e)
+		{
+			throw new BatchFrameworkException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Housekeep> initStatsRul(HousekeepRul husekeepRul,Element loc_loc_root) throws Exception{
+		List<Housekeep> husList = new ArrayList<Housekeep>();
+//		 init housekeep-tx-code-list config
+		List<Element> loc_housekeep_tx_codes = loc_loc_root.element(
+				"housekeep-tx-code-list").elements();
+		int loc_defalut_housekeep_days=Integer.parseInt(husekeepRul.getHousekeepDays());
+		String []loc_def_to_his_stats=husekeepRul.getStats().split(",");
+		String default_housekeepDay=null;
+		if(husekeepRul.getDayType().equals(HousekeepRul.DAYTYPE_A)){
+			default_housekeepDay=DateUtil.addDays(this.batchAcDate,DateUtil.BATCH_DATE_FORMAT,-Integer.parseInt(husekeepRul.getHousekeepDays()));
+		}else if(husekeepRul.getDayType().equals(HousekeepRul.DAYTYPE_D)){
+			default_housekeepDay=DateUtil.addAcDays(this.batchAcDate, -Integer.parseInt(husekeepRul.getHousekeepDays()));
+		}else{
+			throw new Exception("config day-type:"+husekeepRul.getDayType()+" error!");
+		}
+		for (Element loc_housekeep_tx_code : loc_housekeep_tx_codes)
+		{
+			this.execTxCode(husekeepRul,loc_housekeep_tx_code, loc_defalut_housekeep_days, loc_def_to_his_stats, husList,default_housekeepDay);
+		}
+		return husList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void execTxCode(HousekeepRul husekeepRul,Element loc_housekeep_tx_code,int loc_defalut_housekeep_days,String []loc_def_to_his_stats,List<Housekeep> husList,String default_housekeepDay) throws Exception{
+		loc_paramMap.put("txcode", loc_housekeep_tx_code.element(
+		"tx-code").getText());
+		Housekeep loc_houseKeep = new Housekeep();
+		loc_houseKeep.setDefTables(loc_def_table);
+		loc_houseKeep.setTxCode(loc_housekeep_tx_code.element(
+				"tx-code").getText());
+		String transSqlCondition = (loc_housekeep_tx_code
+				.element("trans-sql-condition") == null ? ""
+				: loc_housekeep_tx_code.element("trans-sql-condition")
+						.getText());
+		loc_houseKeep.setTransSqlCondition(new SqlJobUtil(
+				this.batchAcDate).sqlParaReplace(loc_paramMap,
+				transSqlCondition));
+		
+		List<Element> statsRuls=loc_housekeep_tx_code.elements("stats-rul");
+		loc_houseKeep.setHousekeepDay(default_housekeepDay);
+		loc_houseKeep.setHousekeep_stats(loc_def_to_his_stats);
+		if(statsRuls!=null){
+			for(Element statsRul:statsRuls){
+				if(husekeepRul.getId().equals(statsRul.attributeValue("id"))){
+					if(statsRul.attributeValue("day-type")==null||"".equals(statsRul.attributeValue("day-type"))||statsRul.attributeValue("housekeep-days")==null||"".equals(statsRul.attributeValue("housekeep-days"))){
+						loc_houseKeep.setHousekeepDay(default_housekeepDay);
+					}else{
+						if(HousekeepRul.DAYTYPE_A.equals(statsRul.attributeValue("day-type"))){
+							loc_houseKeep.setHousekeepDay(DateUtil.addDays(this.batchAcDate,DateUtil.BATCH_DATE_FORMAT ,-Integer.parseInt(statsRul.attributeValue("housekeep-days"))));
+						}else if(HousekeepRul.DAYTYPE_D.equals(statsRul.attributeValue("day-type"))){
+							loc_houseKeep.setHousekeepDay(DateUtil.addAcDays(this.batchAcDate, -Integer.parseInt(statsRul.attributeValue("housekeep-days"))));
+						}else{
+							throw new Exception("config day-type:"+statsRul.attributeValue("day-type")+" error");
+						}
+					}					
+					if(statsRul.getText()==null||"".equals(statsRul.getText())){
+						loc_houseKeep.setHousekeep_stats(loc_def_to_his_stats);
+					}else{
+						loc_houseKeep.setHousekeep_stats(statsRul.getText().split(","));
+					}					
+				}else{
+					loc_houseKeep.setHousekeepDay(default_housekeepDay);
+					loc_houseKeep.setHousekeep_stats(loc_def_to_his_stats);
+				}
+			}
+		}
+		List<HousekeepTable> loc_tables = new ArrayList<HousekeepTable>();
+		List<Element> loc_txTables = loc_housekeep_tx_code.element(
+				"housekeep-jnl-table").elements();
+		loc_argMap.put("txcode", loc_houseKeep.getTxCode());
+		for (Element loc_txTable : loc_txTables)
+		{
+			HousekeepTable loc_housekeepTable = new HousekeepTable();
+			loc_housekeepTable.setSourceTable(loc_txTable.getText());
+			loc_housekeepTable.setHisTable(loc_txTable
+					.attributeValue("his-jnl-table"));
+			loc_housekeepTable.setJnlColumn(loc_txTable
+					.attribute("jnl_column") == null ? "JNL_NO"
+					: loc_txTable.attributeValue("jnl_column"));
+			loc_housekeepTable.setCondition(loc_txTable
+					.attributeValue("condition") == null ? null
+					: loc_sqlUtil.sqlParaReplace(loc_argMap,
+							loc_txTable.attributeValue("condition")));
+			loc_housekeepTable.setId(loc_txTable
+					.attributeValue("id"));
+			loc_tables.add(loc_housekeepTable);
+		}
+		loc_houseKeep.setTables(loc_tables);
+		husList.add(loc_houseKeep);
+	}
+	
+}

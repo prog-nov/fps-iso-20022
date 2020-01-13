@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<csvfile-input-config>
+	<file-name>success.txt</file-name><!-- 支持外部传入的参数，参数形如：#{para} -->
+	<encoding>GBK</encoding>
+	<header-bytes>0</header-bytes><!-- 头部信息 -->
+	<header-handle-class></header-handle-class><!-- 必须实现自FileInputHeaderHandler，可以留空 -->
+	<footer-bytes>0</footer-bytes><!-- 尾部信息 -->
+	<footer-handle-class></footer-handle-class><!-- 必须实现自FileInputFooterHandler，可以留空 -->
+	<buffer-size>1000</buffer-size><!-- 预读多少(byte)数据，用于优化性能 -->
+	<delimiter>,</delimiter><!-- 分隔符 -->
+	<enclosure>"</enclosure><!-- 括符 -->
+	<line-feed>\r\n</line-feed><!-- 3种：\r;\n;\r\n -->
+	<field-definition>
+		<field name="Field1" data-type="StringType" />
+		<field name="Field2" data-type="StringType" />
+
+		<!--（必须按顺序）完整定义一整行的数据.
+			一些字段说明：
+			data-type  : 自定义数据类型，参考datatype-config.xml；
+		-->
+	</field-definition>
+
+	<!-- multiple file setting，如果不是则必须去掉该行配置 -->
+	<seq-pattern>XXX</seq-pattern><!-- 文件子序号的匹配模式（在file-name中的部分），注意，定义文件名必须为第一个文件的名称完全一致 -->
+</csvfile-input-config>

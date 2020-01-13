@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.role.dao.IRoleAllotDao">
+	
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleAllotBean">
+		  SELECT A.ROLE_ALLOT_ID, A.ROLE_ALLOT_NAME, A.DES
+			FROM {{BF}}_ROLE_ALLOT A
+		<where>
+			<if test="null != roleAllotId and '' != roleAllotId and 0 != roleAllotId">
+				AND A.ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+			</if>
+			<if test="null != roleAllotName and '' != roleAllotName">
+				AND A.ROLE_ALLOT_NAME LIKE #{concat('%' roleAllotName '%'), jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY A.ROLE_ALLOT_ID
+	</select>
+	
+	<select id="dListByRoleAllotName" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleAllotBean">
+		  SELECT A.ROLE_ALLOT_ID, A.ROLE_ALLOT_NAME, A.DES
+			FROM {{BF}}_ROLE_ALLOT A
+		   WHERE A.ROLE_ALLOT_NAME = #{roleAllotName, jdbcType=VARCHAR}
+		   <if test="null != excludeRoleAllotId and '' != excludeRoleAllotId and 0 != excludeRoleAllotId">
+				AND A.ROLE_ALLOT_ID != #{excludeRoleAllotId, jdbcType=INTEGER}
+		   </if>
+	</select>
+	
+	<!-- 进入新增角色界面时查询菜单，这里需要使用当前用户的分配角色来关联，暂使用全部菜单 -->
+	<select id="dListRolePermissionForAdd" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RolePermissionBean" >
+			SELECT DISTINCT M.MENU_ID AS CODE,
+				   M.PARENT_MENU_ID AS PARENT_CODE,
+				   M.MENU_NAME AS TEXT,
+				   M.SEQNO,
+				   0 AS CHECK_STATUS,
+				   P.PERM_ID
+			  FROM {{BF}}_MENU M
+			  JOIN {{BF}}_PERM P
+				ON M.MENU_ID = P.PERM_TYPE_KEY
+			   AND P.PERM_TYPE = #{permType.permType,jdbcType=VARCHAR}
+			   AND (M.PERM_TREE_FLAG IS NULL OR M.PERM_TREE_FLAG = '1')
+			   AND (M.AUTHOR_LEVEL IS NULL OR M.AUTHOR_LEVEL = '2')
+			 ORDER BY M.SEQNO
+	</select>
+
+	<!-- 添加角色 -->
+	<insert id="dInsertRoleAllot">
+		<selectKey keyProperty="roleAllotId" resultType="integer" order="BEFORE" statementType="PREPARED">
+			<choose>
+				<when test="_databaseId == 'oracle'">
+					<!-- 含有排序函数并可在关联子查询中使用的数据库可以用下面语句查询出“空隙ID”，如果没有“空隙ID”，再最大值加1 -->
+					SELECT CASE
+					         WHEN A.GAP_ IS NULL THEN
+					          CASE WHEN MAX_ IS NULL THEN 1 ELSE  MAX_ + 1 END
+					         ELSE
+					          A.GAP_
+					       END AS ROLE_ALLOT_ID
+					  FROM (SELECT MIN(RANK_) GAP_
+					          FROM (SELECT ROW_NUMBER() OVER(ORDER BY ROLE_ALLOT_ID) RANK_, ROLE_ALLOT_ID FROM {{BF}}_ROLE_ALLOT)
+					         WHERE RANK_ != ROLE_ALLOT_ID) A
+					  JOIN (SELECT MAX(ROLE_ALLOT_ID) MAX_ FROM {{BF}}_ROLE_ALLOT) B
+					    ON 1 = 1
+				</when>
+				<otherwise>
+					<!-- 使用关联子查询计算序号，从而获取空隙ID -->
+					SELECT CASE
+					         WHEN A.GAP_ IS NULL THEN
+					          CASE WHEN MAX_ IS NULL THEN 1 ELSE  MAX_ + 1 END
+					         ELSE
+					          A.GAP_
+					       END AS CODE
+					  FROM (SELECT MIN(RANK_) GAP_
+					          FROM (SELECT A.ROLE_ALLOT_ID, COUNT(1) AS RANK_ 
+					                  FROM {{BF}}_ROLE_ALLOT A JOIN {{BF}}_ROLE_ALLOT B ON A.ROLE_ALLOT_ID >= B.ROLE_ALLOT_ID
+									 GROUP BY A.ROLE_ALLOT_ID
+									HAVING A.ROLE_ALLOT_ID != COUNT(1)) T
+							 WHERE ROLE_ALLOT_ID != RANK_
+					         ) A
+					  JOIN (SELECT MAX(ROLE_ALLOT_ID) MAX_ FROM {{BF}}_ROLE_ALLOT) B
+					    ON 1 = 1
+					    <!-- 没有排序函数或者不能在子查询中使用的数据库，直接取最大值加1 -->
+<!-- 					SELECT CASE WHEN MAX(ROLE_ALLOT_ID) IS NULL THEN 1 ELSE MAX(ROLE_ALLOT_ID) + 1 END AS CODE FROM {{BF}}_ROLE -->
+				</otherwise>
+			</choose>
+		</selectKey>
+		INSERT INTO {{BF}}_ROLE_ALLOT(ROLE_ALLOT_ID, ROLE_ALLOT_NAME, DES,
+			INST_DATE, INST_TIME, INST_OPER, 
+		   	MODI_DATE, MODI_TIME, MODI_OPER) 
+		 VALUEs(#{roleAllotId, jdbcType=INTEGER}, #{roleAllotName, jdbcType=VARCHAR}, #{des, jdbcType=VARCHAR},
+		   #{instDate, jdbcType=VARCHAR}, #{instTime, jdbcType=VARCHAR}, #{instOper, jdbcType=VARCHAR}, 
+  		   #{modiDate, jdbcType=VARCHAR}, #{modiTime, jdbcType=VARCHAR}, #{modiOper, jdbcType=VARCHAR}
+		 )
+	</insert>
+	
+	<select id="dListRolePermissionForEdit" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RolePermissionBean" >
+			SELECT DISTINCT M.MENU_ID AS CODE,
+				   M.PARENT_MENU_ID AS PARENT_CODE,
+				   M.MENU_NAME AS TEXT,
+				   M.SEQNO,
+				   CASE WHEN RP.PERM_ID IS NULL THEN 0 ELSE 1 END AS CHECK_STATUS,
+				   P.PERM_ID
+			  FROM {{BF}}_MENU M
+			  JOIN {{BF}}_PERM P
+				ON M.MENU_ID = P.PERM_TYPE_KEY
+			   AND P.PERM_TYPE = #{permType.permType,jdbcType=VARCHAR}
+			   AND (M.PERM_TREE_FLAG IS NULL OR M.PERM_TREE_FLAG = '1')
+			   AND (M.AUTHOR_LEVEL IS NULL OR M.AUTHOR_LEVEL = '2')
+			  LEFT JOIN {{BF}}_ROLE_ALLOT_PERM RP
+			    ON P.PERM_ID = RP.PERM_ID
+			   AND RP.ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+			 ORDER BY M.SEQNO
+	</select>
+	
+	<!-- 修改角色 -->
+	<update id="dUpdateRoleAllot">
+	    UPDATE {{BF}}_ROLE_ALLOT
+	       SET ROLE_ALLOT_NAME = #{roleAllotName, jdbcType=VARCHAR},
+	           DES = #{des, jdbcType=VARCHAR},
+	           MODI_DATE = #{modiDate, jdbcType=VARCHAR},
+		       MODI_TIME = #{modiTime, jdbcType=VARCHAR},
+		       MODI_OPER = #{modiOper, jdbcType=VARCHAR}
+	     WHERE ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+	</update>
+	<!-- 根据权限类型删除单个角色的角色权限(菜单)关系 -->
+	<delete id="dDeleteRoleAllotPermissionByPermTypes">
+		DELETE FROM {{BF}}_ROLE_ALLOT_PERM WHERE ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+		<if test="null != permTypes and permTypes.size > 0">
+		AND PERM_ID IN(SELECT PERM_ID FROM {{BF}}_PERM WHERE PERM_TYPE IN (
+		<foreach item="permType" collection="permTypes" separator=",">
+			#{permType.permType, jdbcType=VARCHAR}
+		</foreach>
+		))
+		</if>
+	</delete>
+	<!-- 添加角色权限(菜单)关系 -->
+	<insert id="dInsertRoleAllotPermission">
+		INSERT INTO {{BF}}_ROLE_ALLOT_PERM(ROLE_ALLOT_ID, PERM_ID)
+		  VALUEs(#{param1.roleAllotId, jdbcType=INTEGER}, #{perm.permId, jdbcType=INTEGER})
+	</insert>
+	
+	<!-- 删除单个角色的角色与角色(分配)关系 -->
+	<delete id="dDeleteRoleRoleAllotByAllot">
+		DELETE FROM {{BF}}_ROLE_ROLE_ALLOT WHERE ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+	</delete>
+	<!-- 删除单个角色的角色权限(菜单)关系 -->
+	<delete id="dDeleteRoleAllotPermission">
+		DELETE FROM {{BF}}_ROLE_ALLOT_PERM WHERE ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+	</delete>
+	<!-- 删除单个角色 -->
+	<delete id="dDeleteRoleAllot">
+		DELETE FROM {{BF}}_ROLE_ALLOT WHERE ROLE_ALLOT_ID = #{roleAllotId, jdbcType=INTEGER}
+	</delete>
+</mapper>

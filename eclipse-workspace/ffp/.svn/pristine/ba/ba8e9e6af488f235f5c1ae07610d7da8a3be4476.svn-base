@@ -1,0 +1,27 @@
+package com.forms.ffp.persistents.service.addressing;
+
+import javax.annotation.Resource;
+
+import org.springframework.stereotype.Service;
+
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.bean.addressing.FFPJbAddressing;
+import com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing_Acct;
+
+@Service("FFPDaoService_Addressing")
+public class FFPDaoService_Addressing_Acct implements FFPIDaoService_Addressing_Acct {
+	
+	@Resource(name="FFPIDao_Addressing_Acct")
+	private FFPIDao_Addressing_Acct dao;
+	
+	@Override
+	public int[] sDelete(FFPJbAddressing jbAdrs) {
+		return dao.dDelete(jbAdrs);
+	}
+
+	@Override
+	public int[] sInsertAndDelete(FFPJbA100 form) {
+		return dao.dInsertAndDelete(form);
+	}
+
+}

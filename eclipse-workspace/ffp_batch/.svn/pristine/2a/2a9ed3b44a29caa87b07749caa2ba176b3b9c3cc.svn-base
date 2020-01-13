@@ -1,0 +1,161 @@
+package com.forms.batch.job.outward;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.MessageRejectV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.BusinessApplicationHeaderV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchResponseFileProcessor {
+	public static String readFromFile(File src) {
+		try {
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(src));
+			StringBuilder stringBuilder = new StringBuilder();
+			String content;
+			while ((content = bufferedReader.readLine()) != null) {
+				stringBuilder.append(content);
+			}
+			return stringBuilder.toString();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// 組裝報文,發送給ICL
+	public static void main1(String[] args) throws Exception {}
+
+	// 解析ICL
+	public static void main(String[] args) throws Exception {
+		// File file = new File("admi.002.001.01.txt");
+		File file = new File("pacs.008.001.06.xml");
+		String fileString = CreditTransferOutwardBatchResponseFileProcessor.readFromFile(file);
+		Object document = null;
+		List list = null;
+		String updateTB_TX_JNL = null;
+		String updateTB_tX_JNL_ACTION = null;
+		System.out.println("初始的报文是："+fileString);
+		FpsMessageEnvelope fpsMsg = FFPHkiclMessageConverter.parseObject(fileString);
+		List<ISO20022BusinessDataV01> bizData = fpsMsg.getFpsPylds().getBizData();
+		if (!(bizData.size() + "").equals(fpsMsg.getNbOfMsgs())) {
+			System.out.println("game over");
+			return;
+		}
+		try {
+			BusinessApplicationHeaderV01 head = (BusinessApplicationHeaderV01) bizData.get(0).getContent().get(0).getValue();
+			document = bizData.get(0).getContent().get(1).getValue();
+			Connection loc_conn = getConnection();
+			if (document instanceof com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) {
+				System.out.println("admin.002");
+				MessageRejectV01 admi00200101 = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+						.getAdmi00200101();
+				String rjctgPtyRsn = admi00200101.getRsn().getRjctgPtyRsn();
+				System.out.println("rjctgPtyRsn:" + rjctgPtyRsn);
+				loc_conn.setAutoCommit(false);
+				updateTB_TX_JNL = "update tb_tx_jnl set tx_stat = ? where jnl_no  = ? ";
+				updateTB_tX_JNL_ACTION = " update tb_tx_jnlaction set msg_status = ? where jnl_no  = ? ";
+				list = new ArrayList();
+				list.add("REJ1");
+				String ref = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document).getAdmi00200101().getRltdRef().getRef();
+				list.add(ref);
+				EntityManager.update(loc_conn, updateTB_TX_JNL, list.toArray());
+				list.clear();
+				list.add("REJ1");
+				list.add(ref);
+				EntityManager.update(loc_conn, updateTB_tX_JNL_ACTION, list.toArray());
+			} else if (document instanceof Document) {
+				System.out.println("pacs.008");
+				loc_conn.setAutoCommit(false);
+				String msgId = ((Document) document).getFIToFICstmrCdtTrf().getGrpHdr().getMsgId();
+				String endToEndId = ((Document) document).getFIToFICstmrCdtTrf().getCdtTrfTxInf().get(0).getPmtId()
+						.getEndToEndId();
+				System.out.println(endToEndId);
+				updateTB_TX_JNL = "update tb_tx_jnl set tx_stat = ? where jnl_no  = ? ";
+				updateTB_tX_JNL_ACTION = " update tb_tx_jnlaction set msg_status = ? where jnl_no  = ? ";
+				list = new ArrayList();
+				list.add("COMP");
+				list.add(endToEndId);
+				EntityManager.update(loc_conn, updateTB_TX_JNL, list.toArray());
+				list.clear();
+				list.add("COMP");
+				list.add(endToEndId);
+				EntityManager.update(loc_conn, updateTB_tX_JNL_ACTION, list.toArray());
+			}
+			loc_conn.commit();
+			loc_conn.close();
+		} catch (Exception ip_ex) {
+			ip_ex.printStackTrace();
+		}
+		ROOT root = new ROOT();
+		HEAD head = new HEAD();
+		head.setRequestID("04");
+		head.setTransactionDate("20131009");
+		head.setTransactionTime("140203");
+		head.setRequestRefno("000001");
+		head.setAccountingDate("20131009");
+		head.setRequestID("03");
+		head.setMessageType("ACEQ");
+		head.setSystemRefno("20131113000000000000127");
+		head.setSystemBeginTIme("103029");
+		head.setSystemEndTIme("103030");
+		head.setResponseBeginTime("103029");
+		head.setResponseEndTime("103030");
+		head.setResponseStatus("N");
+		head.setFinalNode("0");
+		head.setSystemMessageCode("000000");
+		FFPCTI01 body = new FFPCTI01();
+		body.setEndToEndId("11");
+		body.setRejCd("2");
+		body.setRejMsg("3");
+		body.setRsltCd("3");
+		body.setSrcRefNm("4");
+		root.setBODY(body);
+		root.setHEAD(head);
+		String parseAck2FFPAgent = FFPParticipantMessageAckConverter.parseAck2FFPAgent(root);
+		System.out.println("重新组合的报文" + parseAck2FFPAgent);
+		//发送给远程
+		Socket s = new Socket("172.21.21.252", 100);
+		BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+		bufOut.write(parseAck2FFPAgent);
+		bufOut.flush();
+		s.close();
+		
+	}
+
+	public static Connection getConnection() throws Exception {
+		Properties loc_prop = new Properties();
+		loc_prop.put("databaseName", "ffp");
+		loc_prop.put("url", "jdbc:MySQL://172.21.21.198:3306/ffp");
+		loc_prop.put("driverClassName", "com.mysql.jdbc.Driver");
+		loc_prop.put("username", "clous");
+		loc_prop.put("password", "123456");
+		ConnectionManager.registerDatabase(loc_prop);
+		ConnectionManager.setDefaultDatabase("ffp");
+		ConnectionManager loc_connMgr = ConnectionManager.getInstance();
+		Connection loc_conn = loc_connMgr.getConnection();
+		return loc_conn;
+	}
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPRRI01"></xs:element>
+	<xs:complexType name="FFPRRI01">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="PymtCatPrps" type="UpperCaseNumericText_Exact6" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RtrdSettlDate" type="DateTypeNoSplit" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RtrdSettlAmt" type="Restricted15Digit2AmountType"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="RtrdSettlCcy" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="RtrdInstrAmt" type="Restricted15Digit2AmountType"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="RtrdInstrCcy" type="UpperCaseNumericText_Exact3"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="RtrdChrgrsAmt" type="Restricted15Digit2AmountType"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="RtrdChrgrsCcy" type="UpperCaseNumericText_Exact3"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="CdtrNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="CdtrAcTp" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="CdtrAcNo" type="RestrictedFINZText_Max34"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="CdtrContPhone" type="PhoneNumber"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="CdtrContEmailAddr" type="RestrictedFINZText_Max254"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="RtrRsnInf" type="RTRRSNINF" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="RTRRSNINF">
+		<xs:sequence>
+			<xs:element name="PrtryCd" type="UpperCaseNumericText_Exact4" minOccurs="0" maxOccurs="1" />
+			<xs:element name="AddtlInf" type="RestrictedFINZText_Max500" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

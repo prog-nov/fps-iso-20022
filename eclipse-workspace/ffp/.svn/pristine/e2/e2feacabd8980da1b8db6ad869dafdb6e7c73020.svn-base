@@ -1,0 +1,45 @@
+login.user.login_success = 登錄成功
+login.user.notexist = 登錄失敗,用戶{0}不存在
+login.auth.failure = 用戶名或密碼錯,剩余可嘗試登錄次數{1}
+login.auth.failure.nolimit = 用戶{0}登錄失敗,用戶名或密碼錯
+login.ip.error = 用戶{0}當前IP{1}不允許登錄
+login.state.error = 用戶{0}狀態異常,請聯系系統管理員
+login.try.too_more = 用戶{0}嘗試登錄次數過多被鎖定
+login.session.toomany = 用戶{0}登錄會話數過多，最大允許會話數爲{1}
+login.user.dump_login = 不允許同時登錄多個用戶，請退出已登錄用戶後重試
+login.publickey.error = 獲取公鑰異常
+
+
+user.oldpwd.error = 用戶{0}原始密碼錯誤
+
+common.dao.data_not_found=未找到記錄:{0}
+common.dao.has_many_datas=找到多條記錄:{0}
+common.dao.data_has_exist=記錄已存在:{0}
+
+systemmanager.user.rolelimit=角色不符合編號爲{0}的約束關系
+systemmanager.role.exist_rolelimit=角色約束已經存在，或其子約束已經存在，{0}
+
+checker.notempty={0}不能爲空
+
+systemmanager.news.effectiveDayCnt.required=生效天數不能爲空
+
+systemmanager.doc.status.error=文檔狀態已鎖定，不能下載
+systemmanager.doc.file.notexists=文件不存在或已經損壞，下載失敗
+systemmanager.doc.file.nowrite=沒有寫入權限
+systemmanager.doc.file.saveerror=文件{0}保存記錄出錯
+systemmanager.doc.file.alreadyexists=文件{0}已經上傳過，不能再次上傳
+systemmanager.doc.file.filekey.isnull=插件返回的fileKey爲空，處理失敗
+systemmanager.doc.file.download.error=文件下載異常
+systemmanager.doc.file.param.error=傳入的文件或列表當中文件[{0}]不存在或文件是目錄
+systemmanager.doc.file.param.ftpmode=ftp模式【ftp模式｜sftp模式】參數沒有配置
+
+systemmanager.taskrule.alreadysetrule={0}已設置規則，請到修改頁面修改
+systemmanager.taskrule.validate.nullitbean=參數bean缺失
+systemmanager.taskrule.validate.nullbusikey=參數缺失：業務編號缺失
+systemmanager.taskrule.validate.nullnexttaskid=參數缺失：下一個任務節點缺失
+systemmanager.taskrule.validate.nullparams=參數缺失：該任務節點爲進入明細，對應業務參數缺失
+systemmanager.taskrule.validate.unfindtargeturl=代辦任務生成失敗，找不到代辦任務URL，請聯系技術人員
+
+systemmanager.organ.orgid_suporgid_same=拖動機構時，機構號和父機構號不能相同
+systemmanager.organ.suporg_not_exist=拖動機構時，父機構不存在
+systemmanager.organ.suporg_cannot_child=拖動機構時，父機構不能是當前機構的子機構

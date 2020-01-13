@@ -1,0 +1,206 @@
+package com.forms.batch.job.debit;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.forms.ffp.bussiness.participant.ffpdbi01.FFPMsgDBI01_Pacs003;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP200;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.framework.util.ResourceUtil;
+
+public class DirectDebitOutwardBatchFileProcessor extends BatchBaseJob {
+    private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName,
+	    DirectDebitOutwardBatchFileProcessor.class);
+    private static int batSubSeqNum = 0;// 报文文件序列号nnnnnnnn
+
+    private static int eachMessageMaxSize;
+    private static int eachMessageItemMaxNum;
+    public static String batchSubmissionDirectoryPath;
+    public static String clearingCode;
+
+    public static final String OUTK = "outkProperty";
+
+    public static void main(String[] args) throws Exception {
+	String start_time = "2018-03-20 15:56:04";
+	String end_time = "2018-03-20 16:56:04";
+	DirectDebitOutwardBatchFileProcessor ctobfp = new DirectDebitOutwardBatchFileProcessor();
+	ctobfp.init();
+	ctobfp.getPacs003Dat(start_time, end_time);
+    }
+
+    @Override
+    public void init() {
+
+	try {
+	    Properties prop = (Properties) ResourceUtil.getInstance().getResource(OUTK,
+		    ResourceUtil.RESOURCE_PROPERTIES_TYPE);
+
+	    batchSubmissionDirectoryPath = prop.getProperty("batchSubmissionDirectoryPath");
+	    clearingCode = prop.getProperty("SPDBClearingCode");
+	    _logger.info(String.format(
+		    "Read Properties From file %s.properties, eachMessageMaxSize=%s, eachMessageItemMaxNum=%s, batchSubmissionDirectoryPath=%s, clearingCode=%s",
+		    OUTK, eachMessageMaxSize, eachMessageItemMaxNum, batchSubmissionDirectoryPath, clearingCode));
+	} catch (BatchFrameworkException e) {
+	    // TODO Auto-generated catch block
+	    _logger.error(e.getMessage());
+	} catch (Exception e) {
+	    // TODO Auto-generated catch block
+	    _logger.error(e.getMessage());
+	}
+    }
+
+    @Override
+    public boolean execute() throws BatchJobException {
+	// TODO Auto-generated method stub
+	return false;
+    }
+
+    private List<Map<String, Object>> getQueryResult(String startTime, String endTime) {
+	Connection loc_conn = null;
+	_logger.info("Database is connected");
+
+	List<Map<String, Object>> listResult = null;
+	try {
+	    loc_conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+	    String sql = "SELECT A.TRANSACTION_ID,A.END_TO_END_ID,B.* FROM tb_tx_jnl A LEFT JOIN tb_tx_p200dat B ON A.JNL_NO = B.JNL_NO where A.create_ts between ? and ?";
+	    // String sql = "SELECT A.TRANSACTION_ID,A.END_TO_END_ID,B.* FROM
+	    // tb_tx_jnl A LEFT JOIN tb_tx_p200dat B ON A.JNL_NO = B.JNL_NO
+	    // where create_ts between ? and ?";
+	    ArrayList<String> list = new ArrayList<>();
+	    list.add(startTime);
+	    list.add(endTime);
+	    listResult = EntityManager.queryMapList(loc_conn, sql, list.toArray());
+	} catch (Exception e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    _logger.error(e.getMessage());
+	} finally {
+	    if (loc_conn != null) {
+		try {
+		    loc_conn.close();
+		} catch (SQLException e) {
+		    // TODO Auto-generated catch block
+		    _logger.error(e.getMessage());
+		}
+	    }
+	    _logger.info("Database is closed");
+	}
+
+	return listResult;
+    }
+
+    private void getPacs003Dat(String startTime, String endTime) {
+	List<Map<String, Object>> queryResult = getQueryResult(startTime, endTime);
+	if (queryResult == null) {
+	    _logger.error("No Data Is Found");
+	    throw new RuntimeException("No Data Is Found");
+	}
+	// List<FFPJbP100> D1list = new ArrayList<FFPJbP100>();
+	System.out.println(queryResult);
+	for (Map<String, Object> object : queryResult) {
+
+	    FFPJbP200 fb = new FFPJbP200();
+	    FFPTxJnl txJnl = new FFPTxJnl();
+	    txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+	    txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+	    fb.setTxJnl(txJnl);
+	    fb.setCdtrContEmailAddr("");
+	    fb.setCdtrContPhone("");
+	    fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+	    // fb.setRejCode((String) object.get("REJ_CODE"));
+	    // fb.setRejReason((String) object.get("REJ_REASON"));
+	    fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+	    fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+	    if (object.get("SETTLEMENT_AMT") != null) {
+		fb.setSettlementAmount(new BigDecimal((String) object.get("SETTLEMENT_AMT")));
+	    }
+	    fb.setSrcRefNm((String) object.get("SRC_REF_NM"));
+	    fb.setSrvcMode((String) object.get("BUSI_SERVICE_MODE"));
+	    // fb.setStatus((String) object.get("STATUS"));
+	    fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+	    fb.setInstructedAmount(new BigDecimal((String) object.get("INSTRUCTED_AMT")));
+	    fb.setChargersAgentId((String) object.get("CHG_AGT_ID"));
+	    fb.setChargersAgentBic((String) object.get("CHG_AGT_BIC"));
+	    fb.setChargersCurrency((String) object.get("CHG_CUR"));
+	    fb.setChargersAmount(new BigDecimal((String) object.get("CHG_AMT")));
+	    fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+	    fb.setDebtorAccountNumber((String) object.get("DEBTOR_ACCTNO"));
+	    fb.setDebtorAccountNumberType((String) object.get("DEBTOR_ACCTNO_TYPE"));
+	    fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+	    fb.setDebtorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+	    fb.setDbtrContPhone("");
+	    fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+	    fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+	    fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+	    fb.setDbtrContEmailAddr("");
+	    fb.setDbtrRltId((String) object.get("DEBTOR_RLT_ID"));
+	    fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_ID"));
+	    fb.setCreditorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+	    fb.setPaymentPurposeType((String) object.get("PURPOSE_TYPE"));
+	    fb.setPaymentPurposeCd((String) object.get("PURPOSE_CODE"));
+	    fb.setPaymentPurposeProprietary((String) object.get("PURPOSE_OTHER"));
+	    fb.setRemittanceInformation((String) object.get("REMIT_INFO"));
+
+	    FFPMsgDBI01_Pacs003 ffpMsgDBI01_Pacs003 = new FFPMsgDBI01_Pacs003(fb);
+
+	    BufferedWriter bw = null;
+
+	    try {
+
+		String msg = ffpMsgDBI01_Pacs003.parseHkiclMessage();
+
+		_logger.info("Generate A PACS008_PAYC02 Message");
+		SimpleDateFormat fileNameDateForm = new SimpleDateFormat("yyyyMMdd");
+		String fileName = "FPSPCRO" + clearingCode + fileNameDateForm.format(new Date())
+			+ String.format("%08d", DirectDebitOutwardBatchFileProcessor.getBatSubSeqNum()) + ".xml";
+		_logger.info(String.format("Start To Write PACS008_PAYC02 File %s",
+			batchSubmissionDirectoryPath + fileName));
+		bw = new BufferedWriter(new OutputStreamWriter(
+			new FileOutputStream(new File(batchSubmissionDirectoryPath + fileName)), "UTF-8"));
+		bw.write(msg);
+		bw.flush();
+
+		_logger.info(String.format("Finish Writing PACS008_PAYC02 File %s",
+			batchSubmissionDirectoryPath + fileName));
+	    } catch (Exception e) {
+		_logger.error(e.getMessage());
+	    } finally {
+		if (bw != null) {
+		    try {
+			bw.close();
+		    } catch (IOException e) {
+			// TODO Auto-generated catch block
+			_logger.error(e.getMessage());
+		    }
+		}
+	    }
+
+	}
+
+    }
+
+    public synchronized static int getBatSubSeqNum() {
+	batSubSeqNum++;
+	return batSubSeqNum;
+    }
+
+}

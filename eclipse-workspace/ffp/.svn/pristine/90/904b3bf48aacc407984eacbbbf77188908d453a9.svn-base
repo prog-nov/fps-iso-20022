@@ -1,0 +1,207 @@
+package com.forms.ffp.bussiness.iclfps.camt054;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.AccountNotification121;
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.BankToCustomerDebitCreditNotificationV06;
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.ChargesRecord21;
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.EntryTransaction81;
+import com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06.TransactionAgents31;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.dt.FFPDtFpsPaymentNotification;
+import com.forms.ffp.persistents.dao.dt.FFPIDao_FpsPaymentNotification;
+
+@Component("ICL.camt.054.001.06")
+@Scope("prototype")
+public class FFPTxCamt054 extends FFPTxBase
+{
+	@Resource(name="FFPIDao_FpsPaymentNotification")
+	private FFPIDao_FpsPaymentNotification dao;
+	
+	@Override
+	public void perform() throws Exception
+	{
+		if ("ICL.camt.054.001.06".equals(this.serviceName))
+		{
+			FFPVOCamt054 loc_jb = (FFPVOCamt054) txVo;
+			dao.dInsertList(loc_jb.getNotifList());
+		}
+	}
+
+	@Override
+	public void validate() throws Exception
+	{
+		return;
+	}
+
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception
+	{
+		if ("ICL.camt.054.001.06".equals(this.serviceName))
+		{
+			txVo = new FFPVOCamt054();
+			FFPVOCamt054 loc_jb = (FFPVOCamt054) txVo;
+			parseISO20022BizDataHead(bizData);
+			
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			BankToCustomerDebitCreditNotificationV06  noti = doc.getBkToCstmrDbtCdtNtfctn();
+			
+			loc_jb.setMsgId(noti.getGrpHdr().getMsgId());
+			loc_jb.setMsgCreateTs(noti.getGrpHdr().getCreDtTm().toGregorianCalendar().getTime());
+			
+			if(noti.getNtfctn() != null)
+			{
+				for(AccountNotification121 acctNoti : noti.getNtfctn())
+				{
+					FFPDtFpsPaymentNotification ntfctn = new FFPDtFpsPaymentNotification();
+					ntfctn.setMsgId(noti.getGrpHdr().getMsgId());
+					ntfctn.setMsgCreateTs(noti.getGrpHdr().getCreDtTm().toGregorianCalendar().getTime());
+					
+					ntfctn.setNtfctnId(acctNoti.getId());
+					ntfctn.setNtfctnCreateTs(acctNoti.getCreDtTm().toGregorianCalendar().getTime());
+					ntfctn.setNtfctnAcctId(acctNoti.getAcct().getId().getOthr().getId());
+					ntfctn.setNtfctnAcctType(acctNoti.getAcct().getTp().getCd().value());
+					
+					ntfctn.setNtryAmt(acctNoti.getNtry().getAmt().getValue());
+					ntfctn.setNtryAmtCcy(acctNoti.getNtry().getAmt().getCcy().value());
+					ntfctn.setNtryCdtDbtInd(acctNoti.getNtry().getCdtDbtInd().value());
+					ntfctn.setNtryStatus(acctNoti.getNtry().getSts().value());
+					ntfctn.setNtryBankTransCode(acctNoti.getNtry().getBkTxCd().getPrtry().getCd().value());
+					
+					EntryTransaction81 transDetail = acctNoti.getNtry().getNtryDtls().getTxDtls();
+					ntfctn.setNtryDetailEndToEndId(transDetail.getRefs().getEndToEndId());
+					ntfctn.setNtryDetailTxId(transDetail.getRefs().getTxId());
+					ntfctn.setNtryDetailMandateId(transDetail.getRefs().getMndtId());
+					ntfctn.setNtryDetailClrSysRef(transDetail.getRefs().getClrSysRef());
+					
+					ntfctn.setNtryDetailAmt(transDetail.getAmt().getValue());
+					ntfctn.setNtryDetailAmtCcy(transDetail.getAmt().getCcy().value());
+					ntfctn.setNtryDetailCdtDbtInd(transDetail.getCdtDbtInd().value());
+					
+					if(transDetail.getChrgs() != null)
+					{
+						ChargesRecord21 chargesRecord = transDetail.getChrgs().getRcrd();
+						ntfctn.setNtryDetailChrgsAmt(chargesRecord.getAmt().getValue());
+						ntfctn.setNtryDetailChrgsAmtCcy(chargesRecord.getAmt().getCcy().value());
+						ntfctn.setNtryDetailChrgsBr(chargesRecord.getBr().value());
+						if(chargesRecord.getAgt() != null)
+						{
+							ntfctn.setNtryDetailChrgsAgtBic(chargesRecord.getAgt().getFinInstnId().getBICFI());
+							ntfctn.setNtryDetailChrgsAgtMmbId(chargesRecord.getAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+						}
+					}
+					
+					if(transDetail.getRltdPties() != null)
+					{
+						// Debit
+						ntfctn.setRltdPtiesDbtrName(transDetail.getRltdPties().getDbtr().getNm());
+						if(transDetail.getRltdPties().getDbtr().getId() != null)
+						{
+							if(transDetail.getRltdPties().getDbtr().getId().getOrgId() != null)
+							{
+								ntfctn.setRltdPtiesDbtrOrgIdBIC(transDetail.getRltdPties().getDbtr().getId().getOrgId().getAnyBIC());
+								if(transDetail.getRltdPties().getDbtr().getId().getOrgId().getOthr() != null)
+								{
+									ntfctn.setRltdPtiesDbtrOrgIdOthrId(transDetail.getRltdPties().getDbtr().getId().getOrgId().getOthr().getId());
+									ntfctn.setRltdPtiesDbtrOrgIdOthrSchme(transDetail.getRltdPties().getDbtr().getId().getOrgId().getOthr().getSchmeNm().getCd().value());
+									ntfctn.setRltdPtiesDbtrOrgIdOthrIssr(transDetail.getRltdPties().getDbtr().getId().getOrgId().getOthr().getIssr());
+								}
+							}
+							else if(transDetail.getRltdPties().getDbtr().getId().getPrvtId() != null)
+							{
+								ntfctn.setRltdPtiesDbtrPrvtIdOthrId(transDetail.getRltdPties().getDbtr().getId().getPrvtId().getOthr().getId());
+								ntfctn.setRltdPtiesDbtrPrvtIdOthrSchme(transDetail.getRltdPties().getDbtr().getId().getPrvtId().getOthr().getSchmeNm().getCd().value());
+								ntfctn.setRltdPtiesDbtrPrvtIdOthrIssr(transDetail.getRltdPties().getDbtr().getId().getPrvtId().getOthr().getIssr());
+							}
+						}
+						
+						if(transDetail.getRltdPties().getDbtr().getCtctDtls() != null)
+						{
+							ntfctn.setRltdPtiesDbtrContactMobile(transDetail.getRltdPties().getDbtr().getCtctDtls().getMobNb());
+							ntfctn.setRltdPtiesDbtrContactEmail(transDetail.getRltdPties().getDbtr().getCtctDtls().getEmailAdr());
+						}
+						
+						if(transDetail.getRltdPties().getDbtrAcct() != null)
+						{
+							ntfctn.setRltdPtiesDbtrAcctId(transDetail.getRltdPties().getDbtrAcct().getId().getOthr().getId());
+							ntfctn.setRltdPtiesDbtrAcctScheme(transDetail.getRltdPties().getDbtrAcct().getId().getOthr().getSchmeNm().getPrtry().value());
+						}
+						
+						// Credit
+						ntfctn.setRltdPtiesCdtrName(transDetail.getRltdPties().getCdtr().getNm());
+						if(transDetail.getRltdPties().getCdtr().getId() != null)
+						{
+							if(transDetail.getRltdPties().getCdtr().getId().getOrgId() != null)
+							{
+								ntfctn.setRltdPtiesCdtrOrgIdBIC(transDetail.getRltdPties().getCdtr().getId().getOrgId().getAnyBIC());
+								if(transDetail.getRltdPties().getCdtr().getId().getOrgId().getOthr() != null)
+								{
+									ntfctn.setRltdPtiesCdtrOrgIdOthrId(transDetail.getRltdPties().getCdtr().getId().getOrgId().getOthr().getId());
+									ntfctn.setRltdPtiesCdtrOrgIdOthrSchme(transDetail.getRltdPties().getCdtr().getId().getOrgId().getOthr().getSchmeNm().getCd().value());
+									ntfctn.setRltdPtiesCdtrOrgIdOthrIssr(transDetail.getRltdPties().getCdtr().getId().getOrgId().getOthr().getIssr());
+								}
+							}
+							else if(transDetail.getRltdPties().getCdtr().getId().getPrvtId() != null)
+							{
+								ntfctn.setRltdPtiesCdtrPrvtIdOthrId(transDetail.getRltdPties().getCdtr().getId().getPrvtId().getOthr().getId());
+								ntfctn.setRltdPtiesCdtrPrvtIdOthrSchme(transDetail.getRltdPties().getCdtr().getId().getPrvtId().getOthr().getSchmeNm().getCd().value());
+								ntfctn.setRltdPtiesCdtrPrvtIdOthrIssr(transDetail.getRltdPties().getCdtr().getId().getPrvtId().getOthr().getIssr());
+							}
+						}
+						
+						if(transDetail.getRltdPties().getCdtr().getCtctDtls() != null)
+						{
+							ntfctn.setRltdPtiesCdtrContactMobile(transDetail.getRltdPties().getCdtr().getCtctDtls().getMobNb());
+							ntfctn.setRltdPtiesCdtrContactEmail(transDetail.getRltdPties().getCdtr().getCtctDtls().getEmailAdr());
+						}
+						
+						if(transDetail.getRltdPties().getCdtrAcct() != null)
+						{
+							ntfctn.setRltdPtiesCdtrAcctId(transDetail.getRltdPties().getCdtrAcct().getId().getOthr().getId());
+							ntfctn.setRltdPtiesCdtrAcctScheme(transDetail.getRltdPties().getCdtrAcct().getId().getOthr().getSchmeNm().getPrtry().value());
+						}
+					}
+					
+					TransactionAgents31 transAgent = transDetail.getRltdAgts();
+					ntfctn.setRelatedAgentsDbtrBIC(transAgent.getDbtrAgt().getFinInstnId().getBICFI());
+					ntfctn.setRelatedAgentsDbtrMmbId(transAgent.getDbtrAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+					ntfctn.setRelatedAgentsCdtrBIC(transAgent.getCdtrAgt().getFinInstnId().getBICFI());
+					ntfctn.setRelatedAgentsCdtrMmbId(transAgent.getCdtrAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+					
+					if(transDetail.getPurp() != null)
+					{
+						ntfctn.setPurpCode(transDetail.getPurp().getCd());
+						ntfctn.setPurpOther(transDetail.getPurp().getPrtry());
+					}
+				
+					if(transDetail.getRmtInf() != null)
+					{
+						ntfctn.setRemitInfUstrd(transDetail.getRmtInf().getUstrd());
+					}
+					
+					if(transDetail.getRltdDts().getIntrBkSttlmDt() != null)
+						ntfctn.setRelatedDatesIntrSettlDate(transDetail.getRltdDts().getIntrBkSttlmDt().toGregorianCalendar().getTime());
+					if(transDetail.getRltdDts().getTxDtTm() != null)
+						ntfctn.setRelatedDatesTransTs(transDetail.getRltdDts().getTxDtTm().toGregorianCalendar().getTime());
+					
+					if(transDetail.getRtrInf() != null)
+					{
+						ntfctn.setReturnInfRsn(transDetail.getRtrInf().getRsn().getPrtry());
+						StringBuffer loc_sb = new StringBuffer();
+						for(int loc_i = 0; loc_i < transDetail.getRtrInf().getAddtlInf().size(); loc_i++)
+						{
+							loc_sb.append(loc_i == 0 ? transDetail.getRtrInf().getAddtlInf().get(loc_i) : "<BR>"+transDetail.getRtrInf().getAddtlInf().get(loc_i));
+						}
+						ntfctn.setReturnInfMsg(loc_sb.toString());
+					}
+					
+					loc_jb.getNotifList().add(ntfctn);
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<!-- D_OVERSEAS_PAY MOVE IN HIS AND DELETE -->
+	<transaction>
+		<sql>
+		<![CDATA[
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_2006
+			SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) <= '2006'
+		]]>
+		</sql>
+		<sql>
+		<![CDATA[
+			DELETE FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) <= '2006'
+		]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_2007
+			SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2007'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2007'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_2008
+			SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2008'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2008'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_2009
+			SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2009'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2009'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_2010
+			SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2010'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY A
+			WHERE SUBSTR(A.ORG_SEND_DATE,1,4) = '2010'
+		</sql>
+	</transaction>
+</job-sql-configs>

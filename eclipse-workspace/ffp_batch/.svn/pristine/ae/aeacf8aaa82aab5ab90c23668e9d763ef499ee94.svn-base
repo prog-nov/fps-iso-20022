@@ -1,0 +1,23 @@
+package com.forms.batch.job.unit.rishus;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.forms.framework.job.SqlJob;
+
+public class RisHousekeepService extends SqlJob
+{
+
+	//  @Override
+//	Map<String, String> dealSqlStr() throws Exception
+	public Map dealSqlStr() throws Exception
+	{
+//		Map<String, String> parameter_map = new HashMap<String, String>();
+		Map parameter_map = new HashMap();
+		int year = Integer.valueOf(this.batchAcDate.substring(0, 4)).intValue();
+		parameter_map.put("agoYear", String.valueOf(year - 1));
+		parameter_map.put("yearAgo", String.valueOf(year - 1) + this.batchAcDate.substring(4));
+		return parameter_map;
+	}
+
+}

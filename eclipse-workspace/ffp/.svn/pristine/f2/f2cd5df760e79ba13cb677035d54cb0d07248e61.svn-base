@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel-config xmlns="http://www.formssi.com/schema/beneform4j/excel"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.formssi.com/schema/beneform4j/excel http://www.formssi.com/schema/beneform4j/excel.xsd">
+	
+	<!-- D盘beneform4j-excel-demo/file/model目录下的excel文件作为模板，ID为file-加上文件名，
+		修改模板文件内容后无需重启服务，但是添加模板文件需要重启 -->
+	<file-workbook-group idPrefix="file-" locationPatterns="file:/D:/beneform4j-excel-demo/file/model/**" suffixs="xls xlsx"/>
+</excel-config>

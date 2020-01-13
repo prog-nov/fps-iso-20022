@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch Job Configuration Files -->
+<!-- 
+	updateDate:2012-10-19
+	ModifiedBy:ZT
+	ModifiedReason:ADD JOB RISDEALPAYOUT
+	updateVersion:12 month
+ -->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISDEALPAYOUT</job-id>
+		<run-frequency>D</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>INSERT INTO D_OVERSEASPAY_OUTGO_TEMP</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.rishus.RisHousekeepService</processor>
+			<databaseName>risdb</databaseName>
+			<parameters>
+				<parameter>job/risdealpayout/ris-dealpayout-totemptable-sql-job-config.xml</parameter>
+				<parameter>job/risdealpayout/ris-dealpayout-updatebankname-sql-job-config.xml</parameter>
+				<parameter>job/risdealpayout/ris-dealpayout-countsub-sql-job-config.xml</parameter>
+				<parameter>job/risdealpayout/ris-dealpayout-tomaintable-sql-job-config.xml</parameter>
+			</parameters>
+		</action>
+	 </action-flow>
+</job-config>

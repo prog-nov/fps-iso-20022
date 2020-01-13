@@ -1,0 +1,340 @@
+package com.forms.batch.job.commom;
+
+import com.forms.datapipe.exception.DataPipeException;
+import com.forms.datapipe.pipedata.PipeData;
+import com.forms.framework.log.BatchLogger;
+
+public class SwiftProcessor
+{
+	private static BatchLogger logger = BatchLogger.getLogger("SwiftProcessorP31", "SwiftProcessorP31", SwiftProcessor.class);
+	
+	public static void set21(String ip_string, PipeData ip_pipeData)
+			throws DataPipeException
+	{
+		try
+		{
+			ip_pipeData.setPipeFieldValue("21_NAME", ip_string.split("/")[0]);
+			ip_pipeData.setPipeFieldValue("21_VALUE",
+					ip_string.split("/").length > 1 ? ip_string.split("/")[1]
+							: "");
+		} catch (Exception ip_e)
+		{
+			logger.error("set21 processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign23E(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			String loc_23E = ip_pipeData.getPipeFieldStringValue("23E_INDICATE_CODE");
+			if(null == loc_23E || "".equals(loc_23E))
+			{
+				loc_23E = ip_string;
+			}else
+			{
+				loc_23E = loc_23E + "$$$" + ip_string;
+			}
+			ip_pipeData.setPipeFieldValue("23E_INDICATE_CODE", loc_23E);
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign23E processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign71F(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			String loc_71F = ip_pipeData.getPipeFieldStringValue("71F_DTCHG");
+			if(null == loc_71F || "".equals(loc_71F))
+			{
+				loc_71F = ip_string;
+			}else
+			{
+				loc_71F = loc_71F + "$$$" + ip_string;
+			}
+			ip_pipeData.setPipeFieldValue("71F_DTCHG", loc_71F);
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign71F processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign50A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT_AC", ac);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT_BIC", bic);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT_BIC", ip_string);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign50A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign50K(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT_AC", ac);
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_50_REMIT", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign50K processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign52A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK_ACNO", ac);
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign52A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign52D(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK_ACNO", ac);
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_52_REMIT_BANK", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign52D processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign53A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_53_AG_SEND_BANK", ac);
+				ip_pipeData.setPipeFieldValue("SIT_53_AG_SEND_BANK_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_53_AG_SEND_BANK_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign53A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign54A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String ac = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_54_AG_RECV_BANK", ac);
+				ip_pipeData.setPipeFieldValue("SIT_54_AG_RECV_BANK_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_54_AG_RECV_BANK_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign54A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign55A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String bank = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_55_LIQUI_BANK", bank);
+				ip_pipeData.setPipeFieldValue("SIT_55_LIQUI_BANK_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_55_LIQUI_BANK_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign55A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign56A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String bank = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_56_MID_BKNM", bank);
+				ip_pipeData.setPipeFieldValue("SIT_56_MID_BKNM_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_56_MID_BKNM_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign56A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign57A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String bank = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_57_ACT_BKNM", bank);
+				ip_pipeData.setPipeFieldValue("SIT_57_ACT_BKNM_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_57_ACT_BKNM_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign57A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign58A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String act = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING_ACT", act);
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING_BIC", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING_BIC", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign58A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+
+	public static void setSign58D(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String act = ip_string.substring(0, ip_string.indexOf("||"));
+				String bic = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING_ACT", act);
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING", bic);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_58_GATHERING", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign58A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+	
+	public static void setSign59A(String ip_string, PipeData ip_pipeData)
+		throws DataPipeException
+	{
+		try
+		{
+			if(ip_string.startsWith("/"))
+			{
+				String act = ip_string.substring(1, ip_string.indexOf("||"));
+//				String bene = ip_string.substring(ip_string.indexOf("||") + 2);
+				ip_pipeData.setPipeFieldValue("SIT_59_BENEFIT_ACT", act);
+				ip_pipeData.setPipeFieldValue("SIT_59_BENEFICIARY", ip_string);
+			}else
+			{
+				ip_pipeData.setPipeFieldValue("SIT_59_BENEFICIARY", ip_string);
+			}
+		} catch (Exception ip_e)
+		{
+			logger.error("setSign59A processor execute failed:" + ip_string);
+			throw new DataPipeException("processor execute failed:" + ip_e);
+		}
+	}
+
+	public static void main(String[] args)
+	{
+		
+	}
+
+}

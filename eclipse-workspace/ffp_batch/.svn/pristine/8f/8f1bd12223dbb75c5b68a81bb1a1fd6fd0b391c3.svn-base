@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<!-- D_OVERSEAS_PAY MOVE IN HIS AND DELETE -->
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTX_RTS_2006
+			SELECT * FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2006'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2006'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTX_RTS_2007
+			SELECT * FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2007'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2007'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTX_RTS_2008
+			SELECT * FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2008'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2008'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTX_RTS_2009
+			SELECT * FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2009'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2009'
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTX_RTS_2010
+			SELECT * FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2010'
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTX_RTS A
+			WHERE SUBSTR(A.REV_DATE,1,4) = '2010'
+		</sql>
+	</transaction>
+</job-sql-configs>

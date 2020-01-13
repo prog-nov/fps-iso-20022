@@ -1,0 +1,33 @@
+accesscontrol.not_found_permission=The function of the access was not found, request URL:{0}
+accesscontrol.session_timeout=Session timeout, or not logged in, request URL:{0}
+accesscontrol.no_authority=No access, request URL:{0}
+
+
+commonservice.combobox.default.value=--please select--
+
+
+systemmanager.doc.file.please.select=Please select a file.
+systemmanager.doc.file.upload.error=Exception of receive the file.
+systemmanager.doc.file.dir.error=Directory name is not correct.
+systemmanager.doc.file.size.limit=Upload file size over limit.
+systemmanager.doc.file.suffix.limit=Upload file extensions are limited. Only allow {0} format.
+systemmanager.doc.delete.ok=File deletion success
+systemmanager.doc.delete.error=File deletion failed
+
+systemmanager.taskrule.taskid=Task Node
+systemmanager.taskrule.taskname=Task Node Name
+systemmanager.taskrule.limitusers=Limited user
+systemmanager.taskrule.limitorgs=Limited institutions
+systemmanager.taskrule.limitroles=Limited roles
+systemmanager.taskrule.linkdetail=Enter the details
+systemmanager.taskrule.detailmenuname=Detail menu name
+systemmanager.taskrule.islinkdetail=Whether to enter details page
+systemmanager.taskrule.adduser=Add user
+systemmanager.taskrule.deluser=Delete user
+systemmanager.taskrule.deluserall=Detele all
+systemmanager.taskrule.userid=User Code
+systemmanager.taskrule.username=User Name
+systemmanager.taskrule.nickname=User Nickname
+systemmanager.taskrule.org=institutions
+
+

@@ -1,0 +1,506 @@
+package com.forms.ffp.persistents.bean.payment.credittransfer;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.forms.ffp.persistents.bean.FFPJbBaseFin;
+
+public class FFPJbP110 extends FFPJbBaseFin
+{
+	@SuppressWarnings("unused")
+	private static final long serialVersionUID = 1L;
+
+	private String SrvcMode;
+	private String PymtCatPrps;
+	private String accountVerification;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date settlementDate;
+	private String settlementCurrency;
+	private BigDecimal settlementAmount;
+	private String instructedCurrency;
+	private BigDecimal instructedAmount;
+	private String chargersAgentId;
+	private String chargersAgentBic;
+	private String chargersCurrency;
+	private BigDecimal chargersAmount;
+	private String DebtorName;
+	private String DebtorOrgIdAnyBIC;
+	private String DebtorOrgIdOthrId;
+	private String DebtorOrgIdOthrIdSchmeNm;
+	private String DebtorOrgIdOthrIssr;
+	private String DebtorPrvtIdOthrId;
+	private String DebtorPrvtIdOthrIdSchmeNm;
+	private String DebtorPrvtIdOthrIssr;
+	private String DebtorContPhone;
+	private String DebtorContEmailAddr;
+	
+	private String DebtorAccountNumber;
+	private String DebtorAccountNumberType;
+	private String DebtorAgentId;
+	private String DebtorAgentBic;
+
+	private String CreditorName;
+	private String CreditorOrgIdAnyBIC;
+	private String CreditorOrgIdOthrId;
+	private String CreditorOrgIdOthrIdSchmeNm;
+	private String CreditorOrgIdOthrIssr;
+	private String CreditorPrvtIdOthrId;
+	private String CreditorPrvtIdOthrIdSchmeNm;
+	private String CreditorPrvtIdOthrIssr;
+	private String CreditorContPhone;
+	private String CreditorContEmailAddr;
+	
+	private String creditorAccountNumber;
+	private String creditorAccountNumberType;
+	private String creditorAgentId;
+	private String creditorAgentBic;
+
+	private String paymentPurposeType;
+	private String paymentPurposeCd;
+	private String paymentPurposeProprietary;
+	private String remittanceInformation;
+
+	public String getPymtCatPrps()
+	{
+		return this.PymtCatPrps;
+	}
+
+	public void setPymtCatPrps(String PymtCatPrps)
+	{
+		this.PymtCatPrps = PymtCatPrps;
+	}
+
+	public String getAccountVerification()
+	{
+		return this.accountVerification;
+	}
+
+	public void setAccountVerification(String accountVerification)
+	{
+		this.accountVerification = accountVerification;
+	}
+
+	public Date getSettlementDate()
+	{
+		return this.settlementDate;
+	}
+
+	public void setSettlementDate(Date settlementDate)
+	{
+		this.settlementDate = settlementDate;
+	}
+
+	public String getSettlementCurrency()
+	{
+		return this.settlementCurrency;
+	}
+
+	public void setSettlementCurrency(String settlementCurrency)
+	{
+		this.settlementCurrency = settlementCurrency;
+	}
+
+	public BigDecimal getSettlementAmount()
+	{
+		return this.settlementAmount;
+	}
+
+	public void setSettlementAmount(BigDecimal settlementAmount)
+	{
+		this.settlementAmount = settlementAmount;
+	}
+
+	public String getInstructedCurrency()
+	{
+		return this.instructedCurrency;
+	}
+
+	public void setInstructedCurrency(String instructedCurrency)
+	{
+		this.instructedCurrency = instructedCurrency;
+	}
+
+	public BigDecimal getInstructedAmount()
+	{
+		return this.instructedAmount;
+	}
+
+	public void setInstructedAmount(BigDecimal instructedAmount)
+	{
+		this.instructedAmount = instructedAmount;
+	}
+
+	public String getChargersAgentId()
+	{
+		return this.chargersAgentId;
+	}
+
+	public void setChargersAgentId(String chargersAgentId)
+	{
+		this.chargersAgentId = chargersAgentId;
+	}
+
+	public String getChargersAgentBic()
+	{
+		return this.chargersAgentBic;
+	}
+
+	public void setChargersAgentBic(String chargersAgentBic)
+	{
+		this.chargersAgentBic = chargersAgentBic;
+	}
+
+	public String getChargersCurrency()
+	{
+		return this.chargersCurrency;
+	}
+
+	public void setChargersCurrency(String chargersCurrency)
+	{
+		this.chargersCurrency = chargersCurrency;
+	}
+
+	public BigDecimal getChargersAmount()
+	{
+		return this.chargersAmount;
+	}
+
+	public void setChargersAmount(BigDecimal chargersAmount)
+	{
+		this.chargersAmount = chargersAmount;
+	}
+
+	public String getDebtorName()
+	{
+		return this.DebtorName;
+	}
+
+	public void setDebtorName(String DebtorName)
+	{
+		this.DebtorName = DebtorName;
+	}
+
+	public String getDebtorAccountNumber()
+	{
+		return this.DebtorAccountNumber;
+	}
+
+	public void setDebtorAccountNumber(String DebtorAccountNumber)
+	{
+		this.DebtorAccountNumber = DebtorAccountNumber;
+	}
+
+	public String getDebtorAccountNumberType()
+	{
+		return this.DebtorAccountNumberType;
+	}
+
+	public void setDebtorAccountNumberType(String DebtorAccountNumberType)
+	{
+		this.DebtorAccountNumberType = DebtorAccountNumberType;
+	}
+
+	public String getDebtorAgentId()
+	{
+		return this.DebtorAgentId;
+	}
+
+	public void setDebtorAgentId(String DebtorAgentId)
+	{
+		this.DebtorAgentId = DebtorAgentId;
+	}
+
+	public String getDebtorAgentBic()
+	{
+		return this.DebtorAgentBic;
+	}
+
+	public void setDebtorAgentBic(String DebtorAgentBic)
+	{
+		this.DebtorAgentBic = DebtorAgentBic;
+	}
+
+	public String getCreditorName()
+	{
+		return this.CreditorName;
+	}
+
+	public void setCreditorName(String creditorName)
+	{
+		this.CreditorName = creditorName;
+	}
+
+	public String getCreditorAccountNumber()
+	{
+		return this.creditorAccountNumber;
+	}
+
+	public void setCreditorAccountNumber(String creditorAccountNumber)
+	{
+		this.creditorAccountNumber = creditorAccountNumber;
+	}
+
+	public String getCreditorAccountNumberType()
+	{
+		return this.creditorAccountNumberType;
+	}
+
+	public void setCreditorAccountNumberType(String creditorAccountNumberType)
+	{
+		this.creditorAccountNumberType = creditorAccountNumberType;
+	}
+
+	public String getCreditorAgentId()
+	{
+		return this.creditorAgentId;
+	}
+
+	public void setCreditorAgentId(String creditorAgentId)
+	{
+		this.creditorAgentId = creditorAgentId;
+	}
+
+	public String getCreditorAgentBic()
+	{
+		return this.creditorAgentBic;
+	}
+
+	public void setCreditorAgentBic(String creditorAgentBic)
+	{
+		this.creditorAgentBic = creditorAgentBic;
+	}
+
+	public String getPaymentPurposeType()
+	{
+		return this.paymentPurposeType;
+	}
+
+	public void setPaymentPurposeType(String paymentPurposeType)
+	{
+		this.paymentPurposeType = paymentPurposeType;
+	}
+
+	public String getPaymentPurposeCd()
+	{
+		return this.paymentPurposeCd;
+	}
+
+	public void setPaymentPurposeCd(String paymentPurposeCd)
+	{
+		this.paymentPurposeCd = paymentPurposeCd;
+	}
+
+	public String getPaymentPurposeProprietary()
+	{
+		return this.paymentPurposeProprietary;
+	}
+
+	public void setPaymentPurposeProprietary(String paymentPurposeProprietary)
+	{
+		this.paymentPurposeProprietary = paymentPurposeProprietary;
+	}
+
+	public String getRemittanceInformation()
+	{
+		return this.remittanceInformation;
+	}
+
+	public void setRemittanceInformation(String remittanceInformation)
+	{
+		this.remittanceInformation = remittanceInformation;
+	}
+
+
+	public String getDebtorContPhone()
+	{
+		return DebtorContPhone;
+	}
+
+	public void setDebtorContPhone(String DebtorContPhone)
+	{
+		this.DebtorContPhone = DebtorContPhone;
+	}
+
+	public String getDebtorContEmailAddr()
+	{
+		return DebtorContEmailAddr;
+	}
+
+	public void setDebtorContEmailAddr(String DebtorContEmailAddr)
+	{
+		this.DebtorContEmailAddr = DebtorContEmailAddr;
+	}
+
+	public String getCreditorContPhone()
+	{
+		return CreditorContPhone;
+	}
+
+	public void setCreditorContPhone(String CreditorContPhone)
+	{
+		this.CreditorContPhone = CreditorContPhone;
+	}
+
+	public String getCreditorContEmailAddr()
+	{
+		return CreditorContEmailAddr;
+	}
+
+	public void setCreditorContEmailAddr(String CreditorContEmailAddr)
+	{
+		this.CreditorContEmailAddr = CreditorContEmailAddr;
+	}
+
+	public String getSrvcMode()
+	{
+		return SrvcMode;
+	}
+
+	public void setSrvcMode(String srvcMode)
+	{
+		SrvcMode = srvcMode;
+	}
+
+	public String getDebtorOrgIdAnyBIC()
+	{
+		return DebtorOrgIdAnyBIC;
+	}
+
+	public void setDebtorOrgIdAnyBIC(String DebtorOrgIdAnyBIC)
+	{
+		this.DebtorOrgIdAnyBIC = DebtorOrgIdAnyBIC;
+	}
+
+	public String getDebtorOrgIdOthrId()
+	{
+		return DebtorOrgIdOthrId;
+	}
+
+	public void setDebtorOrgIdOthrId(String DebtorOrgIdOthrId)
+	{
+		this.DebtorOrgIdOthrId = DebtorOrgIdOthrId;
+	}
+
+	public String getDebtorOrgIdOthrIdSchmeNm()
+	{
+		return DebtorOrgIdOthrIdSchmeNm;
+	}
+
+	public void setDebtorOrgIdOthrIdSchmeNm(String DebtorOrgIdOthrIdSchmeNm)
+	{
+		this.DebtorOrgIdOthrIdSchmeNm = DebtorOrgIdOthrIdSchmeNm;
+	}
+
+	public String getDebtorOrgIdOthrIssr()
+	{
+		return DebtorOrgIdOthrIssr;
+	}
+
+	public void setDebtorOrgIdOthrIssr(String DebtorOrgIdOthrIssr)
+	{
+		this.DebtorOrgIdOthrIssr = DebtorOrgIdOthrIssr;
+	}
+
+	public String getDebtorPrvtIdOthrId()
+	{
+		return DebtorPrvtIdOthrId;
+	}
+
+	public void setDebtorPrvtIdOthrId(String DebtorPrvtIdOthrId)
+	{
+		this.DebtorPrvtIdOthrId = DebtorPrvtIdOthrId;
+	}
+
+	public String getDebtorPrvtIdOthrIdSchmeNm()
+	{
+		return DebtorPrvtIdOthrIdSchmeNm;
+	}
+
+	public void setDebtorPrvtIdOthrIdSchmeNm(String DebtorPrvtIdOthrIdSchmeNm)
+	{
+		this.DebtorPrvtIdOthrIdSchmeNm = DebtorPrvtIdOthrIdSchmeNm;
+	}
+
+	public String getDebtorPrvtIdOthrIssr()
+	{
+		return DebtorPrvtIdOthrIssr;
+	}
+
+	public void setDebtorPrvtIdOthrIssr(String DebtorPrvtIdOthrIssr)
+	{
+		this.DebtorPrvtIdOthrIssr = DebtorPrvtIdOthrIssr;
+	}
+
+	public String getCreditorOrgIdAnyBIC()
+	{
+		return CreditorOrgIdAnyBIC;
+	}
+
+	public void setCreditorOrgIdAnyBIC(String CreditorOrgIdAnyBIC)
+	{
+		this.CreditorOrgIdAnyBIC = CreditorOrgIdAnyBIC;
+	}
+
+	public String getCreditorOrgIdOthrId()
+	{
+		return CreditorOrgIdOthrId;
+	}
+
+	public void setCreditorOrgIdOthrId(String CreditorOrgIdOthrId)
+	{
+		this.CreditorOrgIdOthrId = CreditorOrgIdOthrId;
+	}
+
+	public String getCreditorOrgIdOthrIdSchmeNm()
+	{
+		return CreditorOrgIdOthrIdSchmeNm;
+	}
+
+	public void setCreditorOrgIdOthrIdSchmeNm(String CreditorOrgIdOthrIdSchmeNm)
+	{
+		this.CreditorOrgIdOthrIdSchmeNm = CreditorOrgIdOthrIdSchmeNm;
+	}
+
+	public String getCreditorOrgIdOthrIssr()
+	{
+		return CreditorOrgIdOthrIssr;
+	}
+
+	public void setCreditorOrgIdOthrIssr(String CreditorOrgIdOthrIssr)
+	{
+		this.CreditorOrgIdOthrIssr = CreditorOrgIdOthrIssr;
+	}
+
+	public String getCreditorPrvtIdOthrId()
+	{
+		return CreditorPrvtIdOthrId;
+	}
+
+	public void setCreditorPrvtIdOthrId(String CreditorPrvtIdOthrId)
+	{
+		this.CreditorPrvtIdOthrId = CreditorPrvtIdOthrId;
+	}
+
+	public String getCreditorPrvtIdOthrIdSchmeNm()
+	{
+		return CreditorPrvtIdOthrIdSchmeNm;
+	}
+
+	public void setCreditorPrvtIdOthrIdSchmeNm(String CreditorPrvtIdOthrIdSchmeNm)
+	{
+		this.CreditorPrvtIdOthrIdSchmeNm = CreditorPrvtIdOthrIdSchmeNm;
+	}
+
+	public String getCreditorPrvtIdOthrIssr()
+	{
+		return CreditorPrvtIdOthrIssr;
+	}
+
+	public void setCreditorPrvtIdOthrIssr(String CreditorPrvtIdOthrIssr)
+	{
+		this.CreditorPrvtIdOthrIssr = CreditorPrvtIdOthrIssr;
+	}
+
+}

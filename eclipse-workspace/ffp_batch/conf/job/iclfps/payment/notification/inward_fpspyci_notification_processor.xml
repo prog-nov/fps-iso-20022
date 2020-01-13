@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>INWARD_FPSPYCI_YAMENT_NOTIFICATION</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>PROCESS DATA</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.iclfps.payment.notification.PaymentInwardNotificationProcessor</processor>
+		</action>
+	 </action-flow>
+</job-config>

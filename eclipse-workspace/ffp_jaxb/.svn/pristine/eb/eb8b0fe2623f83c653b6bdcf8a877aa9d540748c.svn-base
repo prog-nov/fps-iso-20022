@@ -1,0 +1,116 @@
+import java.io.StringReader;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+
+public class MainTestPartMsg
+{
+
+	public static void main(String[] args) throws Exception
+	{
+		StringBuffer sb = new StringBuffer();
+		sb.append("00000543");
+		sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+		sb.append("<ROOT>");
+		sb.append("<HEAD>");
+		sb.append("<RequestID>04</RequestID>");
+		sb.append("<TransactionDate>20131009</TransactionDate>");
+		sb.append("<TransactionTime>140203</TransactionTime>");
+		sb.append("<RequestRefno>000001</RequestRefno>");
+		sb.append("<AccountingDate>20131009</AccountingDate>");
+		sb.append("<SystemRefno>123456</SystemRefno>");
+		sb.append("<ResponseID>03</ResponseID>");
+		sb.append("<MessageType>FFPCTI01</MessageType>");
+		sb.append("</HEAD>");
+		sb.append("<BODY>");
+		sb.append("<SrcRefNm>2</SrcRefNm>");
+		sb.append("<AccountNO>28880623000011</AccountNO>");
+		sb.append("<Currency>HKD</Currency>");
+		sb.append("<CustomerCode></CustomerCode>");
+		sb.append("<AccountStatus>A</AccountStatus>");
+		sb.append("<DataSetKey>0</DataSetKey>");
+		sb.append("<Pages>1</Pages>");
+		sb.append("</BODY>");
+		sb.append("</ROOT>");
+
+		String s = sb.toString();
+		int leng = Integer.valueOf(s.substring(0, 8));
+		String str = sb.substring(8, leng + 8);
+		JAXBContext con = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD.class);
+//		
+		Unmarshaller unmarshaller = con.createUnmarshaller();
+//		
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		InputSource is = new InputSource();
+		is.setCharacterStream(new StringReader(str.toString()));
+		Document doc = db.parse(is);
+		
+		
+		System.out.println(doc);
+		Node headDoc = doc.getElementsByTagName("HEAD").item(0);
+		JAXBElement<HEAD> headElement = unmarshaller.unmarshal(headDoc, HEAD.class);
+		HEAD head = headElement.getValue();
+		System.out.println(head);
+//		
+		Node bodyDoc = doc.getElementsByTagName("BODY").item(0);
+		String packageName = "com.forms.ffp.adaptor.jaxb.participant.response." + head.getMessageType().toLowerCase();
+		con = JAXBContext.newInstance(packageName);
+		unmarshaller = con.createUnmarshaller();
+		JAXBElement<?> body = (JAXBElement<?>)unmarshaller.unmarshal(bodyDoc);
+		System.out.println(body.getValue());
+//		
+//		ROOT root = new ROOT();
+//		root.setHEAD(head);
+//		root.setBODY(body.getValue());
+//		
+//		Document doc1 = db.newDocument();
+//		doc1.setNodeValue(head);
+		
+//		JAXBContext context = JAXBContext.newInstance(HEAD.class);
+//		Marshaller marshaller = context.createMarshaller();
+//		marshaller.setProperty("jaxb.formatted.output", Boolean.valueOf(true));
+//		marshaller.setProperty("jaxb.encoding", "UTF-8");
+//		JAXBElement<HEAD> e = (new com.forms.ffp.adaptor.jaxb.participant.request.head.ObjectFactory()).createHEAD(head);
+//		StringWriter sw = new StringWriter();
+//		XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(sw);
+//		marshaller.marshal(e, new FFPCDataXMLStreamWriter(new IndentingXMLStreamWriter(xmlStreamWriter)));
+//		String xml = sw.toString();
+		
+//		com.forms.ffp.adaptor.jaxb.participant.response.ROOT rpsroot = new com.forms.ffp.adaptor.jaxb.participant.response.ROOT();
+//		com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD rphead = new com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD();
+//		rphead.setMessageType("TEST");
+//		rpsroot.setHEAD(rphead);
+//		com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01 repbody = new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01();
+//		repbody.setSrcRefNm("02");
+//		com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01.FFPADRI1 repbody = new com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01.FFPADRI1();
+//		repbody.setAdrReqId("02");;
+//		rpsroot.setBODY(repbody);
+		
+//		JAXBContext context = JAXBContext.newInstance("com.forms.ffp.adaptor.jaxb.participant.response:com.forms.ffp.adaptor.jaxb.participant.response.head:com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01:com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01");
+//		JAXBContext context = JAXBContext.newInstance("com.forms.ffp.adaptor.jaxb.participant.response");
+		
+//		Marshaller marshaller = context.createMarshaller();
+//		marshaller.setProperty("jaxb.formatted.output", Boolean.valueOf(true));
+//		marshaller.setProperty("jaxb.encoding", "UTF-8");
+//		marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+//		JAXBElement<ROOT> e = (new com.forms.ffp.adaptor.jaxb.participant.response.ObjectFactory()).createROOT(rpsroot);
+//		StringWriter sw = new StringWriter();
+//		XMLStreamWriter xmlStreamWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(sw);
+//		marshaller.marshal(e, new FFPCDataXMLStreamWriter(new IndentingXMLStreamWriter(xmlStreamWriter)));
+//		String xml = sw.toString();
+		
+//		System.out.println(xml);
+		
+	}
+
+}

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.menulocale.dao.IMenuLocaleDao">
+
+	<resultMap id="BfMenuBean" type="com.forms.beneform4j.webapp.systemmanage.menulocale.bean.BfMenuBean">
+		<id column="MENU_ID" property="menuId" jdbcType="INTEGER" />
+		<collection property="localeMenus" columnPrefix="LOCALE" ofType="com.forms.beneform4j.webapp.systemmanage.menulocale.bean.BfMenuLocaleBean" />
+	</resultMap>
+
+	<select id="dListLocaleBean" resultType="com.forms.beneform4j.webapp.systemmanage.menulocale.bean.BfLocaleBean">
+		SELECT DATA_CODE AS LOCALE
+		     , DATA_TEXT AS LOCALE_NAME
+		 FROM BF_PARAM_ENUM_DATA
+		WHERE PARAM_CODE = 'USER_LOCALE'
+		ORDER BY SEQNO
+	</select>
+
+	<select id="dLoadChildren" resultMap="BfMenuBean">
+		 SELECT M.MENU_ID
+	     	  , M.MENU_NAME
+			  , M.PARENT_MENU_ID
+			  , (SELECT COUNT(1) FROM  BF_MENU  M2  WHERE  M2.MENU_FLAG = '0' AND M2.PARENT_MENU_ID = M.MENU_ID) AS COUNT
+			  , L.MENU_ID AS LOCALE_MENU_ID
+			  , L.LOCALE AS LOCALE_LOCALE 
+			  , L.MENU_NAME AS LOCALE_MENU_NAME
+			  , L.DES AS LOCALE_DES 
+		   FROM BF_MENU M
+	       LEFT JOIN BF_MENU_I18N L
+	         ON M.MENU_ID = L.MENU_ID
+	      WHERE M.MENU_FLAG = '0'
+	        AND M.PARENT_MENU_ID = #{menuId, jdbcType=INTEGER}
+	      ORDER BY M.SEQNO
+	</select>
+	
+	
+	<delete id="dDeleteMenuLocale">
+		<!--   DELETE FROM BF_MENU_I18N WHERE MENU_ID = #{menuId, jdbcType=INTEGER} -->
+		
+		
+			DELETE FROM BF_MENU_I18N WHERE MENU_ID IN (
+			<foreach item="menus" collection="menus" separator=",">
+				#{menus.menuId, jdbcType=INTEGER}
+			</foreach>
+			)
+		
+	</delete>
+	<insert id="dInsertMenuLocale">
+		 INSERT INTO BF_MENU_I18N(MENU_ID,LOCALE,MENU_NAME,DES)
+			 VALUES(#{menu.menuId, jdbcType=INTEGER}, 
+			 		#{menu.locale, jdbcType=VARCHAR}, 
+			 		#{menu.menuName, jdbcType=VARCHAR}, 
+			 		#{menu.des, jdbcType=VARCHAR}) 	 
+	</insert>
+</mapper>

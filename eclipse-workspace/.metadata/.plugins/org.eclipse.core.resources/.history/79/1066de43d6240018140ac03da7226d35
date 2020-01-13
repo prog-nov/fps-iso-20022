@@ -1,0 +1,1085 @@
+package com.forms.batch.job.inward;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.forms.batch.util.FFPBatchUtil;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.BatchInformation;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.BusinessApplicationHeaderV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.BranchAndFinancialInstitutionIdentification51;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CashAccount241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CreditTransferTransaction251;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.GenericOrganisationIdentification11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.GenericPersonIdentification11;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf.CdtrOrgIdOth;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf.CdtrPrvtIdOth;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf.ChargeInfo;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf.DbtrOrgIdOth;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVO_Pacs008_CdtTrfTxInf.DbtrPrvtIdOth;
+import com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgVo_Pacs008;
+import com.forms.ffp.core.exception.FFPDBException;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPTcpParticipantMessageConverter;
+import com.forms.ffp.core.msg.participant.busi.FFP_CTI01_OVO;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+
+public class InwardBatchFileProcessor extends BatchBaseJob
+{
+	private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName, InwardBatchFileProcessor.class);
+	private static SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+	private static SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+	private static int BATCH_SIZE = 500;
+	private String filePath = null;
+	private Date _batchDate = null;
+	
+	private static String MESSAGE_TYPE_PACS_008_001_06 = "pacs.008.001.06";
+	//private static String MESSAGE_TYPE_PACS_004_001_07 = "pacs.004.001.07";
+	//private static String MESSAGE_TYPE_CAMT_054_001_06 = "camt.054.001.06";
+	
+	public enum CREDIT_STATUS
+	{
+		APPST, ACCP, INWARD_INITATE, INWARD_ERROR, INWARD_FINISH;
+		
+		public String getCode()
+		{
+			switch(this)
+			{
+				case APPST:
+					return "APPST";
+				case ACCP:
+					return "ACCP";
+				case INWARD_INITATE:
+					return "I";
+				case INWARD_ERROR:
+					return "E";
+				case INWARD_FINISH:
+					return "F";
+			}
+			throw new RuntimeException(String.format("STATUS[%s] IS NOT VALID", this.name()));
+		}
+	}
+	
+	public void init()
+	{
+		filePath = "C:\\Users\\user\\Desktop\\test";
+		_batchDate = new Date();
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		return false;
+	}
+	
+	public void processor(Map<String, List<ISO20022BusinessDataV01>> busiDataMap)
+	{
+		_logger.info("Started processor inward batch file");
+		
+		//List<com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document> pacs008list = new ArrayList<com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document>();
+		FFPAdaptorMgr ffpMgr = FFPAdaptorMgr.getInstance();
+		Iterator<String> fileKeyInfoItr = busiDataMap.keySet().iterator();
+		boolean allValidFileData = true;
+		
+		Connection con = null;
+		String batchId = null;//each batch time have the same batch id in all batch files
+		
+		try
+		{
+			con = getConnection();
+			
+			skipProcess:while(fileKeyInfoItr.hasNext())
+			{
+				String fileKeyInfo = fileKeyInfoItr.next();
+				
+				String fileName = fileKeyInfo.substring(0, fileKeyInfo.lastIndexOf("-"));
+				if(batchId == null) batchId = fileKeyInfo.substring(fileKeyInfo.lastIndexOf("-") + 1);
+				List<ISO20022BusinessDataV01> busiData = busiDataMap.get(fileKeyInfo);
+				
+				for(ISO20022BusinessDataV01 data : busiData)
+				{
+					try
+					{
+						BusinessApplicationHeaderV01 head = (BusinessApplicationHeaderV01)data.getContent().get(0).getValue();
+						String messageType = head.getMsgDefIdr();
+						//pacs.008.001.06
+						if(MESSAGE_TYPE_PACS_008_001_06.compareTo(messageType) == 0) 
+						{
+							com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document doc008 = 
+													(com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document)data.getContent().get(1).getValue();
+							
+							//pacs008list.add(doc008);
+							
+							//4.parse xml
+							FFPMsgVo_Pacs008 pacs008 = parse008(doc008);
+							
+							//5.persistent in temp table
+							//savePacs008Data(pacs008, pacs008MsgMap);
+							persistentFileData(con, pacs008, fileName, batchId);
+						}
+					}
+					catch(Exception ex)
+					{
+						//if some data of inward file cann't persistent in DB, then stop and re-run
+						_logger.error("Process file data error", ex);
+						allValidFileData = false;
+						break skipProcess;
+					}
+				}
+			}
+			
+			
+			
+			if(allValidFileData)
+			{
+				Map<String, FFPJbP100> p100DataMap = new HashMap<String, FFPJbP100>();
+				List<FFPJbP100> FFPJbP100List = getData(con, batchId);
+				//6.persistent inward credit transfer data to transaction table
+				savePacs008Data(con, FFPJbP100List, p100DataMap);
+				
+				//7.Send data to Participant----Synchronous
+				Iterator<String> ffpJnlNoIt = p100DataMap.keySet().iterator();
+				while(ffpJnlNoIt.hasNext())
+				{
+					String ffpJnlNo = ffpJnlNoIt.next();
+					FFPJbP100 singlePacs008TxInfo = p100DataMap.get(ffpJnlNo);
+					String ffpRequestMessage = generateMsgToAgent(ffpJnlNo, singlePacs008TxInfo);
+					
+					_logger.info(String.format("FFP to Agent request message: %s", ffpRequestMessage));
+					
+					FFP_CTI01_OVO reply = null;
+					//retry three times for FFP Agent response
+					int retryCount = 0;
+					while(retryCount++ < 3)
+					{
+						try
+						{
+							reply = ffpMgr.sendTcpMsg(ffpRequestMessage);//send list message?
+							if(reply != null)
+							{
+								break;
+							}
+						}
+						catch(Exception ex)
+						{
+							_logger.info(String.format("Call FFP Agent fail.[%s]. Retry count[%s]", ex.getMessage(), retryCount));
+						}
+					}
+					
+					//8.Synchronously update FFP DB status according to the response message
+					if(reply != null)
+					{
+						_logger.info(String.format("Update FFP credit transfer status from FFP Agent with source reference number[%s]", reply.getSrcRefNm()));
+						
+						updateResultSts(con, "", reply.getSrcRefNm());
+					}
+					else
+					{
+						_logger.info(String.format("Update FFP credit transfer status not with response message from Agent by FFP tx_jnl[%s]", ffpJnlNo));
+						updateResultSts(con, "", ffpJnlNo);
+					}
+				}
+			}
+			else
+			{
+				_logger.info(" Write Inward batch file data had error, please check!");
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			_logger.error("Process inward file error", e);
+		}
+		finally
+		{
+			//close connection
+		}
+	}
+	
+	private void updateResultSts(Connection con, String status, String refNum)
+	{
+		String sql = "UPDATE TB_TX_JNL SET TX_STAT = ?, LAST_UPDATE_TS = ? WHERE JNL_NO = ?";
+		PreparedStatement pstm = null;
+		try
+		{
+			pstm = con.prepareStatement(sql);
+			pstm.setString(1, status);
+			pstm.setTimestamp(2, new java.sql.Timestamp(new Date().getTime()));
+			pstm.setString(3, refNum);
+			
+			pstm.executeUpdate();
+		}
+		catch(Exception ex)
+		{
+			_logger.error(String.format("Update status[%s] with source reference number[%s] failed", status, refNum), ex);
+		}
+	}
+	//query pacs008 data form temp table, according to batch_id for each batch times
+	public List<FFPJbP100> getData(Connection con, String batchId) throws FFPDBException
+	{
+		String sql = "SELECT * FROM TB_INWARD_DATA WHERE BATCH_ID = ? AND MSG_INST_DATE = ?";
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		List<FFPJbP100> list = new ArrayList<FFPJbP100>();
+		try
+		{
+			pstm = con.prepareStatement(sql);
+			pstm.setString(1, batchId);
+			pstm.setDate(2, new java.sql.Date(_batchDate.getTime()));
+			
+			rs = pstm.executeQuery();
+			while(rs.next())
+			{
+				FFPJbP100 ctInfo = new FFPJbP100();
+				FFPTxJnl txJnl = new FFPTxJnl();
+				txJnl.setTransactionId(rs.getString("TRANSACTION_ID"));
+				txJnl.setEndToEndId(rs.getString("END_TO_END_ID"));
+				
+				ctInfo.setTxJnl(txJnl);
+				ctInfo.setSrcRefNm(rs.getString("ID"));//just use this field to save temporary id
+				ctInfo.setPymtCatPrps(rs.getString("CATEGORY_PURPOSE"));
+				ctInfo.setAccountVerification(rs.getString("ACCT_VERF"));
+				ctInfo.setSettlementAmount(new BigDecimal(rs.getString("SETTLEMENT_AMT")));
+				ctInfo.setSettlementCurrency(rs.getString("SETTLEMENT_CUR"));
+				ctInfo.setSettlementDate(rs.getDate("SETTLEMETN_DATE"));
+				ctInfo.setInstructedCurrency(rs.getString("INSTRUCTED_CUR"));
+				ctInfo.setInstructedAmount(rs.getString("INSTRUCT_AMT") != null ? new BigDecimal(rs.getString("INSTRUCT_AMT")) : null);
+				ctInfo.setChargersAgentId(rs.getString("CHG_AGT_ID"));
+				ctInfo.setChargersAgentBic(rs.getString("CHG_AGT_BIC"));
+				ctInfo.setChargersCurrency(rs.getString("CHG_CUR"));
+				ctInfo.setChargersAmount(rs.getString("CHG_AMT") != null ? new BigDecimal(rs.getString("CHG_AMT")) : null);
+				ctInfo.setDebtorName(rs.getString("DEBTOR_NAME"));
+				ctInfo.setDebtorAccountNumber(rs.getString("DEBTOR_ACCTNO"));
+				ctInfo.setDebtorAccountNumberType(rs.getString("DEBTOR_ACCTNO_TYPE"));
+				ctInfo.setDebtorAgentId(rs.getString("DEBTOR_AGT_ID"));
+				ctInfo.setDebtorAgentBic(rs.getString("DEBTOR_AGT_BIC"));
+				ctInfo.setCreditorName(rs.getString("CREDITOR_NAME"));
+				ctInfo.setCreditorAccountNumber(rs.getString("CREDITOR_ACCTNO"));
+				ctInfo.setCreditorAccountNumberType(rs.getString("CREDITOR_ACCTNO_TYPE"));
+				ctInfo.setCreditorAgentId(rs.getString("CREDITOR_AGT_ID"));
+				ctInfo.setCreditorAgentBic(rs.getString("CREDITOR_AGT_BIC"));
+				ctInfo.setPaymentPurposeType(rs.getString("PURPOSE_TYPE"));
+				ctInfo.setPaymentPurposeCd(rs.getString("PURPOSE_CODE"));
+				ctInfo.setPaymentPurposeProprietary(rs.getString("PURPOSE_OTHER"));
+				ctInfo.setRemittanceInformation(rs.getString("REMIT_INFO"));
+				
+				list.add(ctInfo);
+			}
+		}
+		catch(Exception ex)
+		{
+			throw new FFPDBException(String.format("Failed to get file data from temporary table with batchId[%s]", batchId), ex);
+		}
+		finally
+		{
+			if(rs != null)
+			{
+				try {
+					rs.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			if(pstm != null)
+			{
+				try {
+					pstm.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return list;
+	}
+	
+	//save file datas to temp table for re-run while exception
+	public void persistentFileData(Connection con, FFPMsgVo_Pacs008 pacs008, String fileName, String batchId) throws FFPDBException
+	{
+		String sql = "INSERT INTO TB_INWARD_DATA(BATCH_ID, STATUS, FILE_NAME, TRANSACTION_ID, END_TO_END_ID, FPS_REF, INSTRUCTION_ID, CATEGORY_PURPOSE, "
+				+ "ACCT_VERF, SETTLEMENT_CUR, SETTLEMENT_AMT, SETTLEMETN_DATE, INSTRUCTED_CUR, INSTRUCT_AMT, CHG_AGT_ID, CHG_AGT_BIC, CHG_CUR, CHG_AMT, "
+				+ "DEBTOR_NAME, DEBTOR_ACCTNO, DEBTOR_ACCTNO_TYPE, DEBTOR_AGT_ID, DEBTOR_AGT_BIC, CREDITOR_NAME, CREDITOR_ACCTNO, CREDITOR_ACCTNO_TYPE,"
+				+ "CREDITOR_AGT_ID, CREDITOR_AGT_BIC, PURPOSE_TYPE, PURPOSE_CODE, PURPOSE_OTHER, REMIT_INFO, MSG_INST_DATE, LAST_MODI_DATE) VALUES (?,?,?,?,?,?,?,"
+				+ "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		PreparedStatement pstm = null;
+		try
+		{
+			List<FFPMsgVO_Pacs008_CdtTrfTxInf> txInfList = pacs008.getCdtTrfTxInfList();
+			if(txInfList != null && txInfList.size() > 0)
+			{
+				pstm = con.prepareStatement(sql);
+				con.setAutoCommit(false);
+				int count = 0;
+				for(FFPMsgVO_Pacs008_CdtTrfTxInf txInf : txInfList)
+				{
+					count ++;
+					pstm.setString(1, batchId);
+					pstm.setString(2, CREDIT_STATUS.INWARD_INITATE.getCode());
+					pstm.setString(3, fileName);
+					pstm.setString(4, txInf.getTxId());
+					pstm.setString(5, txInf.getEndToEndId());
+					pstm.setString(6, txInf.getClrSysRef());
+					pstm.setString(7, txInf.getInstrId());//Instruction ID
+					
+					pstm.setString(8, txInf.getCtgyPurp());
+					pstm.setString(9, txInf.getLclInstrm());
+					pstm.setString(10, txInf.getIntrBkSttlmAmtCcy());
+					pstm.setString(11, txInf.getIntrBkSttlmAmt());
+					pstm.setTimestamp(12, new java.sql.Timestamp(new Date().getTime()));//settlement date
+					pstm.setString(13, txInf.getInstdAmtCcy());
+					pstm.setString(14, txInf.getInstdAmt());
+					pstm.setString(15, null);		//charge info
+					pstm.setString(16, null);
+					pstm.setString(17, null);
+					pstm.setString(18, null);
+					pstm.setString(19, txInf.getDbtrNm());
+					pstm.setString(20, txInf.getDbtrAcctId());
+					pstm.setString(21, txInf.getDbtrAccSchmeNm());
+					pstm.setString(22, txInf.getDbtrAgClrSysMmbId());//
+					pstm.setString(23, txInf.getDbtrAgBICFI());
+					pstm.setString(24, txInf.getCdtrNm());
+					pstm.setString(25, txInf.getCdtrAcctId());
+					pstm.setString(26, txInf.getCdtrAcctSchmeNm());
+					pstm.setString(27, txInf.getCdtrAgtClrSysMmbId());
+					pstm.setString(28, txInf.getCdtrAgtBICFI());
+					pstm.setString(29, null); //type
+					pstm.setString(30, txInf.getPurpCd());
+					pstm.setString(31, txInf.getPurpPrtry());
+					pstm.setString(32, null);		//remittance info
+					pstm.setDate(33, new java.sql.Date(new Date().getTime()));
+					pstm.setTimestamp(34, new java.sql.Timestamp(new Date().getTime()));
+					
+					pstm.addBatch();
+					
+					if(count % BATCH_SIZE == 0)
+					{
+						pstm.executeBatch();
+						pstm.clearBatch();
+					}
+				}
+				pstm.executeBatch();
+				
+				con.commit();
+				con.setAutoCommit(true);
+			}
+		}
+		catch(Exception ex)
+		{
+			try {
+				con.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			throw new FFPDBException(String.format("Temporarily persistent batch file[%s] data error", fileName), ex);
+		}
+		finally
+		{
+			if(pstm != null)
+			{
+				try {
+					pstm.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	//Generate CTI01 request message
+	public String generateMsgToAgent(String jnl_no, FFPJbP100 txInfo)
+	{
+		String message = null;
+		ROOT root = new ROOT();
+			
+		HEAD head = new HEAD();
+			
+		head.setRequestID("03");
+		head.setTransactionDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setRequestRefno(jnl_no);//
+		head.setAccountingDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+			
+		root.setHEAD(head);
+			
+		FFPCTI01 body = new FFPCTI01();
+		body.setSrcRefNm(jnl_no);//
+		body.setSettlDate(txInfo.getSettlementDate() != null ? format1.format(txInfo.getSettlementDate()) : null);//NullPointerException
+		body.setSettlAmt(txInfo.getSettlementAmount());
+		body.setSettlCcy(txInfo.getSettlementCurrency());
+			
+		body.setCdtrNm(txInfo.getCreditorName());
+		body.setCdtrAcTp(txInfo.getCreditorAccountNumberType());
+		body.setCdtrAcNo(txInfo.getCreditorAccountNumber());
+		body.setCdtrContPhone(txInfo.getCdtrContPhone());
+		body.setCdtrContEmailAddr(txInfo.getCdtrContEmailAddr());
+		body.setPytPurp(txInfo.getPymtCatPrps());
+		body.setRemInfo(txInfo.getRemittanceInformation());
+		root.setBODY(body);
+			
+		try 
+		{
+			message = FFPTcpParticipantMessageConverter.parseXml2FFPAgent(root);
+		} 
+		catch (Exception e)
+		{
+			_logger.error(String.format("Error on generating Inward credit transfer request message[FFP Credit Transfer jnl_no:%s]", jnl_no));
+			//update DB status for retry?
+			e.printStackTrace();
+		}
+	
+		return message;
+	}
+	
+	//DB config:just for test
+	public static Connection getConnection() throws Exception 
+	{
+		Properties loc_prop = new Properties();
+		loc_prop.put("databaseName", "ffp");
+		loc_prop.put("url", "jdbc:MySQL://172.21.21.198:3306/ffp");
+		loc_prop.put("driverClassName", "com.mysql.jdbc.Driver");
+		loc_prop.put("username", "clous");
+		loc_prop.put("password", "123456");
+		ConnectionManager.registerDatabase(loc_prop);
+		ConnectionManager.setDefaultDatabase("ffp");
+		ConnectionManager loc_connMgr = ConnectionManager.getInstance();
+		Connection loc_conn = loc_connMgr.getConnection();
+		return loc_conn;
+	}
+	
+	private void savePacs008Data(Connection conn, List<FFPJbP100> FFPJbP100List, Map<String, FFPJbP100> tx_p100)
+	{
+		//a. p100,generate Jnl No.
+		//b. tb_tx_jnl
+		//Map<String, FFPMsgVO_Pacs008_CdtTrfTxInf> map = new HashMap<String, FFPMsgVO_Pacs008_CdtTrfTxInf>();
+		PreparedStatement pstm = null;
+		PreparedStatement pstm2 = null;
+		PreparedStatement pstm3 = null;
+		try 
+		{
+			conn.setAutoCommit(false);
+			//Insert
+			String jnl_sql = "INSERT INTO TB_TX_JNL VALUES (?, ?, ?, ?, ?, ?, ?)";
+			String p100_sql = "INSERT INTO TB_TX_P100DAT VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String inward_sql = "UPDATE TB_INWARD_DATA SET STATUS = ?, LAST_MODI_DATE = ? WHERE ID = ?";
+			pstm = conn.prepareStatement(jnl_sql);
+			pstm2 = conn.prepareStatement(p100_sql);
+			pstm3 = conn.prepareStatement(inward_sql);	
+			//List<FFPMsgVO_Pacs008_CdtTrfTxInf> txInfList = pacs008.getCdtTrfTxInfList();
+			int count = 0;
+			for(FFPJbP100 txInf : FFPJbP100List)
+			{
+				count ++;
+				String jnl_no = FFPBatchUtil.generateJnlNo();
+				FFPTxJnl txJnl = txInf.getTxJnl();	
+				tx_p100.put(jnl_no, txInf);
+				pstm.setString(1, jnl_no);//generate FFP->FFP Agent Jnl_no
+				pstm.setString(2, CREDIT_STATUS.APPST.getCode());
+				pstm.setString(3, "FFP");
+				pstm.setString(4, txJnl.getTransactionId());
+				pstm.setString(5, txJnl.getEndToEndId());
+				pstm.setTimestamp(6, new java.sql.Timestamp(new Date().getTime()));
+				pstm.setTimestamp(7, new java.sql.Timestamp(new Date().getTime()));
+				pstm.addBatch();
+						
+				pstm2.setString(1, jnl_no);
+				pstm2.setString(2, txInf.getPymtCatPrps());
+				pstm2.setString(3, txInf.getAccountVerification());
+				pstm2.setString(4, txInf.getSettlementCurrency());
+				pstm2.setString(5, String.valueOf(txInf.getSettlementAmount()));
+				pstm2.setTimestamp(6, new java.sql.Timestamp(txInf.getSettlementDate().getTime()));
+				pstm2.setString(7, txInf.getInstructedCurrency());
+				pstm2.setString(8, String.valueOf(txInf.getInstructedAmount()));
+				pstm2.setString(9, null);		//charge info
+				pstm2.setString(10, null);
+				pstm2.setString(11, null);
+				pstm2.setString(12, null);
+				pstm2.setString(13, txInf.getDebtorName());
+				pstm2.setString(14, txInf.getDebtorAccountNumber());
+				pstm2.setString(15, txInf.getDebtorAccountNumberType());
+				pstm2.setString(16, txInf.getDebtorAgentId());//
+				pstm2.setString(17, txInf.getDebtorAgentBic());
+				pstm2.setString(18, txInf.getCreditorName());
+				pstm2.setString(19, txInf.getCreditorAccountNumber());
+				pstm2.setString(20, txInf.getCreditorAccountNumberType());
+				pstm2.setString(21, txInf.getCreditorAgentId());
+				pstm2.setString(22, txInf.getCreditorAgentBic());
+				pstm2.setString(23, txInf.getPaymentPurposeType());
+				pstm2.setString(24, txInf.getPaymentPurposeCd());
+				pstm2.setString(25, txInf.getPaymentPurposeProprietary());
+				pstm2.setString(26, txInf.getRemittanceInformation());		//remittance info
+						
+				pstm2.addBatch();
+						
+				if(count % BATCH_SIZE == 0)
+				{
+					pstm.executeBatch();
+					pstm.clearBatch();
+							
+					pstm2.executeBatch();
+					pstm2.clearBatch();
+				}
+			}
+					
+			pstm.executeBatch();
+			pstm2.executeBatch();
+				
+			conn.commit();
+			conn.setAutoCommit(true);
+		}
+		catch (Exception e) 
+		{
+			//map.clear();
+			e.printStackTrace();
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			//update temporary table data 
+			
+		}
+		finally
+		{
+			if(pstm != null)
+			{
+				try {
+					pstm.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+				
+			if(pstm2 != null)
+			{
+				try {
+					pstm2.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+				
+			if(conn != null)
+			{
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private FFPMsgVo_Pacs008 parse008(com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document pacs008) 
+	{
+		FFPMsgVo_Pacs008 pacs008MsgVo = new FFPMsgVo_Pacs008();
+		pacs008MsgVo.setMsgId(pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getMsgId());
+		pacs008MsgVo.setCreDtTm(pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getCreDtTm().toString());
+		String numberOfTx = pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getNbOfTxs();
+		pacs008MsgVo.setNbOfTxs(numberOfTx);
+		pacs008MsgVo.setSttlmMtd(pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getSttlmInf().getSttlmMtd().value());
+		pacs008MsgVo.setClrSys(pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getSttlmInf().getClrSys().getPrtry().value());
+		List<CreditTransferTransaction251> list = pacs008.getFIToFICstmrCdtTrf().getCdtTrfTxInf();
+		List<FFPMsgVO_Pacs008_CdtTrfTxInf> pacs008TxInf = new ArrayList<FFPMsgVO_Pacs008_CdtTrfTxInf>();
+		pacs008MsgVo.setCdtTrfTxInfList(pacs008TxInf);
+			
+		//check message number
+		if(numberOfTx.compareTo(String.valueOf(list.size())) != 0)
+		{
+			//logger
+			//TBC
+		}
+			
+		for(CreditTransferTransaction251 ct251 : list)
+		{
+			FFPMsgVO_Pacs008_CdtTrfTxInf cdtTxInfo = new FFPMsgVO_Pacs008_CdtTrfTxInf();
+			pacs008TxInf.add(cdtTxInfo);
+			cdtTxInfo.setInstrId(ct251.getPmtId().getInstrId());
+			cdtTxInfo.setEndToEndId(ct251.getPmtId().getEndToEndId());
+			cdtTxInfo.setTxId(ct251.getPmtId().getTxId());
+			cdtTxInfo.setClrSysRef(ct251.getPmtId().getClrSysRef());
+			//payment type information
+			if(ct251.getPmtTpInf() != null && ct251.getPmtTpInf().getLclInstrm() != null)
+			{
+				cdtTxInfo.setLclInstrm(ct251.getPmtTpInf().getLclInstrm().getPrtry().value()); //FPS skip this verification for received mode is batch
+				if(ct251.getPmtTpInf().getCtgyPurp() != null)
+				{
+					cdtTxInfo.setCtgyPurp(ct251.getPmtTpInf().getCtgyPurp().getPrtry().value());
+				}
+			}
+				
+			cdtTxInfo.setIntrBkSttlmAmt(String.valueOf(ct251.getIntrBkSttlmAmt().getValue()));
+			cdtTxInfo.setIntrBkSttlmAmtCcy(ct251.getIntrBkSttlmAmt().getCcy().value());
+				
+			if(ct251.getIntrBkSttlmDt() != null)
+			{
+				cdtTxInfo.setIntrBkSttlmDt(ct251.getIntrBkSttlmDt().toString());
+			}
+			if(ct251.getSttlmTmIndctn() != null && ct251.getSttlmTmIndctn().getCdtDtTm() != null)
+			{
+				cdtTxInfo.setCdtDtTm(ct251.getSttlmTmIndctn().getCdtDtTm().toString());
+			}
+			if(ct251.getInstdAmt() != null)
+			{
+				cdtTxInfo.setInstdAmt(String.valueOf(ct251.getInstdAmt().getValue()));
+				cdtTxInfo.setInstdAmtCcy(ct251.getInstdAmt().getCcy().value());
+			}
+				
+			//charge info.
+			cdtTxInfo.setChrgBr(ct251.getChrgBr().value());
+			//TBC
+			if(ct251.getChrgsInf() != null)
+			{
+				ChargeInfo chrgInfo = cdtTxInfo.new ChargeInfo();
+				if(ct251.getChrgsInf().getAmt() != null)
+				{
+					chrgInfo.setChrgsInfAmt(String.valueOf(ct251.getChrgsInf().getAmt().getValue()));
+					chrgInfo.setChrgsInfCcy(ct251.getChrgsInf().getAmt().getCcy().value());
+				}
+				chrgInfo.setChrgsInfAgtBICFI(ct251.getChrgsInf().getAgt().getFinInstnId().getBICFI());
+				chrgInfo.setChrgsInfAgtClrSysId(ct251.getChrgsInf().getAgt().getFinInstnId() != null ? ct251.getChrgsInf().getAgt().getFinInstnId().getClrSysMmbId().getMmbId() : null);
+			}
+				
+			//Debtor
+			cdtTxInfo.setDbtrNm(ct251.getDbtr().getNm());
+			if(ct251.getDbtr().getId() != null)
+			{
+				if(ct251.getDbtr().getId().getOrgId().getAnyBIC() != null) cdtTxInfo.setDbtrOrgIdAnyBIC(ct251.getDbtr().getId().getOrgId().getAnyBIC());
+				GenericOrganisationIdentification11 other = ct251.getDbtr().getId().getOrgId().getOthr();
+				if(other != null) //0..*,maybe a collection
+				{
+					DbtrOrgIdOth dbtrOrgOth = cdtTxInfo.new DbtrOrgIdOth();
+					List<DbtrOrgIdOth> dbtrOrgOthList = new ArrayList<DbtrOrgIdOth>();
+					dbtrOrgOth.setDbtrOrgIdId(other.getId());
+					dbtrOrgOth.setDbtrOrgIdSchmeNm(other.getSchmeNm() != null ? other.getSchmeNm().getCd().value() : null);
+					dbtrOrgOth.setDbtrOrgIdIssr(other.getIssr() != null ? other.getIssr() : null);
+					dbtrOrgOthList.add(dbtrOrgOth);
+					cdtTxInfo.setDbtrOrgOthers(dbtrOrgOthList);
+				}
+					
+				GenericPersonIdentification11 prvtOther = ct251.getDbtr().getId().getPrvtId().getOthr();
+				if(prvtOther != null)
+				{
+					DbtrPrvtIdOth dbtrPrvtOth = cdtTxInfo.new DbtrPrvtIdOth();
+					List<DbtrPrvtIdOth> dbtrPrvtOthList = new ArrayList<DbtrPrvtIdOth>();
+					dbtrPrvtOth.setDbtrPrvtIdId(prvtOther.getId());
+					dbtrPrvtOth.setDbtrPrvtIdSchmeNm(prvtOther.getSchmeNm() != null ? prvtOther.getSchmeNm().getCd().value() : null);
+					dbtrPrvtOth.setDbtrPrvtIdIssr(prvtOther.getIssr() != null ? prvtOther.getIssr() : null);
+					dbtrPrvtOthList.add(dbtrPrvtOth);
+					cdtTxInfo.setDbtrPrvtOthers(dbtrPrvtOthList);
+				}
+			}
+				
+			cdtTxInfo.setDbtrMobNb(ct251.getDbtr().getCtctDtls() != null ? ct251.getDbtr().getCtctDtls().getMobNb() : null);
+			cdtTxInfo.setDbtrEmailAdr(ct251.getDbtr().getCtctDtls() != null ? ct251.getDbtr().getCtctDtls().getEmailAdr() : null);
+				
+			//Debtor Account and Debtor Agent
+			CashAccount241 dbtAcc = ct251.getDbtrAcct();
+			BranchAndFinancialInstitutionIdentification51 dbtAgt = ct251.getDbtrAgt();
+			if(dbtAcc != null)
+			{
+				cdtTxInfo.setDbtrAcctId(dbtAcc.getId().getOthr().getId());
+				cdtTxInfo.setDbtrAccSchmeNm(dbtAcc.getId().getOthr().getSchmeNm() != null ? dbtAcc.getId().getOthr().getSchmeNm().getPrtry().value() : null);
+			}
+				
+			if(dbtAgt != null)
+			{
+				cdtTxInfo.setDbtrAgBICFI(dbtAgt.getFinInstnId().getBICFI());
+				cdtTxInfo.setDbtrAgClrSysMmbId(dbtAgt.getFinInstnId().getClrSysMmbId() != null ? dbtAgt.getFinInstnId().getClrSysMmbId().getMmbId() : null);
+			}
+				
+			//Creditor Agent
+			BranchAndFinancialInstitutionIdentification51 cdtrAgt = ct251.getCdtrAgt();
+			if(cdtrAgt != null)
+			{
+				cdtTxInfo.setCdtrAgtBICFI(cdtrAgt.getFinInstnId().getBICFI());
+				cdtTxInfo.setCdtrAgtClrSysMmbId(cdtrAgt.getFinInstnId().getClrSysMmbId() != null ? cdtrAgt.getFinInstnId().getClrSysMmbId().getMmbId() : null);
+			}
+			//Creditor
+			cdtTxInfo.setCdtrNm(ct251.getCdtr().getNm());
+			if(ct251.getCdtr().getId() != null)
+			{
+				cdtTxInfo.setCdtrOrgIdAnyBIC(ct251.getCdtr().getId().getOrgId().getAnyBIC());
+				GenericOrganisationIdentification11 other = ct251.getCdtr().getId().getOrgId().getOthr();
+				if(other != null) //0..*,maybe a collection
+				{
+					CdtrOrgIdOth cdtrOrgOth = cdtTxInfo.new CdtrOrgIdOth();
+					List<CdtrOrgIdOth> cdtrOrgOthList = new ArrayList<CdtrOrgIdOth>();
+					cdtrOrgOth.setCdtrOrgIdId(other.getId());
+					cdtrOrgOth.setCdtrOrgIdSchmeNm(other.getSchmeNm() != null ? other.getSchmeNm().getCd().value() : null);
+					cdtrOrgOth.setCdtrOrgIdIssr(other.getIssr() != null ? other.getIssr() : null);
+					cdtrOrgOthList.add(cdtrOrgOth);
+					cdtTxInfo.setCdtrOrgOthers(cdtrOrgOthList);
+				}
+					
+				GenericPersonIdentification11 prvtOther = ct251.getCdtr().getId().getPrvtId().getOthr();
+				if(prvtOther != null)
+				{
+					CdtrPrvtIdOth cdtrPrvtOth = cdtTxInfo.new CdtrPrvtIdOth();
+					List<CdtrPrvtIdOth> cdtrPrvtOthList = new ArrayList<CdtrPrvtIdOth>();
+					cdtrPrvtOth.setCdtrPrvtIdId(prvtOther.getId());
+					cdtrPrvtOth.setCdtrPrvtIdSchmeNm(prvtOther.getSchmeNm() != null ? prvtOther.getSchmeNm().getCd().value() : null);
+					cdtrPrvtOth.setCdtrPrvtIdIssr(prvtOther.getIssr() != null ? prvtOther.getIssr() : null);
+					cdtrPrvtOthList.add(cdtrPrvtOth);
+					cdtTxInfo.setCdtrPrvtOthers(cdtrPrvtOthList);
+				}
+			}
+				
+			cdtTxInfo.setCdtrMobNb(ct251.getCdtr().getCtctDtls() != null ? ct251.getCdtr().getCtctDtls().getMobNb() : null);
+			cdtTxInfo.setCdtrEmailAdr(ct251.getCdtr().getCtctDtls() != null ? ct251.getCdtr().getCtctDtls().getEmailAdr() : null);
+				
+			//Creditor Account
+			CashAccount241 cbtrAcc = ct251.getCdtrAcct();
+			if(cbtrAcc != null)
+			{
+				cdtTxInfo.setCdtrAcctId(cbtrAcc.getId().getOthr().getId());
+				cdtTxInfo.setCdtrAcctSchmeNm(cbtrAcc.getId().getOthr().getSchmeNm() !=null ? cbtrAcc.getId().getOthr().getSchmeNm().getPrtry().value() : null);
+			}
+				
+			//purpose
+			if(ct251.getPurp() != null)
+			{
+				cdtTxInfo.setPurpCd(ct251.getPurp().getCd());
+				cdtTxInfo.setPurpPrtry(ct251.getPurp().getPrtry());
+			}
+				
+			//Remittance information
+			if(ct251.getRmtInf() != null)
+			{
+				List<String> rmtList = new ArrayList<String>();
+				rmtList.add(ct251.getRmtInf().getUstrd());
+				cdtTxInfo.setRmtInf(rmtList);
+			}
+		}
+			
+		return pacs008MsgVo;
+	}
+	
+	private Map<String, List<ISO20022BusinessDataV01>> readFile(File file)
+	{
+		//fileName:FPSPYCIkkkYYYYMMDDhhmmnnnn.xml
+		//content:credit transfer(pacs008),return/refund(pacs004),notification(camt054)
+		_logger.info("Started read inward batch file");
+		
+		Map<String, List<ISO20022BusinessDataV01>> validBusData = new HashMap<String, List<ISO20022BusinessDataV01>>();
+		//pacs004
+		//camt054
+		
+		//1.Get all files in this batch time
+		File[] files = file.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File subFile) {
+				String subFileName = subFile.getName();
+				String exFileName = subFileName.substring(subFileName.lastIndexOf(".") + 1);
+				String fileDate = subFileName.substring(10, 18);
+				
+				return subFileName.startsWith("FPSPYCI") 							//compare file id
+						&& "XML".equalsIgnoreCase(exFileName) 						//compare file type
+						&& fileDate.compareTo(format.format(_batchDate)) == 0;		//compare date
+				
+			}}); 
+		
+		//2.validate number of files in this batch time
+		Map<String, FpsMessageEnvelope> validFiles = validateInwardFiles(files);
+		
+		Iterator<String> fileNameIt = validFiles.keySet().iterator();
+		while(fileNameIt.hasNext())
+		{
+			
+			String fileName = fileNameIt.next();
+			FpsMessageEnvelope xmlFileData = validFiles.get(fileName);
+			String batchId = xmlFileData.getBtchInf().getBtchId();
+			String fileName_batchId = String.format("%s-%s", fileName, batchId);
+			//3.validate message counts are correctly with each valid files
+			String msgCount = xmlFileData.getNbOfMsgs();//get BizData count of each file
+			List<ISO20022BusinessDataV01> bisDataList = xmlFileData.getFpsPylds().getBizData();
+			if(msgCount.compareTo(String.valueOf(bisDataList.size())) != 0)
+			{
+				_logger.info(String.format("The file contains invalid message counts:FileName[%s]-NoOfMsgs[%s]-ActualMegsCount[%s]", 
+													fileName, msgCount, String.valueOf(bisDataList.size())));
+			}
+			else
+			{
+				validBusData.put(fileName_batchId, bisDataList);
+			}
+		}
+		
+		_logger.info("Ended read inward batch file");
+		return validBusData;
+	}
+	
+	//Remove invalid files which batchId & numberOfFile not match with the actual number of file.
+	public Map<String, FpsMessageEnvelope> validateInwardFiles(File[] files)
+	{
+		if(files.length == 0) return new HashMap<String, FpsMessageEnvelope>();
+		Map<String, FpsMessageEnvelope> validFileData = new HashMap<String, FpsMessageEnvelope>();
+		Map<String, FpsMessageEnvelope> mapFile = new HashMap<String, FpsMessageEnvelope>();
+		List<String> keyCount = new ArrayList<String>();
+		
+		for(File xmlFile : files)
+		{
+			try
+			{
+				FpsMessageEnvelope result = FFPHkiclMessageConverter.parseObject(xmlFile);
+				
+				BatchInformation batchInfo = result.getBtchInf();
+				String batchID = batchInfo.getBtchId();
+				String numberOfFile = batchInfo.getNbOfFls();
+				//check batchId & numberOfFile, maybe numberOfFile>1, so more than one file contains the same batch ID.
+				String keyFileIdStr = String.format("BatchId[%s]-NumberOfFile[%s]-fileName[%s]", batchID, numberOfFile, xmlFile.getName());
+				String keyCountStr = String.format("BatchId[%s]-NumberOfFile[%s]", batchID, numberOfFile);
+				_logger.info(String.format("File info:%s", keyFileIdStr));
+				if(Integer.valueOf(numberOfFile) > 1)
+				{
+					mapFile.put(keyFileIdStr, result);
+					keyCount.add(keyCountStr);
+				}
+				else
+				{
+					//add a single batch file
+					validFileData.put(xmlFile.getName(), result);
+				}
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+				_logger.error(String.format("Error on parsing file[fileName:%s]",xmlFile.getName()));
+			}
+			
+		}
+		
+		Comparator<String> comp = new Comparator<String>() {
+
+			@Override
+			public int compare(String arg0, String arg1) {
+				return arg0.compareTo(arg1);
+			}
+		}; 
+		
+		Collections.sort(keyCount, comp);
+		
+		//Calculate count
+		Map<String, Integer> countMap = new HashMap<String, Integer>();
+		for(String str : keyCount)
+		{
+			if(countMap.containsKey(str)) countMap.put(str, countMap.get(str) + 1);
+			else countMap.put(str, 1);
+		}
+		
+		//Remove invalid file
+		List<String> validKey = new ArrayList<String>();
+		Iterator<String> iteStr = countMap.keySet().iterator();
+		while(iteStr.hasNext())
+		{
+			String countKey = iteStr.next();
+			Integer countValue = countMap.get(countKey);
+			//whether count matches file No. or not
+			if(countKey.substring(countKey.lastIndexOf("[") + 1, countKey.lastIndexOf("]")).compareTo(String.valueOf(countValue)) != 0)
+			{
+				//Not match
+				_logger.info(String.format("The files contain %s not matched with actual number of files!", countKey));
+			}
+			else
+			{
+				validKey.add(countKey);//add matched key info. of files
+			}
+		}
+		
+		
+		Iterator<String> iter = mapFile.keySet().iterator();
+		while(iter.hasNext())
+		{
+			String key = iter.next();
+			if(validKey.contains(key.substring(0, key.lastIndexOf("-"))))
+			{
+				validFileData.put(key.substring(key.lastIndexOf("[") + 1, key.lastIndexOf("]")), mapFile.get(key));
+			}
+		}
+		
+		return validFileData;
+	}
+	
+	public static void main(String[] args) throws Exception
+	{
+		InwardBatchFileProcessor process = new InwardBatchFileProcessor();
+		process.init();
+		Map<String, List<ISO20022BusinessDataV01>> map = process.readFile(new File("C:\\Users\\user\\Desktop\\test"));
+		process.processor(map);
+		//String str = "<?xmlversion=\"1.0\"encoding=\"utf-8\"?><ROOT><HEAD><RequestID>02</RequestID><TransactionDate>20180307</TransactionDate><TransactionTime>164532</TransactionTime><RequestRefno>20180307</RequestRefno><AccountingDate>20180307</AccountingDate><ResponseID>07</ResponseID><MessageType>FFPCTI01</MessageType><SystemRefno>2018030780000000000000001</SystemRefno><SystemBeginTIme>164532</SystemBeginTIme><SystemEndTIme>174532</SystemEndTIme><ResponseRefno>2323</ResponseRefno><ResponseBeginTime>164532</ResponseBeginTime><ResponseEndTime>174532</ResponseEndTime><ResponseStatus>N</ResponseStatus><FinalNode>1</FinalNode><SystemMessageCode>000000</SystemMessageCode><ResponseMessageCode>89</ResponseMessageCode><ResponseMessage>34</ResponseMessage></HEAD><BODY><SrcRefNm>344</SrcRefNm><transactionId>23</transactionId><RsltCd>S</RsltCd><RejCd>0</RejCd><RejMsg>001</RejMsg></BODY></ROOT>";
+		//System.out.println(str.substring(0, str.indexOf("<ROOT>")));
+		//System.out.println(str.substring(str.indexOf("<ROOT>")));
+		//str.substring(str.indexOf("<<MessageType>>"), str.lastIndexOf("<MessageType>"))
+		//System.out.println(FFPStringUtils.lpad(String.valueOf("123".length()), '0', 8));
+		/*FFPJbP100 jb = new FFPJbP100();
+		FFPTxJnl txJnl = new FFPTxJnl();
+		txJnl.setEndToEndId("21212121212212");
+		txJnl.setTransactionId("44444444444");
+		jb.setTxJnl(txJnl);
+		
+		jb.setSrcRefNm("ABC");
+		jb.setSrvcMode("PAYC03");
+		jb.setPymtCatPrps("CXSALA");
+		jb.setAccountVerification("SKIP_PYE_VRF");
+		jb.setSettlementDate(format1.parse("2018-03-05"));
+		jb.setSettlementCurrency("HKD");
+		jb.setSettlementAmount(new BigDecimal("2000"));
+		jb.setInstructedCurrency("HKD");
+		jb.setInstructedAmount(new BigDecimal("1000"));
+		jb.setChargersAgentId("123456");
+		jb.setChargersAgentBic("AAAAAABNABC");
+		jb.setChargersCurrency("HKD");
+		jb.setChargersAmount(new BigDecimal("30"));
+		jb.setDebtorName("weihui");
+		jb.setDebtorAccountNumber("01288888");
+		jb.setDebtorAccountNumberType("BBAN");
+		jb.setDebtorAgentId("001");
+		jb.setCreditorAgentId("005");
+		jb.setCreditorName("zhang");
+		jb.setCreditorAccountNumber("999999999");
+		jb.setCreditorAccountNumberType("MOBN");
+		
+		////FFPMsgCTO01_Pacs008 signle008 = new FFPMsgCTO01_Pacs008(jb);
+		//FFPMsgBaseHkiclMessage messageObj1 = (FFPMsgBaseHkiclMessage) signle008;
+		//System.out.println(messageObj1.parseHkiclMessage());
+		
+		FFPJbP100 jb1 = new FFPJbP100();
+		jb1.setTxJnl(txJnl);
+		jb1.setSrcRefNm("ABC");
+		jb1.setSrvcMode("PAYC03");
+		jb1.setPymtCatPrps("CXSALA");
+		jb1.setAccountVerification("SKIP_PYE_VRF");
+		jb1.setSettlementDate(format1.parse("2018-03-05"));
+		jb1.setSettlementCurrency("HKD");
+		jb1.setSettlementAmount(new BigDecimal("2000"));
+		jb1.setInstructedCurrency("HKD");
+		jb1.setInstructedAmount(new BigDecimal("1000"));
+		jb1.setChargersAgentId("123456");
+		jb1.setChargersAgentBic("AAAAAABNABC");
+		jb1.setChargersCurrency("HKD");
+		jb1.setChargersAmount(new BigDecimal("30"));
+		jb1.setDebtorName("weihui");
+		jb1.setDebtorAccountNumber("01288888");
+		jb1.setDebtorAccountNumberType("BBAN");
+		jb1.setDebtorAgentId("001");
+		jb1.setCreditorAgentId("005");
+		jb1.setCreditorName("zhang");
+		jb1.setCreditorAccountNumber("999999999");
+		jb1.setCreditorAccountNumberType("MOBN");
+		List<FFPJbP100> lsit = new ArrayList<FFPJbP100>();
+		lsit.add(jb);
+		lsit.add(jb1);
+		FFPMsgCTO01_MutiPacs008 pacs008 = new FFPMsgCTO01_MutiPacs008(lsit);
+		FFPMsgBaseHkiclMessage messageObj = (FFPMsgBaseHkiclMessage) pacs008;
+		System.out.println(messageObj.parseHkiclMessage());*/
+		
+		/*String subFileName = "FPSPYCI55520180226hhmm0001.xml";
+		String exFileName = subFileName.substring(subFileName.lastIndexOf(".") + 1);
+		String fileDate = subFileName.substring(10, 18);
+		System.out.println(subFileName.startsWith("FPSPYCI") 							//compare file id
+		&& "XML".equalsIgnoreCase(exFileName) 						//compare file type
+		&& fileDate.compareTo(format.format(new Date())) == 0);
+		System.out.println(format.format(new Date()));*/
+		
+		//FileInputStream fis = new FileInputStream(new File(""));
+		//SAXReader saxReader = new SAXReader();
+		//Document tempDocument = saxReader.read(new File("C:\\Users\\user\\Desktop\\pacs008.xml"));
+		//System.out.println(String.format("Error on parsing file[fileName:%s]","test.xml"));
+		
+		//PropertiesFile propFile = new PropertiesFile(new File("C:\\Users\\user\\Desktop\\pacs008.xml"));
+		//System.out.println("BatchId[%s]-NumberOfFile[%s]-fileName[%s]".substring(0,"BatchId[%s]-NumberOfFile[%s]-fileName[%s]".lastIndexOf("-")));
+		//Path path = Paths.get("C:\\Users\\user\\Desktop\\", new String[] { "pacs008.xml" });
+		//System.out.println(path);
+		/*Map<String, String> map = new HashMap<String, String>();
+		List<String> keyCount = new ArrayList<String>();
+		
+		keyCount.add("BatchId[ABC123456]-NumberOfFile[2]");
+		keyCount.add("BatchId[FFF123456]-NumberOfFile[3]");
+		keyCount.add("BatchId[EEE123456]-NumberOfFile[2]");
+		keyCount.add("BatchId[FFF123456]-NumberOfFile[3]");
+		keyCount.add("BatchId[ABC123456]-NumberOfFile[2]");
+		keyCount.add("BatchId[FFF123456]-NumberOfFile[3]");
+		
+		map.put("BatchId[ABC123456]-NumberOfFile[2]-fileName[PAY1.XML]", "PAY-1.XML");
+		map.put("BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY11.XML]", "PAY-11.XML");
+		map.put("BatchId[EEE123456]-NumberOfFile[2]-fileName[PAY4.XML]", "PAY-4.XML");
+		map.put("BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY12.XML]", "PAY-12.XML");
+		map.put("BatchId[ABC123456]-NumberOfFile[2]-fileName[PAY2.XML]", "PAY-2.XML");
+		map.put("BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY13.XML]", "PAY-13.XML");
+		
+		Map<String, Integer> countMap = new HashMap<String, Integer>();
+		for(String str : keyCount)
+		{
+			if(countMap.containsKey(str)) countMap.put(str, countMap.get(str) + 1);
+			else countMap.put(str, 1);
+		}
+		
+		
+		List<String> validKey = new ArrayList<String>();
+		Iterator<String> iteStr = countMap.keySet().iterator();
+		while(iteStr.hasNext())
+		{
+			String countKey = iteStr.next();
+			Integer countValue = countMap.get(countKey);
+			//whether count matches file No. or not
+			//System.out.println(countKey.substring(countKey.indexOf("[", 2), countKey.lastIndexOf("]")));
+			if(countKey.substring(countKey.lastIndexOf("[") + 1, countKey.lastIndexOf("]")).compareTo(String.valueOf(countValue)) != 0)
+			{
+				//Not match
+				//_logger.info(String.format("The file contain %s, ", countKey));
+			}
+			else
+			{
+				validKey.add(countKey);//add matched key info. of files
+			}
+		}
+		
+		for(String str : validKey)
+		{
+			System.out.println(str);
+		}
+		
+		Iterator<String> iter = map.keySet().iterator();
+		while(iter.hasNext())
+		{
+			String key = iter.next();
+			//System.out.println(key.substring(0, key.lastIndexOf("-")));
+			if(validKey.contains(key.substring(0, key.lastIndexOf("-"))))
+			{
+				System.out.println(key + "-----" + map.get(key));
+			}
+		}
+		
+		//String str = "BatchId[FFF123456]-NumberOfFile[3]";
+		
+		System.out.println("BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY13.XML]".
+				substring("BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY13.XML]".lastIndexOf("[")+1, 
+						"BatchId[FFF123456]-NumberOfFile[3]-fileName[PAY13.XML]".lastIndexOf("]")));*/
+	}
+	
+	
+}

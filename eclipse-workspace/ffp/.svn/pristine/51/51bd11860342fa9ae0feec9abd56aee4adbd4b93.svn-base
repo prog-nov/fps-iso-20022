@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_A110">
+
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERTLIST_TB_TX_A110DAT">
+		INSERT INTO TB_TX_A110DAT(
+			JNL_NO,			ADR_REQ_ID,
+			PROXY_ID,		PROXY_ID_TP,	STAT
+		)
+		VALUES (
+			#{txJnl.jnlNo, jdbcType=VARCHAR},	#{adrReqId, jdbcType=VARCHAR}, 
+			#{proxyId, jdbcType=VARCHAR},		#{proxyIdTp, jdbcType=VARCHAR}, 	#{stat, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertA110dtl">
+		<include refid="INSERTLIST_TB_TX_A110DAT_DTL"></include>
+	</insert>
+	
+	<sql id="INSERTLIST_TB_TX_A110DAT_DTL">
+		INSERT INTO TB_TX_A110DAT_DTL(
+			JNL_NO,			ADR_REQ_ID,
+			STS,			RJ_CD,			PROXY_ID,
+			PROXY_ID_TP,	NO_OF_ADR,		LANG_EN,
+			DISP_NM_EN,		LANG_ZH,		DISP_NM_ZH,
+			MMBID,			DEF_IND,		PURP_CD,
+			CRE_DT_TM,		LST_UPD_DT_TM
+		)
+		VALUES (
+			#{adr.jnlNo, jdbcType=VARCHAR},			#{adr.adrReqId, jdbcType=VARCHAR}, 
+			#{adr.sts, jdbcType=VARCHAR},			#{adr.rjCd, jdbcType=VARCHAR},			#{adr.proxyId, jdbcType=VARCHAR}, 
+			#{adr.proxyIdTp, jdbcType=VARCHAR},		#{adr.noOfAdr, jdbcType=VARCHAR},		#{adr.langEN, jdbcType=VARCHAR}, 
+			#{adr.dispNmEN, jdbcType=VARCHAR},		#{adr.langZH, jdbcType=VARCHAR},		#{adr.dispNmZH, jdbcType=VARCHAR}, 
+			#{adr.mmbId, jdbcType=VARCHAR},			#{adr.defInd, jdbcType=VARCHAR},		#{adr.purpCd, jdbcType=VARCHAR}, 
+			#{adr.creDtTm, jdbcType=TIMESTAMP},		#{adr.lstUpdDtTm, jdbcType=TIMESTAMP}
+		)
+	</sql>
+	
+	<!-- FIND MESSAGE -->
+	<select  id="inqueryAddress_A110Dtl" resultType="com.forms.ffp.persistents.bean.addressing.FFPJbA110dtl">
+		SELECT 	
+				JNL_NO AS jnlNo,
+				ADR_REQ_ID AS adrReqId,
+				STS AS sts,
+				RJ_CD AS rjCd,
+				PROXY_ID AS proxyId,
+				PROXY_ID_TP AS proxyIdTp,
+				NO_OF_ADR AS noOfAdr,
+				LANG_EN AS langEN,
+				DISP_NM_EN AS dispNmEN,
+				LANG_ZH AS langZH,
+				DISP_NM_ZH AS dispNmZH,
+				MMBID AS mmbId,
+				DEF_IND AS defInd,
+				PURP_CD AS purpCd,
+				CRE_DT_TM AS creDtTm,
+				LST_UPD_DT_TM AS lstUpdDtTm
+		FROM
+			TB_TX_A110DAT_DTL
+		WHERE
+			JNL_NO = #{jnlNo,jdbcType=VARCHAR}
+				
+	</select>
+	
+	<!-- UPDATE STATUS  -->
+	<update id="updateA110Status">
+		UPDATE TB_TX_A110DAT 
+			SET STAT=#{status,jdbcType=VARCHAR}
+		WHERE
+			JNL_NO=#{jnlNo,jdbcType=VARCHAR}
+	</update>
+	
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+</mapper>

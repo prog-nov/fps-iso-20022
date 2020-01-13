@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.task.taskcollect.dao.ITaskCollectDao">
+
+	<insert id="dTranTaskLog" >
+		INSERT INTO {{BF}}_TASK_LOG
+			(LOG_ID,
+			 KEY_ID,
+			 TASK_ID,
+			 TASK_DATE,
+			 TASK_TIME,
+			 DEAL_OPER,
+			 DEAL_DATE,
+			 DEAL_TIME)
+		SELECT #{logId, jdbcType=VARCHAR},T.KEY_ID, T.TASK_ID, T.TASK_DATA, T.TASK_TIME,
+				#{dealOper, jdbcType=VARCHAR},#{dealDate, jdbcType=VARCHAR},#{dealTime, jdbcType=VARCHAR}
+		  FROM {{BF}}_TASK_DETAIL T
+		 WHERE T.TASK_ID = #{currentTaskId, jdbcType=VARCHAR}
+		   AND T.BUSI_KEY = #{busiKey, jdbcType=VARCHAR}
+	</insert>
+	
+	<delete id="dDeleteTask">
+		DELETE FROM {{BF}}_TASK_DETAIL 
+		 WHERE TASK_ID = #{currentTaskId, jdbcType=VARCHAR}
+		   AND BUSI_KEY = #{busiKey, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="dSelectLimitUsers" resultType="java.lang.String">
+		SELECT LIMIT_KEY_ID
+		  FROM {{BF}}_TASK_REGEX_SUB_INFO RS
+	     WHERE EXISTS (SELECT 1 FROM {{BF}}_TASK_REGEX T WHERE T.TASK_ID = #{nextTaskId, jdbcType=VARCHAR} AND T.RULE_ID = RS.RULE_ID)
+	       AND LIMIT_FLAG = 'U'
+	</select>
+	
+	<select id="dSelectLimitOrgs" resultType="java.lang.String">
+		SELECT LIMIT_KEY_ID
+		  FROM {{BF}}_TASK_REGEX_SUB_INFO RS
+	     WHERE EXISTS (SELECT 1 FROM {{BF}}_TASK_REGEX T WHERE T.TASK_ID = #{nextTaskId, jdbcType=VARCHAR} AND T.RULE_ID = RS.RULE_ID)
+	       AND LIMIT_FLAG = 'O'
+	</select>
+	
+	<select id="dSelectLimitRoles" resultType="java.lang.String">
+		SELECT LIMIT_KEY_ID
+		  FROM {{BF}}_TASK_REGEX_SUB_INFO RS
+	     WHERE EXISTS (SELECT 1 FROM {{BF}}_TASK_REGEX T WHERE T.TASK_ID = #{nextTaskId, jdbcType=VARCHAR} AND T.RULE_ID = RS.RULE_ID)
+	       AND LIMIT_FLAG = 'R'
+	</select>
+	
+	<select id="dFindRule" resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskRuleBean">
+		SELECT T.*, P.MENU_ID, P.DETAIL_MENU_ID
+		  FROM {{BF}}_TASK_REGEX T
+		  JOIN {{BF}}_TASK_PARAM P ON T.RULE_ID = P.RULE_ID
+	 	 WHERE T.TASK_ID = #{nextTaskId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="dFindUserRoleId" resultType="java.lang.String">
+		SELECT ROLE_ID FROM {{BF}}_USER_ROLE T WHERE USER_ID = #{userId, jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="dInsertTask">
+		INSERT INTO {{BF}}_TASK_DETAIL
+			(KEY_ID, TASK_ID, BUSI_KEY, TASK_DATA, TASK_TIME, TARGET_URL,PARAMS)
+		VALUES (#{keyId, jdbcType=VARCHAR},#{nextTaskId, jdbcType=VARCHAR},#{busiKey, jdbcType=VARCHAR},
+				#{dealDate, jdbcType=VARCHAR},#{dealTime, jdbcType=VARCHAR},#{targetUrl, jdbcType=VARCHAR},
+				#{params, jdbcType=VARCHAR})  
+	</insert>
+	<insert id="dInsertUsers">
+		insert into {{BF}}_TASK_LIMIT_USERS (KEY_ID,USER_ID)
+		values (#{param1.keyId, jdbcType=VARCHAR}, #{userId, jdbcType=VARCHAR})
+	</insert>
+	<insert id="dInsertOrgs">
+		insert into {{BF}}_TASK_LIMIT_ORGS (KEY_ID,ORG_ID)
+		values (#{param1.keyId, jdbcType=VARCHAR}, #{orgId, jdbcType=VARCHAR})
+	</insert>
+	<insert id="dInsertRoles">
+		insert into {{BF}}_TASK_LIMIT_ROLES (KEY_ID,ROLE_ID)
+		values (#{param1.keyId, jdbcType=VARCHAR}, #{roleId, jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="dFindTargetUrl" resultType="java.lang.String">
+		SELECT MENU_URL FROM {{BF}}_MENU T WHERE MENU_ID = #{menuId, jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

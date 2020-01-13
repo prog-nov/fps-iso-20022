@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>risdb</databaseName>
+	<flush-rows>500</flush-rows>
+	<field-definition>
+		<field name="MSG_TYPE"					data-type="StringTypeRT"	/>
+		<field name="CP04_APPG_MODE"			data-type="StringTypeRT"	/>
+		<field name="CP04_APPG_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP04_INST"					data-type="StringTypeRT"	/>
+		<field name="CP04_PAY_NO"				data-type="StringTypeRT"	/>
+		<field name="CP04_MSG_SEQ_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_PROS_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP04_SRC_SYS"				data-type="StringTypeRT"	/>
+		<field name="CP04_MSG_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP04_DSTN_SYS"				data-type="StringTypeRT"	/>
+		<field name="SPYO_BRANCH"				data-type="StringTypeRT"	/>
+		<field name="CP04_SPYO_VER"				data-type="StringTypeRT"	/>
+		<field name="DP04_VALU_DATE"			data-type="StringTypeRT"	/>
+		<field name="DP04_SEND_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP04_SEND_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP04_REJ_ERR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_SUSP_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP04_SUSP_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_SUSP_JRNLNO"			data-type="StringTypeRT"	/>
+		<field name="DP04_REJ_DATE"				data-type="StringTypeRT"	/>
+		<field name="CP04_REJ_TIME"				data-type="StringTypeRT"	/>
+		<field name="CP04_PAY_CURR"				data-type="StringTypeRT"	/>
+		<field name="CP04_PAY_AMT"				data-type="StringTypeRT"	/>
+		<field name="CP04_EXTN_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_RETR"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_DEAD"			data-type="StringTypeRT"	/>
+		<field name="DP04_CHAS_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_ATMP"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_FREQ"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHAS_UNIT"			data-type="StringTypeRT"	/>
+		<field name="CP04_ACCT_NO"				data-type="StringTypeRT"	/>
+		<field name="CP04_BENF_DETL"			data-type="StringTypeRT"	/>
+		<field name="CP04_TRAN_NO"				data-type="StringTypeRT"	/>
+		<field name="CP04_BTCH_ID"				data-type="StringTypeRT"	/>
+		<field name="CP04_NOST_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="SPYO_MUR"					data-type="StringTypeRT"	/>
+		<field name="CP04_CYCLE_NO"				data-type="StringTypeRT"	/>
+		<field name="CP04_NOST_UPD_FLAG"		data-type="StringTypeRT"	/>
+		<field name="CP04_CR_DR_IND"			data-type="StringTypeRT"	/>
+		<field name="CP04_REMIT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP04_CHANNEL_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP04_TO_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_PAYMENT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP04_FEE_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP04_FEE"					data-type="StringTypeRT"	/>
+		<field name="CP04_FISC_FEE"				data-type="StringTypeRT"	/>
+		<field name="CP04_CREDIT_CODE"			data-type="StringTypeRT"	/>
+		<field name="CP04_OD15_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP04_OD15_SDN_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP04_OD15_CHK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP04_IN_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP04_IN_SDN_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP04_IN_CHK_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP04_FISC_SEQ"				data-type="StringTypeRT"	/>
+		<field name="CP04_INTERBANK_SEQ"		data-type="StringTypeRT"	/>
+		<field name="CP04_RETURN_REASON"		data-type="StringTypeRT"	/>
+		<field name="CP04_CHECK_NO"				data-type="StringTypeRT"	/>
+		<field name="CP04_ORG_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_ORG_FISC_SEQ"			data-type="StringTypeRT"	/>
+		<field name="CP04_OD15_PRNT_TIMES"		data-type="StringTypeRT"	/>
+		<field name="CP04_IN_PRINT_TIMES"		data-type="StringTypeRT"	/>
+		<field name="CP04_TELLER_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_TELLER_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP04_SPRVSR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_SPRVSR_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP04_SENDER_NAME"			data-type="StringTypeRT"	/>
+		<field name="CP04_RECEIVER_NAME"		data-type="StringTypeRT"	/>
+		<field name="CP04_SENDER_DESC"			data-type="StringTypeRT"	/>
+		<field name="CP04_APRV_JRNL_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_OLD_SUSP_JRNLNO"		data-type="StringTypeRT"	/>
+		<field name="CP04_SPRVSR2_NO"			data-type="StringTypeRT"	/>
+		<field name="DP04_RESTORED_DATE"		data-type="StringTypeRT"	/>
+		<field name="CP04_CB_RPT_STAT"			data-type="StringTypeRT"	/>
+		<field name="CP04_ORIG"					data-type="StringTypeRT"	/>
+		<field name="CP04_BUSINESS_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_REGION"				data-type="StringTypeRT"	/>
+		<field name="CP04_SUB_STATUS"			data-type="StringTypeRT"	/>
+		<field name="CP04_PRIORITY_WAIT"		data-type="StringTypeRT"	/>
+		<field name="CP04_ACK_NACK_STATUS"		data-type="StringTypeRT"	/>
+		<field name="CP04_STL_CASE_NO"			data-type="StringTypeRT"	/>
+		<field name="CP04_STL_TEMP_ID"			data-type="StringTypeRT"	/>
+		<field name="CP04_STL_INV_PURP"			data-type="StringTypeRT"	/>
+		<field name="CP04_MSG_DATA"				data-type="StringTypeRT"	/>
+		<field name="CP04_LAST_MAINT_DATE1"		data-type="StringTypeRT"	/>
+		<field name="CP04_LAST_MAINT_FLAG1"		data-type="StringTypeRT"	/>
+		<field name="docCnt"					data-type="StringTypeRT"	/>
+	</field-definition>
+	
+	<update-sql>
+		INSERT INTO #{schema}.D_OVERSEAS_FILE_P31_TEMP
+		(
+			CP04_APPG_MODE,			CP04_APPG_DATE,			CP04_INST,			CP04_PAY_NO,			CP04_MSG_SEQ_NO,
+			CP04_PROS_FLAG,			CP04_SRC_SYS,			CP04_MSG_TYPE,		CP04_DSTN_SYS,			SPYO_BRANCH,
+			CP04_SPYO_VER,			DP04_VALU_DATE,			DP04_SEND_DATE,		CP04_SEND_TIME,			CP04_REJ_ERR_NO,
+			CP04_SUSP_FLAG,			CP04_SUSP_ACCT_NO,		CP04_SUSP_JRNLNO,	DP04_REJ_DATE,			CP04_REJ_TIME,
+			CP04_PAY_CURR,			CP04_PAY_AMT,			CP04_EXTN_REF_NO,	CP04_CHAS_RETR,			CP04_CHAS_DEAD,
+			DP04_CHAS_DATE,			CP04_CHAS_TIME,			CP04_CHAS_ATMP,		CP04_CHAS_FREQ,			CP04_CHAS_UNIT,
+			CP04_ACCT_NO,			CP04_BENF_DETL,			CP04_TRAN_NO,		CP04_BTCH_ID,			CP04_NOST_ACCT_NO,
+			SPYO_MUR,				CP04_CYCLE_NO,			CP04_NOST_UPD_FLAG,	CP04_CR_DR_IND,			CP04_REMIT_TYPE,
+			CP04_CHANNEL_TYPE,		CP04_TO_ACCT_NO,		CP04_PAYMENT_TYPE,	CP04_FEE_TYPE,			CP04_FEE,
+			CP04_FISC_FEE,			CP04_CREDIT_CODE,		CP04_OD15_BANK_CODE2,CP04_OD15_SDN_CODE2,	CP04_OD15_CHK_CODE2,
+			CP04_IN_BANK_CODE2,		CP04_IN_SDN_CODE2,		CP04_IN_CHK_CODE2,	CP04_FISC_SEQ,			CP04_INTERBANK_SEQ,
+			CP04_RETURN_REASON,		CP04_CHECK_NO,			CP04_ORG_REF_NO,	CP04_ORG_FISC_SEQ,		CP04_OD15_PRNT_TIMES,
+			CP04_IN_PRINT_TIMES,	CP04_TELLER_NO,			CP04_TELLER_TERM,	CP04_SPRVSR_NO,			CP04_SPRVSR_TERM,
+			CP04_SENDER_NAME,		CP04_RECEIVER_NAME,		CP04_SENDER_DESC,	CP04_APRV_JRNL_NO,		CP04_OLD_SUSP_JRNLNO,
+			CP04_SPRVSR2_NO,		DP04_RESTORED_DATE,		CP04_CB_RPT_STAT,	CP04_ORIG,				CP04_BUSINESS_NO,
+			CP04_REGION,			CP04_SUB_STATUS,		CP04_PRIORITY_WAIT,	CP04_ACK_NACK_STATUS,	CP04_STL_CASE_NO,
+			CP04_STL_TEMP_ID,		CP04_STL_INV_PURP,		CP04_MSG_DATA,		CP04_LAST_MAINT_DATE1,	CP04_LAST_MAINT_FLAG1,
+			DOC_CNT
+		)VALUES
+		(	
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?
+		)
+		
+	</update-sql> 
+
+	<sql-parameters>    
+		<sql-parameter index="1"		field="CP04_APPG_MODE"			/>
+		<sql-parameter index="2"		field="CP04_APPG_DATE"      	  />
+		<sql-parameter index="3"		field="CP04_INST"           	  />
+		<sql-parameter index="4"		field="CP04_PAY_NO"         	  />
+		<sql-parameter index="5"		field="CP04_MSG_SEQ_NO"     	  />
+		<sql-parameter index="6"		field="CP04_PROS_FLAG"      	  />
+		<sql-parameter index="7"		field="CP04_SRC_SYS"        	  />
+		<sql-parameter index="8"		field="CP04_MSG_TYPE"       	  />
+		<sql-parameter index="9"		field="CP04_DSTN_SYS"       	  />
+		<sql-parameter index="10"		field="SPYO_BRANCH"         	  />
+		<sql-parameter index="11"		field="CP04_SPYO_VER"       	  />
+		<sql-parameter index="12"		field="DP04_VALU_DATE"      	  />
+		<sql-parameter index="13"		field="DP04_SEND_DATE"      	  />
+		<sql-parameter index="14"		field="CP04_SEND_TIME"      	  />
+		<sql-parameter index="15"		field="CP04_REJ_ERR_NO"     	  />
+		<sql-parameter index="16"		field="CP04_SUSP_FLAG"      	  />
+		<sql-parameter index="17"		field="CP04_SUSP_ACCT_NO"   	  />
+		<sql-parameter index="18"		field="CP04_SUSP_JRNLNO"    	  />
+		<sql-parameter index="19"		field="DP04_REJ_DATE"       	  />
+		<sql-parameter index="20"		field="CP04_REJ_TIME"       	  />
+		<sql-parameter index="21"		field="CP04_PAY_CURR"       	  />
+		<sql-parameter index="22"		field="CP04_PAY_AMT"        	  />
+		<sql-parameter index="23"		field="CP04_EXTN_REF_NO"    	  />
+		<sql-parameter index="24"		field="CP04_CHAS_RETR"      	  />
+		<sql-parameter index="25"		field="CP04_CHAS_DEAD"      	  />
+		<sql-parameter index="26"		field="DP04_CHAS_DATE"      	  />
+		<sql-parameter index="27"		field="CP04_CHAS_TIME"      	  />
+		<sql-parameter index="28"		field="CP04_CHAS_ATMP"      	  />
+		<sql-parameter index="29"		field="CP04_CHAS_FREQ"      	  />
+		<sql-parameter index="30"		field="CP04_CHAS_UNIT"      	  />
+		<sql-parameter index="31"		field="CP04_ACCT_NO"        	  />
+		<sql-parameter index="32"		field="CP04_BENF_DETL"      	  />
+		<sql-parameter index="33"		field="CP04_TRAN_NO"        	  />
+		<sql-parameter index="34"		field="CP04_BTCH_ID"        	  />
+		<sql-parameter index="35"		field="CP04_NOST_ACCT_NO"   	  />
+		<sql-parameter index="36"		field="SPYO_MUR"            	  />
+		<sql-parameter index="37"		field="CP04_CYCLE_NO"       	  />
+		<sql-parameter index="38"		field="CP04_NOST_UPD_FLAG"  	  />
+		<sql-parameter index="39"		field="CP04_CR_DR_IND"      	  />
+		<sql-parameter index="40"		field="CP04_REMIT_TYPE"     	  />
+		<sql-parameter index="41"		field="CP04_CHANNEL_TYPE"   	  />
+		<sql-parameter index="42"		field="CP04_TO_ACCT_NO"     	  />
+		<sql-parameter index="43"		field="CP04_PAYMENT_TYPE"   	  />
+		<sql-parameter index="44"		field="CP04_FEE_TYPE"       	  />
+		<sql-parameter index="45"		field="CP04_FEE"            	  />
+		<sql-parameter index="46"		field="CP04_FISC_FEE"       	  />
+		<sql-parameter index="47"		field="CP04_CREDIT_CODE"    	  />
+		<sql-parameter index="48"		field="CP04_OD15_BANK_CODE2"	  />
+		<sql-parameter index="49"		field="CP04_OD15_SDN_CODE2" 	  />
+		<sql-parameter index="50"		field="CP04_OD15_CHK_CODE2" 	  />
+		<sql-parameter index="51"		field="CP04_IN_BANK_CODE2"  	  />
+		<sql-parameter index="52"		field="CP04_IN_SDN_CODE2"   	  />
+		<sql-parameter index="53"		field="CP04_IN_CHK_CODE2"   	  />
+		<sql-parameter index="54"		field="CP04_FISC_SEQ"       	  />
+		<sql-parameter index="55"		field="CP04_INTERBANK_SEQ"  	  />
+		<sql-parameter index="56"		field="CP04_RETURN_REASON"  	  />
+		<sql-parameter index="57"		field="CP04_CHECK_NO"       	  />
+		<sql-parameter index="58"		field="CP04_ORG_REF_NO"     	  />
+		<sql-parameter index="59"		field="CP04_ORG_FISC_SEQ"   	  />
+		<sql-parameter index="60"		field="CP04_OD15_PRNT_TIMES"	  />
+		<sql-parameter index="61"		field="CP04_IN_PRINT_TIMES" 	  />
+		<sql-parameter index="62"		field="CP04_TELLER_NO"      	  />
+		<sql-parameter index="63"		field="CP04_TELLER_TERM"    	  />
+		<sql-parameter index="64"		field="CP04_SPRVSR_NO"      	  />
+		<sql-parameter index="65"		field="CP04_SPRVSR_TERM"    	  />
+		<sql-parameter index="66"		field="CP04_SENDER_NAME"    	  />
+		<sql-parameter index="67"		field="CP04_RECEIVER_NAME"  	  />
+		<sql-parameter index="68"		field="CP04_SENDER_DESC"    	  />
+		<sql-parameter index="69"		field="CP04_APRV_JRNL_NO"   	  />
+		<sql-parameter index="70"		field="CP04_OLD_SUSP_JRNLNO"	  />
+		<sql-parameter index="71"		field="CP04_SPRVSR2_NO"     	  />
+		<sql-parameter index="72"		field="DP04_RESTORED_DATE"  	  />
+		<sql-parameter index="73"		field="CP04_CB_RPT_STAT"    	  />
+		<sql-parameter index="74"		field="CP04_ORIG"           	  />
+		<sql-parameter index="75"		field="CP04_BUSINESS_NO"    	  />
+		<sql-parameter index="76"		field="CP04_REGION"         	  />
+		<sql-parameter index="77"		field="CP04_SUB_STATUS"     	  />
+		<sql-parameter index="78"		field="CP04_PRIORITY_WAIT"  	  />
+		<sql-parameter index="79"		field="CP04_ACK_NACK_STATUS"    />
+		<sql-parameter index="80"		field="CP04_STL_CASE_NO"        />
+		<sql-parameter index="81"		field="CP04_STL_TEMP_ID"        />
+		<sql-parameter index="82"		field="CP04_STL_INV_PURP"       />
+		<sql-parameter index="83"		field="CP04_MSG_DATA"           />
+		<sql-parameter index="84"		field="CP04_LAST_MAINT_DATE1"   />
+		<sql-parameter index="85"		field="CP04_LAST_MAINT_FLAG1"    />
+		<sql-parameter index="86"		field="docCnt"					/>
+	</sql-parameters>
+</database-output-config>

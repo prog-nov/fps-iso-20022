@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:jms="http://www.springframework.org/schema/jms" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms.xsd
+						http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context-2.5.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+	
+	<!-- <bean id="mq.configSvc" class="com.forms.ffp.mq.config.FFPMqConfigSvc" >
+		<property name="propertiesFile" value="${config.mq.filename}" />
+	</bean> -->
+	
+	<!-- <bean id ="mq.hkicl.ffp.ack.listener" class="com.forms.ffp.mq.listener.msg.FFPHkicl2FfpAckMsgListener" />
+	<bean id ="mq.hkicl.ffp.req.listener" class="com.forms.ffp.mq.listener.msg.FFPHkicl2FfpReqMsgListener" />
+	<bean id ="mq.participant.ffp.ack.listener" class="com.forms.ffp.mq.listener.msg.FFPParticipant2FfpAckMsgListener" />
+	<bean id ="mq.participant.ffp.req.listener" class="com.forms.ffp.mq.listener.msg.FFPParticipant2FfpReqMsgListener" />
+	
+	<bean class="com.forms.ffp.mq.listener.mq.FFPApacheMqListenerAgent" scope="prototype" />
+	<bean class="com.forms.ffp.mq.listener.mq.FFPIbmWebSphereMqListenerAgent" scope="prototype" />
+	
+	<bean class="com.forms.ffp.mq.listener.mq.FFPMqListenerAgentInterface" scope="prototype" /> -->
+	<bean class="com.forms.ffp.mq.listener.mq.FFPApacheMqListenerAgent" scope="prototype" />
+	<bean class="com.forms.ffp.mq.listener.mq.FFPIbmWebSphereMqListenerAgent" scope="prototype" />
+	<!--  <bean id="mq.agentMap" class="java.util.LinkedHashMap">
+	    <constructor-arg>
+	        <map key-type="java.lang.String" value-type="com.forms.ffp.mq.listener.mq.FFPMqListenerAgentInterface"></map>
+	    </constructor-arg>
+	</bean>  -->
+	
+	<!-- <bean id="mq.agentSvc" class="com.forms.ffp.mq.listener.FFPMqListenerAgentSvc" />
+
+	<bean id="FPSHkiclMessageConverter" class="com.forms.ffp.mq.listener.FFPMessageConverter" /> -->
+
+</beans>

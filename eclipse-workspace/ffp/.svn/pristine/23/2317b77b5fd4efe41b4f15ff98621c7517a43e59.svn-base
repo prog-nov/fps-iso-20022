@@ -1,0 +1,7 @@
+beneform4j.core.service=服務層異常
+beneform4j.core.service.spring_not_init=Spring容器尚未初始化
+beneform4j.core.service.not_found_bean_from_spring=從Spring容器中找不到bean:{0}
+beneform4j.core.service.exception_code_is_empty=異常配置中異常代碼配置爲空
+beneform4j.core.service.exception_code_is_duplicate=異常代碼配置重複:{0}
+beneform4j.core.service.exception_code_is_error=異常代碼配置不正確:{0}，正確的配置:前兩位大寫字母，後六位爲數字
+beneform4j.core.service.locale_file_is_duplicate=國際化文件的basename配置重複:{0}

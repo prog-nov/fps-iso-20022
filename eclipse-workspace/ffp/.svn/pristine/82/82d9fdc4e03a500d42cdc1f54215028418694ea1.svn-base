@@ -1,0 +1,151 @@
+package com.forms.ffp.webapp.testing.service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.webapp.testing.form.TestingForm;
+
+@Service("TestingService")
+@Scope("prototype")
+public class TestingService
+{
+    public void init()
+	{
+    	//Start Listener
+    	MqSimulatorThread mq = new MqSimulatorThread();
+    	mq.start();
+    	TcpSimulatorThread tcp = new TcpSimulatorThread();
+    	tcp.start();
+	}
+
+	public String send(TestingForm form)
+	{
+		try
+		{
+			if("TCP".equals(form.getMqName()))
+			{
+				Socket socket = null;
+				try
+				{
+					socket = new Socket("localhost", 20000);
+					DataOutputStream os = new DataOutputStream(socket.getOutputStream());
+					os.write(form.getRequestMsg().getBytes("UTF-8"));
+					os.flush();
+					socket.shutdownOutput();
+					socket.setSoTimeout(60*1000);
+					
+					DataInputStream is = new DataInputStream(socket.getInputStream());
+					ByteArrayOutputStream result = new ByteArrayOutputStream();
+					byte[] buffer = new byte[1024];
+					int length = 0;
+					while ((length = is.read(buffer)) != -1)
+					{
+						result.write(buffer, 0, length);
+					}
+					String message = new String(result.toByteArray(), FFPConstants.ENCODING_UTF8);
+					return message;
+				}
+				catch(SocketTimeoutException timeout)
+				{
+					return timeout.getMessage() + "TIME UP";
+				}
+				catch(Exception ip_e)
+				{
+					return ip_e.getMessage();
+				}
+				finally
+				{
+					socket.close();
+				}
+			}
+			else if("HMQ".equals(form.getMqName()) || "LMQ".equals(form.getMqName()))
+			{
+				Connection conn = null;
+				Session sessionPro = null;
+				Session sessionCus = null;
+				MessageProducer producer = null;
+				MessageConsumer consumer = null;
+				try
+				{
+					ConnectionFactory connFactory = new ActiveMQConnectionFactory("admin","admin", "tcp://172.21.21.251:61616");
+					conn = connFactory.createConnection();   
+					conn.start();
+					
+					sessionPro = conn.createSession(Boolean.TRUE, Session.AUTO_ACKNOWLEDGE);
+					Destination destination = null;
+					if("HMQ".equals(form.getMqName()))
+					{
+						destination = sessionPro.createQueue("HKICL.FFP.REQ.H.REM");
+					}
+					else if("LMQ".equals(form.getMqName()))
+					{
+						destination = sessionPro.createQueue("HKICL.FFP.REQ.M.REM");
+					}
+					producer = sessionPro.createProducer(destination);   
+					producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+					
+					TextMessage textMessage = sessionPro.createTextMessage(form.getRequestMsg());   
+					producer.send(textMessage);
+					sessionPro.commit();
+					
+					
+					sessionCus = conn.createSession(Boolean.FALSE, Session.AUTO_ACKNOWLEDGE);
+					Destination destination2 = null;
+					if("HMQ".equals(form.getMqName()))
+					{
+						destination2 = sessionCus.createQueue("FFP.HKICL.ACK.H01.LOC");
+					}
+					else if("LMQ".equals(form.getMqName()))
+					{
+						destination2 = sessionCus.createQueue("FFP.HKICL.ACK.M01.LOC");
+					}
+					
+					consumer = sessionCus.createConsumer(destination2);
+					while (true) {  
+						//time out 6 sec
+		                TextMessage message = (TextMessage) consumer.receive(6000);  
+		                if (null != message) {  
+		                    return message.getText();
+		                } else {  
+		                    break;  
+		                }  
+		            }  
+				}
+				catch(Exception ip_e)
+				{
+					return ip_e.getMessage();
+				}
+				finally
+				{
+					if(producer!=null)producer.close();
+					if(consumer!=null)consumer.close();
+					if(sessionPro!=null)sessionPro.close();
+					if(sessionCus!=null)sessionCus.close();
+					if(conn!=null)conn.close();
+				}
+			}
+			return "TIME OUT";
+		}
+		catch(Exception ip_e)
+		{
+			return ip_e.getMessage();
+		}
+	}
+}

@@ -1,0 +1,62 @@
+package com.forms.batch.job.unit.participant.receivefile;
+
+import java.io.File;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.env.BatchEnvBuilder;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+
+public class FFPReceiveParticipantMsg extends BatchBaseJob
+{
+	private BatchLogger logger = BatchLogger.getLogger(this.jobName, this.actionName, FFPReceiveParticipantMsg.class);
+	
+	private int port;
+	
+	private File stopListenerTokenfile;
+	
+	public void init() throws BatchJobException
+	{
+		try
+		{
+			port = Integer.valueOf(BatchEnvBuilder.getInstance().getEnv("RECEIVE_FILE_SERVER_PORT"));
+			stopListenerTokenfile = new File(BatchEnvBuilder.getInstance().getEnv("STOP_PARTICIPANT_LISTENSER_TOEKN_FILE"));
+			//port = 8888;
+			//stopListenerTokenfile = new File("E://data.text");
+		} catch (Exception e)
+		{
+			throw new BatchJobException();
+		}
+	}
+	
+	//  @SuppressWarnings("unchecked")
+	//  @Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			ServerSocket serverSocket = new ServerSocket(port);
+			Socket socket = null;
+			logger.info("***服务器即将启动，等待客户端的连接***");
+			while(!stopListenerTokenfile.exists())
+			{
+				socket = serverSocket.accept();
+				Thread thread = new Thread(new FFPReceiveFileServerThread(socket));
+				thread.start();
+			}
+			
+			serverSocket.close();
+			return true;
+		}catch(Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+	}
+	public static void main(String[] args) throws BatchJobException {
+		FFPReceiveParticipantMsg ffpReceiveParticipantMsg = new FFPReceiveParticipantMsg();
+		ffpReceiveParticipantMsg.init();
+		ffpReceiveParticipantMsg.execute();
+	}
+}

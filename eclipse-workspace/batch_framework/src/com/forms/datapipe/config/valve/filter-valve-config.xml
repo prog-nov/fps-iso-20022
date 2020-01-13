@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<filter-valve-config>
+	<filter-cases>
+		<filter-case>
+			<name>case1</name>
+			<forward>success</forward>
+			<logic-express><![CDATA[
+			field1 > 0
+			]]>
+			</logic-express>
+			<!-- javascript express -->
+		</filter-case>
+	</filter-cases>
+</filter-valve-config>

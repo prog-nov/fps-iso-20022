@@ -1,0 +1,207 @@
+package com.forms.ffp.webapp.cashmanagement.return_refund.service;
+
+import java.util.Date;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.FFPIDaoService_TxjnlAction;
+import com.forms.ffp.persistents.service.payment.returnrefund.FFPDaoService_P300;
+import com.forms.ffp.webapp.cashmanagement.return_refund.form.DoReturnRefundForm;
+
+@Component("ReturnRefund_Pacs004Service")
+@Scope("prototype")
+public class ReturnRefund_Pacs004Service {
+	
+	@Resource(name = "FFPParseMsg_JBP300")
+	FFPParseMsg_JBP300 ms300;
+
+	@Resource(name = "FFPDaoService_TxjnlAction")
+	private FFPIDaoService_TxjnlAction txJnlActionService;
+
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+
+	@Resource(name = "FFPDaoService_P300")
+	private FFPDaoService_P300 dao300;
+
+
+	
+	public void performMsg(DoReturnRefundForm form) throws Exception {
+		if (null == form)
+			return;
+		ms300.setForm(form);
+		// parse msg to Object
+		ms300.perform();
+
+		FFPJbP300 p300 = ms300.getP300();
+		Date loc_date = new Date();
+		/**
+		 * isRefund,refund true: return false
+		 */
+		boolean isRefund = (p300.getTxJnl().getTxStat()
+				.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus())? true:false);
+		
+
+		String jnlNo = FFPIDUtils.getJnlNo();
+		// insert data about P300
+
+		String returnSts = (isRefund?
+				FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus():
+					FFPConstantsTxJnl.TX_STATUS.TX_STAT_RETURN.getStatus());
+		
+		String rejCode=null;
+		String rejReason=null;
+
+		FFPTxJnlAction jnlAction = null;
+		FFPTxJnlAction jnlAction1 = null;
+		FFPTxJnlAction jnlAction2 = null;
+
+		try {
+			// refund
+			if (isRefund) {
+				p300.setPymtCatPrps("RPRFND");
+
+				FFPMsgPacs004_RRO01 pr = new FFPMsgPacs004_RRO01(ms300.getTxinf());
+
+				jnlAction = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pr.getReqRefNo(),
+						FFPConstants.MSG_DIRECTION_OUTWARD, FFPConstants.MSG_CODE_FFP, pr.getMsgType(),
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_APPST.getStatus(), loc_date, loc_date, loc_date, null);
+
+				FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(pr);
+				if (response != null) {
+					FFPSendTcpMessageResp msgResp = (FFPSendTcpMessageResp) response;
+					// jnlAction.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+					pr.unmarshalResponseMsg(msgResp.getRespMessage());
+					if (null != ms300.getTxinf().getReply()) {
+						
+						rejCode=ms300.getTxinf().getReply().getRejCd();
+						rejReason=ms300.getTxinf().getReply().getRejMsg();
+						/*
+						 * 
+						 * AGENT RESPONSE
+						 */
+						jnlAction.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+						jnlAction1 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pr.getResRefNo(),
+								FFPConstants.MSG_DIRECTION_INWARD, pr.getResponseID(), pr.getMsgType(),
+								FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), 
+								rejCode,rejReason,
+								pr.getCreateTs(), loc_date,
+								loc_date, pr.getReqRefNo(),"N");
+
+						if ("S".equals(ms300.getTxinf().getReply().getRsltCd())) {
+							/*
+							 * TODO send pacs004 to icl
+							 */
+							FFPMsgDB_pacs004 pacs004 = new FFPMsgDB_pacs004(p300);
+
+							jnlAction2 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pacs004.getMsgID(),
+									FFPConstants.MSG_DIRECTION_OUTWARD, FFPConstants.TX_SOURCE_HKICL,
+									pacs004.getMsgTypeName(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(),
+									pacs004.getCreDt(), loc_date, loc_date,null);
+
+							FFPBaseResp ICLresponse = FFPAdaptorMgr.getInstance().execute(pacs004);
+							
+							jnlAction.setMsgStatus(ICLresponse.getMessageStatus());
+							if(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus().equals(ICLresponse.getMessageStatus()))
+							{
+								
+							}
+							else
+							{
+								returnSts=FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus();
+								
+							}
+
+						} else {// RJCT
+							returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+						}
+					}
+				} else {// TIME OUT
+					returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus();
+				}
+			} else {// return
+				FFPMsgDB_pacs004 pacs004 = new FFPMsgDB_pacs004(p300);
+
+				jnlAction2 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, pacs004.getMsgID(),
+						FFPConstants.MSG_DIRECTION_OUTWARD, FFPConstants.TX_SOURCE_HKICL, pacs004.getMsgTypeName(),
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), pacs004.getCreDt(), loc_date, loc_date,
+						null);
+
+				FFPBaseResp ICLresponse = FFPAdaptorMgr.getInstance().execute(pacs004);
+				
+				if(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus().equals(ICLresponse.getMessageStatus()))
+				{
+					
+				}
+				else
+				{
+					returnSts=FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus();
+					
+				}
+			}
+
+		} catch (Exception e) {// TODO
+			e.printStackTrace();
+			returnSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus();
+		} finally {
+
+			/**
+			 * jnlAction is null
+			 * update
+			 */
+			p300.getTxJnl().setJnlRef(jnlNo);
+			if(returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus()) ||
+					returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_RETURN.getStatus())){
+				p300.getTxJnl().setTxStat(returnSts);
+			}
+			txJnlService.updateJnlStat(p300);
+			
+			/*
+			 * insert DB
+			 */
+
+			if (null != jnlAction)
+				p300.getJnlActionList().add(jnlAction);
+			if (null != jnlAction1)
+				p300.getJnlActionList().add(jnlAction1);
+			if (null != jnlAction2)
+				p300.getJnlActionList().add(jnlAction2);
+			
+			FFPTxJnl txjnl = p300.getTxJnl();
+			
+			if(returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus()) ||
+					returnSts.equals(FFPConstantsTxJnl.TX_STATUS.TX_STAT_RETURN.getStatus())){
+				txjnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+			}else{
+				txjnl.setTxStat(returnSts);
+			}
+			txjnl.setJnlRef(txjnl.getJnlNo());
+			txjnl.setTransactionId(p300.getReturnId());
+			txjnl.setEndToEndId(null);
+			txjnl.setJnlNo(jnlNo);
+			txjnl.setTxSrc("FFP");
+			txjnl.setTxMode(FFPConstants.RUNNING_MODE_REALTIME);
+			txjnl.setTxRejCode(rejCode);
+			txjnl.setTxRejReason(rejReason);
+			txjnl.setLastUpdateTs(loc_date);
+			txjnl.setCreateTs(loc_date);
+			txjnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_P300.getCode());
+			dao300.sInsert(p300);
+		}
+
+	}
+}

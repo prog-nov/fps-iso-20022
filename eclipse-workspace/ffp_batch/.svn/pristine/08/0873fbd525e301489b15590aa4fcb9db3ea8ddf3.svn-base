@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>STOP_DISPATCHER</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>DISPATCHER</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.dispatcher.StopDipatcherProcessor</processor>
+		</action>
+	 </action-flow>
+</job-config>

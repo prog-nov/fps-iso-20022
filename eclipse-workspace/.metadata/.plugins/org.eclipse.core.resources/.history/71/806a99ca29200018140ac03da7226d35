@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_Other.xsd"></xs:include>
+
+	<xs:element name="ROOT" type="ROOT"></xs:element>
+	<xs:complexType name="ROOT">
+		<xs:sequence>
+			<xs:element name="HEAD" type="Max2NumericText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element ref="../Response/HEAD.xsd"/></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
+	

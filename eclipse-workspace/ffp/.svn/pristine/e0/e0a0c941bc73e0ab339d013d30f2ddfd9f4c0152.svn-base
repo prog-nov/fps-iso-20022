@@ -1,0 +1,61 @@
+package com.forms.ffp.persistents.service.addressing;
+
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Service;
+
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA110;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA110dtl;
+import com.forms.ffp.persistents.dao.addressing.FFPIDao_A100;
+import com.forms.ffp.persistents.dao.addressing.FFPIDao_A110;
+
+@Service("FFPDaoService_A110")
+public class FFPDaoService_A110 implements FFPIDaoService_A110
+{
+	@Resource(name = "FFPIDao_A110")
+	private FFPIDao_A110 dao;
+
+	@Override
+	public int sInsert(FFPJbA110 form) throws Exception {
+		int[] rs =dao.dInsert(form);
+		return rs[0]; 
+	}
+
+	@Override
+	public int updateJnlStat(FFPJbBase form) throws Exception {
+		int[] rs = dao.updateJnlStat(form);
+		return rs[0];
+	}
+
+	@Override
+	public int[] dInsertA110dtl(FFPJbA110 form) {
+		
+		return dao.dInsertA110dtl(form);
+	}
+
+	@Override
+	public List<FFPJbA110dtl> inqueryAllDtlFrA110Dtl(String jnlNo) {
+		// TODO Auto-generated method stub
+		return dao.inqueryAddress_A110Dtl(jnlNo);
+	}
+
+	@Override
+	public int updateA110Stat(String status, String jnlNo) {
+		// TODO Auto-generated method stub
+		return dao.updateA110Status(status, jnlNo);
+	}
+
+	@Override
+	public String inqueryResStatus(String jnlNo) {
+		// TODO Auto-generated method stub
+		return dao.inqueryrRestatus(jnlNo);
+	}
+	
+	
+	
+}

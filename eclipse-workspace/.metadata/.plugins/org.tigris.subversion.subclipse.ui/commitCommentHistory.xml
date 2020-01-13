@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CommitComments>	<CommitComment>add FFPRRI01 type</CommitComment>
+	<CommitComment>update return and refund logical</CommitComment>
+	<CommitComment>Update </CommitComment>
+	<CommitComment>update newly logical</CommitComment>
+	<CommitComment>add status codes for return or refund</CommitComment>
+	<CommitComment>UPDATE RESEND LOGICAL</CommitComment>
+	<CommitComment>update persistent logical</CommitComment>
+	<CommitComment>add response message of head</CommitComment>
+	<CommitComment>add response fields</CommitComment>
+	<CommitComment>update tb_tx_jnl</CommitComment>
+</CommitComments>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/
+mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.maintenance.dao.IMaintenanceDao">
+	<!--加载主页面列表和模糊查询 -->
+	<select id="dLoadMaintenance" resultType="com.forms.beneform4j.webapp.systemmanage.maintenance.bean.MaintenanceBean">
+		SELECT A.ROLE_ID
+			 , R1.ROLE_NAME
+			 , A.ROLE_ALLOT_ID
+			 , R2.ROLE_ALLOT_NAME
+		  FROM {{BF}}_ROLE_ROLE_ALLOT A
+		  JOIN {{BF}}_ROLE R1
+		    ON A.ROLE_ID = R1.ROLE_ID
+		  JOIN {{BF}}_ROLE_ALLOT R2
+		    ON A.ROLE_ALLOT_ID = R2.ROLE_ALLOT_ID
+		<where>
+			<if test="null != roleName and '' != roleName">
+				AND R1.ROLE_NAME LIKE #{concat('%' roleName '%'), jdbcType=VARCHAR}
+			</if>
+			<if test="null != roleAllotName and '' != roleAllotName">
+				AND R2.ROLE_ALLOT_NAME LIKE #{concat('%' roleAllotName '%'), jdbcType=VARCHAR}
+			</if>
+		</where>
+		 ORDER BY A.ROLE_ID
+	</select>
+	
+	<!--加载增加页面右侧列表 -->
+	<select id="dAllotlist" resultType="com.forms.beneform4j.webapp.systemmanage.maintenance.bean.MaintenanceAllotBean">
+		SELECT B.ROLE_ALLOT_ID
+			 , B.ROLE_ALLOT_NAME
+		  FROM {{BF}}_ROLE_ALLOT B
+		 ORDER BY B.ROLE_ALLOT_ID
+	</select>
+	
+	<!--加载增加页面没有角色(分配)关系的下拉框列表 -->
+	<select id="dAllotSelectlist" resultType="com.forms.beneform4j.webapp.systemmanage.maintenance.bean.MaintenanceBean">
+		SELECT ROLE_ID
+			 , ROLE_NAME
+  		  FROM {{BF}}_ROLE
+		 WHERE ROLE_ID NOT IN (SELECT DISTINCT ROLE_ID FROM {{BF}}_ROLE_ROLE_ALLOT)
+		 ORDER BY ROLE_ID
+	</select>
+	
+	<!--添加角色与角色(分配)的关系 -->
+	<insert id="dInsert" >
+	    insert into {{BF}}_ROLE_ROLE_ALLOT (ROLE_ID, ROLE_ALLOT_ID)
+	    	VALUES(#{param1.roleId, jdbcType=INTEGER}, 
+	    		   #{role.roleId, jdbcType=INTEGER})
+	</insert>
+	
+	<!-- 删除单个角色关系 -->
+	<delete id="dDelete">
+		DELETE FROM {{BF}}_ROLE_ROLE_ALLOT WHERE ROLE_ID = #{roleId, jdbcType=INTEGER}
+	</delete>
+	
+	<!-- 有权限维护的角色列表（进入到修改页面）  -->
+	<select id="dGetListRoleAllotForEdit" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleAllotBean">
+		select RA.ROLE_ALLOT_ID, RA.ROLE_ALLOT_NAME, RA.DES, CASE WHEN RR.ROLE_ID IS NULL THEN '0' ELSE '1' END AS CHECKED 
+		  FROM {{BF}}_ROLE_ALLOT RA
+		  LEFT JOIN {{BF}}_ROLE_ROLE_ALLOT RR
+			ON RA.ROLE_ALLOT_ID = RR.ROLE_ALLOT_ID 
+		   AND RR.ROLE_ID = #{roleId, jdbcType=INTEGER} 
+		 ORDER BY RA.ROLE_ALLOT_ID
+	</select>	
+</mapper>

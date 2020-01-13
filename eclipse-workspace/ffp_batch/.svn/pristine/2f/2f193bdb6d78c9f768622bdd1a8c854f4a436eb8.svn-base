@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_TX_HISTORY A
+			WHERE A.TX_DATE = REPLACE('#{acDate}','-','')
+		</sql>
+		<sql>
+		<![CDATA[
+			INSERT INTO #{schema}.D_OVERSEAS_TX_HISTORY 
+				(OREF_NO,		TX_DATE,			TX_TIME,			BRANCH,		TXTLER,
+				MSG_STATUS,		BEF_FIELD_DETAIL,	CUR_FIELD_DETAIL) 
+			SELECT DISTINCT 
+					B.OREF_NO,		PADT_DATE,			PADT_TIME,
+					SUBSTR(PADT_TELR_BR,8,5),SUBSTR(PADT_TELR_BR,1,7),		PADT_STATUS,
+					PADT_OLD_VAL_1||'<BR>'||PADT_OLD_VAL_2||'<BR>'||PADT_OLD_VAL_3||'<BR>'||PADT_OLD_VAL_4||'<BR>'||PADT_OLD_VAL_5||'<BR>'||PADT_OLD_VAL_6,
+					PADT_NEW_VAL_1||'<BR>'||PADT_NEW_VAL_2||'<BR>'||PADT_NEW_VAL_3||'<BR>'||PADT_NEW_VAL_4||'<BR>'||PADT_NEW_VAL_5||'<BR>'||PADT_NEW_VAL_6 
+			FROM #{schema}.D_OVERSEAS_TX_HISTORY_TEMP A 
+			JOIN #{schema}.D_OVERSEAS_PAY B 
+			ON A.PADT_EXTN_REF_NO = B.SEND_MSGNO 
+			WHERE A.PADT_APPG_DATE = REPLACE('#{acDate}','-','')
+		]]>
+		</sql>
+		<sql>
+		<![CDATA[
+			INSERT INTO #{schema}.D_OVERSEAS_TX_HISTORY 
+				(OREF_NO,		TX_DATE,			TX_TIME,		BRANCH,		TXTLER,
+				MSG_STATUS,		BEF_FIELD_DETAIL,	CUR_FIELD_DETAIL) 
+			SELECT DISTINCT 
+					B.OREF_NO,		PADT_DATE,			PADT_TIME,
+					SUBSTR(PADT_TELR_BR,8,5),SUBSTR(PADT_TELR_BR,1,7),		PADT_STATUS,
+					PADT_OLD_VAL_1||'<BR>'||PADT_OLD_VAL_2||'<BR>'||PADT_OLD_VAL_3||'<BR>'||PADT_OLD_VAL_4||'<BR>'||PADT_OLD_VAL_5||'<BR>'||PADT_OLD_VAL_6,
+					PADT_NEW_VAL_1||'<BR>'||PADT_NEW_VAL_2||'<BR>'||PADT_NEW_VAL_3||'<BR>'||PADT_NEW_VAL_4||'<BR>'||PADT_NEW_VAL_5||'<BR>'||PADT_NEW_VAL_6 
+			FROM #{schema}.D_OVERSEAS_TX_HISTORY_TEMP A 
+			JOIN #{schema}.D_OVERSEAS_PAY_OUTGO B 
+			ON A.PADT_EXTN_REF_NO = B.SEND_MSGNO 
+			WHERE A.PADT_APPG_DATE = REPLACE('#{acDate}','-','')
+		]]>
+		</sql>
+	</transaction>
+</job-sql-configs>

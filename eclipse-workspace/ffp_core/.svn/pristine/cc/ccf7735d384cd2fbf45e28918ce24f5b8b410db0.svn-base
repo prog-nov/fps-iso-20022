@@ -1,0 +1,452 @@
+package com.forms.ffp.core.utils;
+
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
+public class FFPDateUtils
+{
+	private static final Logger _logger = Logger.getLogger(FFPDateUtils.class);
+	public static final String ISO_NULL_DATE = "0001-01-01";
+	public static final String ISO_NULL_TIMESTAMP = "0001-01-01-00.00.00.000000";
+	public static final int NULL_INT_DATE = 0;
+	public static final int NULL_INT_TIME = 999999;
+	public static final String ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd-HH.mm.ss.SSS";
+	public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
+	public static final String ISO_TIME_FORMAT = "HH.mm.ss";
+	public static final String ISO_TIME_FORMAT2 = "HH.mm.ss.SSS";
+	public static final String ISO_TIME_FORMAT3 = "yyyy-MM-dd'T'HH:mm:ss";
+	public static final String DB2_TIMESTAMP_FORMAT = "yyyy-MM-dd-HH.mm.ss.SSS000";
+	public static final String DB2_DATE_FORMAT = "MM/dd/yyyy";
+	public static final String DB2_TIME_FORMAT = "HH:mm:ss";
+	public static final String WEB_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	public static final String WEB_TIMESTAMP_FORMAT2 = "yyyy-MM-dd HH:mm";
+	public static final String INT_DATE_FORMAT = "yyyyMMdd";
+	public static final String INT_SHORT_YEAR_DATE_FORMAT = "yyMMdd";
+	public static final String INT_TIME_FORMAT = "HHmmss";
+	public static final String INT_SHORT_TIME_FORMAT = "HHmm";
+	public static final String INT_SHORT_TIME_FORMAT2 = "HH:mm";
+	public static final String INT_TIMESTAMP_FORMAT = "yyyyMMddHHmmss";
+	public static final String DAY_FORMAT = "dd";
+	public static final String MONTH_FORMAT = "MM";
+	public static final String ENG_MONTH_FORMAT = "MMMMM";
+	public static final String YEAR_FORMAT = "yyyy";
+	public static final String SHORT_YEAR_FORMAT = "yy";
+	public static final String HOUR_FORMAT = "HH";
+	public static final String MINUTE_FORMAT = "mm";
+	public static final String SECOND_FORMAT = "ss";
+	public static final String HOUR_MINUTE_FORMAT = "HH:mm";
+	public static final int MONTH_FIELD = 2;
+	public static final int DAY_FIELD = 5;
+	public static final int YEAR_FIELD = 1;
+	public static final java.util.Date NULL_DATE = getDate("0001-01-01", "yyyy-MM-dd");
+	public static final Time NULL_TIME = Time.valueOf("00:00:00");
+	public static final Timestamp NULL_TIMESTAMP = Timestamp.valueOf("0001-01-01 00:00:00.000000000");
+	protected static final long DAY_MILLISECOND = 86400000L;
+	public static final String HKICL_DATE_FORMAT = "yyyy-MM-dd";
+	public static final String HKICL_TIMESTAMP_FORMAT = "yyyy-MM-dd-HH:mm:ss";
+	public static final String ITA_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+	public static final String XML_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S z";
+	public static final String FILE_DATE_FORMAT = "yyyyMMdd_HHmmss";
+	public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	public static final String DATE_TIME_TYPE_1_FORMAT = "YYYY-MM-DD HH24:MI:SS";
+	public static final int[] monthLength = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	public static final int[] leapMonthLength = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+	public static Timestamp getTimestamp(java.util.Date date, Time time)
+	{
+		Calendar c1 = Calendar.getInstance();
+		Calendar c2 = Calendar.getInstance();
+
+		c1.setTimeInMillis(date.getTime());
+		c2.setTimeInMillis(time.getTime());
+
+		c1.set(11, c2.get(11));
+		c1.set(12, c2.get(12));
+		c1.set(13, c2.get(13));
+		c1.set(14, c2.get(14));
+
+		return new Timestamp(c1.getTimeInMillis());
+	}
+
+	public static Timestamp getTimestamp(java.util.Date date, Time time, int nanos)
+	{
+		Timestamp ts = getTimestamp(date, time);
+		ts.setNanos(nanos);
+		return ts;
+	}
+
+	public static java.util.Date getDate(Timestamp timestamp)
+	{
+		long milliseconds = timestamp.getTime() + timestamp.getNanos() / 1000000;
+		return new java.util.Date(milliseconds);
+	}
+
+	public static java.util.Date getDate(long longTime)
+	{
+		return new java.util.Date(longTime);
+	}
+
+	public static Time getTime(Timestamp timestamp)
+	{
+		long milliseconds = timestamp.getTime();
+		return new Time(milliseconds);
+	}
+
+	public static Time getTime(java.util.Date date)
+	{
+		long milliseconds = date.getTime();
+		return new Time(milliseconds);
+	}
+
+	public static Timestamp getTimestamp(java.util.Date date)
+	{
+		long milliseconds = date.getTime();
+		return new Timestamp(milliseconds);
+	}
+
+	public static java.util.Date getDate(String dateStr, String format)
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		ParsePosition pos = new ParsePosition(0);
+		return sdf.parse(dateStr, pos);
+	}
+
+	public static java.sql.Date getSqlDate(String dateStr, String format)
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		ParsePosition pos = new ParsePosition(0);
+		return new java.sql.Date(sdf.parse(dateStr, pos).getTime());
+	}
+
+	public static String getDateStr(String dateStr, String fromFormat, String toFormat) throws NumberFormatException
+	{
+		return getDateStr(dateStr, fromFormat, toFormat, false);
+	}
+
+	public static String getDateStr(String dateStr, String fromFormat, String toFormat, boolean lenient) throws NumberFormatException
+	{
+		String str = dateStr;
+		if (fromFormat.equals("yyyy-MM-dd-HH.mm.ss.SSS000"))
+		{
+			str = dateStr.substring(0, "yyyy-MM-dd-HH.mm.ss.SSS".length());
+			fromFormat = "yyyy-MM-dd-HH.mm.ss.SSS";
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(fromFormat);
+		sdf.setLenient(lenient);
+		ParsePosition pos = new ParsePosition(0);
+
+		java.util.Date date = sdf.parse(str, pos);
+		if (date == null)
+		{
+			return null;
+		}
+		sdf.applyPattern(toFormat);
+		return sdf.format(date);
+	}
+
+	public static String getDateStr(java.util.Date givenDate, String format)
+	{
+		if (givenDate == null)
+		{
+			return null;
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(givenDate);
+	}
+
+	public static String getTimeStr(Time givenTime, String format)
+	{
+		if (givenTime == null)
+		{
+			return null;
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(givenTime);
+	}
+
+	public static String getTimeStr(Timestamp givenTime, String format)
+	{
+		if (givenTime == null)
+		{
+			return null;
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		return sdf.format(givenTime);
+	}
+
+	public static Time getTime(String timeStr)
+	{
+		return Time.valueOf(timeStr);
+	}
+
+	public static long getTimeInMillis(java.util.Date givenDate)
+	{
+		if (givenDate == null)
+		{
+			return 0L;
+		}
+		return givenDate.getTime();
+	}
+
+	public static long getTimeInMillis(String dateStr, String format) throws NumberFormatException
+	{
+		String str = dateStr;
+		if (format.equals("yyyy-MM-dd-HH.mm.ss.SSS000"))
+		{
+			str = dateStr.substring(0, "yyyy-MM-dd-HH.mm.ss.SSS".length());
+			format = "yyyy-MM-dd-HH.mm.ss.SSS";
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		ParsePosition pos = new ParsePosition(0);
+
+		java.util.Date date = sdf.parse(str, pos);
+		if (date == null)
+		{
+			return 0L;
+		}
+		return getTimeInMillis(date);
+	}
+
+	public static int dateTimeDiff(java.util.Date fmDate, java.util.Date toDate)
+	{
+		return fmDate.compareTo(toDate);
+	}
+
+	public static long diffDate(int year1, int month1, int day1, int year2, int month2, int day2)
+	{
+		GregorianCalendar cal1 = null;
+
+		cal1 = new GregorianCalendar(year1, month1, day1);
+		long m1 = cal1.getTime().getTime();
+
+		cal1.set(year2, month2, day2);
+		m1 -= cal1.getTime().getTime();
+		m1 /= 86400000L;
+
+		return m1;
+	}
+
+	public static long diffDate(java.util.Date lvDate, java.util.Date rvDate)
+	{
+		Calendar lvCal = Calendar.getInstance();
+		lvCal.setTime(lvDate);
+
+		Calendar rvCal = Calendar.getInstance();
+		rvCal.setTime(rvDate);
+
+		return diffDate(lvCal.get(1), lvCal.get(2), lvCal.get(5), rvCal.get(1), rvCal.get(2), rvCal.get(5));
+	}
+
+	public static long absDiffDate(java.util.Date lvDate, java.util.Date rvDate)
+	{
+		return Math.abs(diffDate(lvDate, rvDate));
+	}
+
+	public static java.util.Date addDateUt(java.util.Date dt, int prd, String prdUt)
+	{
+		if (dt == null)
+		{
+			return dt;
+		}
+		String prefix = StringUtils.left(prdUt, 1);
+		if ("D".startsWith(prefix))
+		{
+			dt = org.apache.commons.lang3.time.DateUtils.addDays(dt, prd);
+		}
+		if ("M".startsWith(prefix))
+		{
+			dt = org.apache.commons.lang3.time.DateUtils.addMonths(dt, prd);
+		}
+		if ("Y".startsWith(prefix))
+		{
+			dt = org.apache.commons.lang3.time.DateUtils.addYears(dt, prd);
+		}
+		if ("W".startsWith(prefix))
+		{
+			dt = org.apache.commons.lang3.time.DateUtils.addWeeks(dt, prd);
+		}
+		return dt;
+	}
+
+	public static boolean isSameMonth(java.util.Date dt1, java.util.Date dt2)
+	{
+		Calendar c = Calendar.getInstance();
+
+		c.setTime(dt1);
+		int month1 = c.get(2);
+
+		c.setTime(dt2);
+		int month2 = c.get(2);
+
+		return month1 == month2;
+	}
+
+	public static boolean isSameWeek(java.util.Date dt1, java.util.Date dt2)
+	{
+		Calendar c = Calendar.getInstance();
+		c.setFirstDayOfWeek(2);
+
+		c.setTime(dt1);
+		int week1 = c.get(3);
+
+		c.setTime(dt2);
+		int week2 = c.get(3);
+
+		return week1 == week2;
+	}
+
+	public static java.util.Date mergeDateTime(java.util.Date srcDt, Time srcTm)
+	{
+		if (srcDt == null)
+		{
+			return null;
+		}
+		if (srcTm == null)
+		{
+			return srcDt;
+		}
+		Timestamp ts = getTimestamp(srcDt, srcTm);
+
+		return new java.util.Date(ts.getTime());
+	}
+
+	public static boolean isLeapYear(int year)
+	{
+		return (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0));
+	}
+
+	public static int lastDayOfMonth(int year, int month)
+	{
+		return monthLength[(month - 1)];
+	}
+
+	public static java.util.Date truncateTime(java.util.Date dtTs)
+	{
+		java.util.Date dt = null;
+		if (dtTs != null)
+		{
+			dt = new java.util.Date();
+			Calendar calendar = Calendar.getInstance();
+			calendar.clear();
+			Calendar calRslt = Calendar.getInstance();
+			calRslt.clear();
+			calendar.setTime(dtTs);
+			int year = calendar.get(1);
+			int month = calendar.get(2);
+			int day = calendar.get(5);
+			calRslt.set(year, month, day, 0, 0, 0);
+			dt = calRslt.getTime();
+		}
+		return dt;
+	}
+
+	public static java.util.Date timeOnly(java.util.Date dtTs)
+	{
+		java.util.Date dt = null;
+		if (dtTs != null)
+		{
+			dt = new java.util.Date();
+			Calendar calendar = Calendar.getInstance();
+			calendar.clear();
+			Calendar calRslt = Calendar.getInstance();
+			calRslt.clear();
+			calendar.setTime(dtTs);
+			int year = calendar.get(1);
+			int month = calendar.get(2);
+			int day = calendar.get(5);
+			calRslt.set(year, month, day, 0, 0, 0);
+			dt = calRslt.getTime();
+		}
+		return dt;
+	}
+
+	public static java.util.Date convertTimestampToDate(Timestamp ts) throws SQLException, Exception
+	{
+		String dateStr = getDateStr(ts, "yyyy-MM-dd");
+
+		return getDate(dateStr, "yyyy-MM-dd");
+	}
+	
+	public static Date convertStringToDate(String ip_a_date) throws ParseException
+	{
+
+		return convertStringToDate(ip_a_date, "yyyy-MM-dd");
+	}
+	
+	public static Date convertStringToDate(String ip_a_date, String ip_a_format)
+			throws ParseException
+	{
+		SimpleDateFormat loc_sdf = new SimpleDateFormat(ip_a_format);
+		return loc_sdf.parse(ip_a_date);
+	}
+
+	public static int getDateField(java.util.Date date, int field)
+	{
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		return c.get(field);
+	}
+
+	public static Timestamp convertDecimalTimetoTimestamp(java.util.Date in_dt, float d)
+	{
+		return new Timestamp(org.apache.commons.lang3.time.DateUtils.addMinutes(in_dt, getRoundedMinute(d)).getTime());
+	}
+
+	public static Timestamp dateAddedMintoTimestamp(java.util.Date in_dt, int mi)
+	{
+		return new Timestamp(org.apache.commons.lang3.time.DateUtils.addMinutes(in_dt, mi).getTime());
+	}
+
+	public static int getRoundedMinute(float d)
+	{
+		return Math.round(d * 60.0F);
+	}
+
+	public static java.util.Date addMinutes(java.util.Date dateTIme, Integer minutes)
+	{
+		return org.apache.commons.lang3.time.DateUtils.addMinutes(dateTIme, minutes.intValue());
+	}
+
+	public static java.util.Date addSeconds(java.util.Date dateTime, Integer seconds)
+	{
+		return org.apache.commons.lang3.time.DateUtils.addSeconds(dateTime, seconds.intValue());
+	}
+
+	public static void main(String[] args) throws Exception
+	{
+		String dateStr1 = "2003-04-15-01.02.03.123456";
+		String dateStr2 = "01:02:03";
+		if (_logger.isDebugEnabled())
+		{
+			_logger.debug("Get dateStr1 in ISO date format = " + getDateStr(dateStr1, "yyyy-MM-dd-HH.mm.ss.SSS000", "yyyy-MM-dd"));
+		}
+		if (_logger.isDebugEnabled())
+		{
+			_logger.debug("Get dateStr2 in INT time format = " + getDateStr(dateStr2, "HH:mm:ss", "HHmmss"));
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+		java.util.Date lvDate = sdf.parse("2006-11-28");
+
+		java.util.Date rvDate = sdf.parse("2006-10-28");
+
+		System.out.println("New Date:" + org.apache.commons.lang3.time.DateUtils.addMinutes(lvDate, 1060));
+
+		System.out.println("New Date2 :" + convertDecimalTimetoTimestamp(lvDate, 17.67F));
+
+		System.out.println("Date diff = " + diffDate(rvDate, lvDate));
+		System.out.println("Date diff = " + absDiffDate(lvDate, rvDate));
+
+		System.out.println(String.format("Date Time: [%1$s]", new Object[] { getDateStr(getDate(1358446142619L), "yyyy-MM-dd") }));
+	}
+}

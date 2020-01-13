@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>DISPATCHER</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>DISPATCHER</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.dispatcher.DispatcherProcessor</processor>
+			<private-settings>
+				<thread-pool>10</thread-pool>
+				<check-token-period>60000</check-token-period>
+			</private-settings>
+			<!--<timer-group GROUP_NAME="BATCH LISTENER">
+				<timer>
+					<name>RECEIVE_MSG</name>
+					<command>RECEIVE_MSG.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>0</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+			</timer-group>-->
+			<timer-group GROUP_NAME="INWARD BATCH FILE">
+				<timer>
+					<name>INWARD_READER_FPSPYCI</name>
+					<command>INWARD_READER_FPSPYCI.BAT</command>
+					<delay>1</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>INWARD_PROCESS_FPSPYCI</name>
+					<command>INWARD_PROCESS_FPSPYCI.BAT</command>
+					<delay>60</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>INWARD_RESEND_FPSPYCI</name>
+					<command>INWARD_RESEND_FPSPYCI.BAT</command>
+					<delay>60</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+			</timer-group>
+			
+			<timer-group GROUP_NAME="TRANSACTION CHECK JOBS">
+				<timer>
+					<name>TRANSACTION_CHECKER</name>
+					<command>TRANSACTION_CHECK_PROCESSOR.BAT</command>
+					<delay IS_TIME="Y">00:01:00</delay>
+					<next-method>START</next-method>
+					<period>86400</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+			</timer-group>
+			
+			<timer-group GROUP_NAME="OUTWARD BATCH FILE">
+				<!-- <timer>
+					<name>OUTWARD_FPSPCRO</name>
+					<command>OUTWARD_FPSPCRO.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>OUTWARD_FPSPCRO</name>
+					<command>OUTWARD_FPSPCRO.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer> -->
+				<!-- OUTWARD BATCH FILE END -->
+				
+				<!-- OUTWARD RESPONSE BATCH FILE START-->
+				<!-- <timer>
+					<name>RESPONSE_FPSERRI_READER</name>
+					<command>RESPONSE_FPSERRI_READER.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>RESPONSE_FPSERRI_PROCESSOR</name>
+					<command>RESPONSE_FPSERRI_PROCESSOR.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>RESPONSE_FPSPCRR_READER</name>
+					<command>RESPONSE_FPSPCRR_READER.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+				<timer>
+					<name>RESPONSE_FPSPCRR_PROCESSOR</name>
+					<command>RESPONSE_FPSPCRR_PROCESSOR.BAT</command>
+					<delay>1000</delay>
+					<next-method>END</next-method>
+					<period>1800</period>
+					<timeunit>SECONDS</timeunit>
+				</timer> -->
+			</timer-group>
+			
+			<timer-group GROUP_NAME="HOUSEKEEP JOBS">
+				<timer>
+					<name>FFPHUS01</name>
+					<command>FFPHUS01.BAT</command>
+					<delay IS_TIME="Y">00:00:01</delay>
+					<next-method>START</next-method>
+					<period>86400</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+			</timer-group>
+			
+
+		</action>
+	 </action-flow>
+</job-config>

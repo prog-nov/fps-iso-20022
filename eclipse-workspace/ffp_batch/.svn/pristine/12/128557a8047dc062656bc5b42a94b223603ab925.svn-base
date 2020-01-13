@@ -1,0 +1,198 @@
+package com.forms.batch.job.unit.risp31;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import com.forms.batch.job.commom.SwiftContants;
+import com.forms.batch.job.commom.SwiftDataProcessValve;
+import com.forms.datapipe.ValveMapping;
+import com.forms.datapipe.config.ValveConfig;
+import com.forms.datapipe.context.InputContext;
+import com.forms.datapipe.context.OutputContext;
+import com.forms.datapipe.context.PipeContext;
+import com.forms.datapipe.exception.DataPipeException;
+import com.forms.datapipe.pipedata.PipeData;
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.util.CommonAPI;
+
+public class RisP31DataProcessValve extends SwiftDataProcessValve
+{
+	private BatchLogger logger = null;
+	
+//	@SuppressWarnings("static-access")
+	public void init(ValveConfig ip_config, PipeContext ip_pipeContext)
+			throws DataPipeException
+	{
+		super.init(ip_config, ip_pipeContext);
+		logger = BatchLogger.getLogger("RISP31", "RISP31-READ 0175040D.dq1 IN D_OVERSEAS_PAY_OUTGO_TEMP", RisP31DataProcessValve.class);
+	}
+
+//	List<ValveForward>
+	public List process(ValveMapping ip_valveMapping,
+			PipeData ip_pipeData, InputContext ip_in, OutputContext ip_out)
+			throws DataPipeException
+	{
+		// count file record
+		synchronized (config)
+		{
+			docCnt++;
+			ip_in.getPipeContext().setAttribute("docCnt", new Integer(docCnt));
+		}
+
+		String loc_swiftInfo = ip_pipeData.getPipeFieldStringValue("CP04_MSG_DATA");
+		dealSwiftString(loc_swiftInfo, ip_pipeData, SwiftContants.CONTENT_END_MODE1);
+		
+		// 23E, 71F
+		deal23EAnd71F(ip_pipeData);
+		
+		return ip_valveMapping.findForwards(CommonAPI.DATAPIPE_SUCCESS);
+	}
+
+	private void deal23EAnd71F(PipeData ip_pipeData) throws DataPipeException
+	{
+		int seq = 0;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = "";
+		try
+		{
+			String loc_23E = ip_pipeData.getPipeFieldStringValue("23E_INDICATE_CODE");
+			String loc_71F = ip_pipeData.getPipeFieldStringValue("71F_DTCHG");
+			
+			// if loc_23 is empty and loc_71F is empty, return
+			if((null == loc_23E || "".equals(loc_23E))
+					&& (null == loc_71F || "".equals(loc_71F)))
+			{
+				return;
+			}else
+			{
+				conn = ConnectionManager.getInstance().getConnection();
+				String schema = ConnectionManager.getInstance().getDefaultSchema();
+				sql = "INSERT INTO " + schema + ".D_OVERSEAS_PAY_OUTGO_MSGDATA_SUB_TEMP					" +
+				  	  " (APPG_DATE, INST_NO, PAY_NO, REC_SEQ_NO, SEQ_NO, SITISTCD, SITSCCUR, SITSCAMT) 	" +
+				  	  "	VALUES(?, ?, ?, ?, ?, ?, ?, ?)													";
+				pstmt = conn.prepareStatement(sql);
+				
+				String appg_date = ip_pipeData.getPipeFieldStringValue("CP04_APPG_DATE");
+				String inst_no = ip_pipeData.getPipeFieldStringValue("CP04_INST");
+				String pay_no = ip_pipeData.getPipeFieldStringValue("CP04_PAY_NO");
+				String rec_seq_no = ip_pipeData.getPipeFieldStringValue("CP04_MSG_SEQ_NO");
+				
+				if(null != loc_23E && !"".equals(loc_23E.trim()))
+				{
+					String[] loc_23E_arr = loc_23E.split("\\$\\$\\$");
+					if(null != loc_23E_arr)
+					{
+						String temp = "";
+						for(int i=0;i<loc_23E_arr.length;i++)
+						{
+							String tmp = loc_23E_arr[i];
+							seq ++;
+							temp = "00" + String.valueOf(seq);
+							pstmt.setString(1, appg_date);
+							pstmt.setString(2, inst_no);
+							pstmt.setString(3, pay_no);
+							pstmt.setString(4, rec_seq_no);
+							pstmt.setString(5, temp.substring(temp.length() - 2));
+							pstmt.setString(6, tmp);
+							pstmt.setString(7, "");
+							pstmt.setInt(8, 0);
+							pstmt.addBatch();
+						}
+					}
+				}
+				
+				if(null != loc_71F && !"".equals(loc_71F.trim()) )
+				{
+					String[] loc_71F_arr = loc_71F.split("\\$\\$\\$");
+					if(null != loc_71F_arr)
+					{
+						String temp = "";
+						String ccy = "";
+						String amt = "";
+						for(int i=0;i<loc_71F_arr.length;i++)
+						{
+							String tmp = loc_71F_arr[i];
+							seq ++;
+							temp = "00" + String.valueOf(seq);
+							
+							ccy = tmp.substring(0, 3);
+							amt = tmp.substring(3).replaceAll(",", ".");
+							
+							pstmt.setString(1, appg_date);
+							pstmt.setString(2, inst_no);
+							pstmt.setString(3, pay_no);
+							pstmt.setString(4, rec_seq_no);
+							pstmt.setString(5, temp.substring(temp.length() - 2));
+							pstmt.setString(6, "");
+							pstmt.setString(7, ccy);
+							pstmt.setString(8, amt);
+							pstmt.addBatch();
+						}
+					}
+					pstmt.executeBatch();
+				}
+			}
+		}catch(SQLException ip_e)
+		{
+			logger.error(ip_e.getNextException().toString());
+			throw new DataPipeException(ip_e);
+		}catch(BatchFrameworkException ip_ee)
+		{
+			throw new DataPipeException(ip_ee);
+		}catch(Exception ip_eee)
+		{
+			throw new DataPipeException(ip_eee);
+		}
+		finally
+		{
+			try
+			{
+				if(null != pstmt)
+				{
+					pstmt.close();
+				}
+				if(null != conn)
+				{
+					conn.close();
+				}
+			}catch(SQLException e)
+			{
+				throw new DataPipeException(e);
+			}
+		}
+	}
+	
+	protected void initSwiftSignSet()
+	{
+		for(int i=0;i<SwiftContants.MT103_SWIFT_FIELD.length;i++)
+		{
+			String loc_str = SwiftContants.MT103_SWIFT_FIELD[i];
+			SWIFT_SIGN_SET.add(SwiftContants.CONTENT_START_MODE1 + loc_str + SwiftContants.MSG_DELIMITER);
+		}
+		for(int i=0;i<SwiftContants.MT202_SWIFT_FIELD.length;i++)
+		{
+			String loc_str = SwiftContants.MT202_SWIFT_FIELD[i];
+			SWIFT_SIGN_SET.add(SwiftContants.CONTENT_START_MODE1 + loc_str + SwiftContants.MSG_DELIMITER);
+		}
+		for(int i=0;i<SwiftContants.I996_SWIFT_FIELD.length;i++)
+		{
+			String loc_str = SwiftContants.I996_SWIFT_FIELD[i];
+			SWIFT_SIGN_SET.add(SwiftContants.CONTENT_START_MODE1 + loc_str + SwiftContants.MSG_DELIMITER);
+		}
+		for(int i=0;i<SwiftContants.MT111_SWIFT_FIELD.length;i++)
+		{
+			String loc_str = SwiftContants.MT111_SWIFT_FIELD[i];
+			SWIFT_SIGN_SET.add(SwiftContants.CONTENT_START_MODE1 + loc_str + SwiftContants.MSG_DELIMITER);
+		}
+		for(int i=0;i<SwiftContants.MT110_SWIFT_FIELD.length;i++)
+		{
+			String loc_str = SwiftContants.MT110_SWIFT_FIELD[i];
+			SWIFT_SIGN_SET.add(SwiftContants.CONTENT_START_MODE1 + loc_str + SwiftContants.MSG_DELIMITER);
+		}
+	}
+}

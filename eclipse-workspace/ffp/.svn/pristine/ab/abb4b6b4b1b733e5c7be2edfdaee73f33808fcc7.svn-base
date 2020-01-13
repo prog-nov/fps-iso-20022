@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction">
+
+	<sql id="INSERT_LIST_TXJNLACTION">
+		INSERT INTO TB_TX_JNLACTION
+		(
+			JNL_NO, MSG_ID, MSG_DIRECTION,
+			MSG_SYSTEMID, MSG_TYPE, MSG_STATUS,
+			MSG_CODE, MSG_RESULT, MSG_CREAT_TS,
+			MSG_PROCE_TS, MSG_COMPL_TS, REF_MSG_ID,
+			IS_AUTOCHECK
+		)
+		VALUES
+		(
+			#{jnlAction.jnlNo, jdbcType=VARCHAR}, #{jnlAction.msgId, jdbcType=VARCHAR}, #{jnlAction.msgDirection, jdbcType=VARCHAR},
+			#{jnlAction.msgSystemId, jdbcType=VARCHAR}, #{jnlAction.msgType, jdbcType=VARCHAR}, #{jnlAction.msgStatus, jdbcType=VARCHAR},
+			#{jnlAction.msgCode, jdbcType=VARCHAR}, #{jnlAction.msgResult, jdbcType=VARCHAR}, #{jnlAction.msgCreatTs, jdbcType=TIMESTAMP},
+			#{jnlAction.msgProceTs, jdbcType=TIMESTAMP}, #{jnlAction.msgComplTs, jdbcType=TIMESTAMP}, #{jnlAction.refMsgId, jdbcType=VARCHAR},
+			#{jnlAction.isAutoCheck, jdbcType=VARCHAR}
+		)
+	</sql>
+
+	<sql id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<!-- <choose> <when test="_databaseId == 'mysql'"> -->
+		INSERT INTO TB_TX_JNLACTION
+		(
+			JNL_NO, MSG_ID, MSG_DIRECTION,
+			MSG_SYSTEMID, MSG_TYPE, MSG_STATUS,
+			MSG_CODE, MSG_RESULT, MSG_CREAT_TS,
+			MSG_PROCE_TS, MSG_COMPL_TS, REF_MSG_ID,
+			IS_AUTOCHECK
+		)
+		VALUES
+		(
+			#{jnlAction.jnlNo, jdbcType=VARCHAR}, #{jnlAction.msgId, jdbcType=VARCHAR}, #{jnlAction.msgDirection, jdbcType=VARCHAR},
+			#{jnlAction.msgSystemId, jdbcType=VARCHAR}, #{jnlAction.msgType, jdbcType=VARCHAR}, #{jnlAction.msgStatus, jdbcType=VARCHAR},
+			#{jnlAction.msgCode, jdbcType=VARCHAR}, #{jnlAction.msgResult, jdbcType=VARCHAR}, #{jnlAction.msgCreatTs, jdbcType=TIMESTAMP},
+			#{jnlAction.msgProceTs, jdbcType=TIMESTAMP}, #{jnlAction.msgComplTs, jdbcType=TIMESTAMP}, #{jnlAction.refMsgId, jdbcType=VARCHAR},
+			#{jnlAction.isAutoCheck, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY UPDATE
+			MSG_DIRECTION=#{jnlAction.msgDirection, jdbcType=VARCHAR},
+			MSG_SYSTEMID=#{jnlAction.msgSystemId, jdbcType=VARCHAR},
+			MSG_TYPE=#{jnlAction.msgType, jdbcType=VARCHAR},
+			MSG_STATUS=#{jnlAction.msgStatus, jdbcType=VARCHAR},
+			MSG_CODE=#{jnlAction.msgCode, jdbcType=VARCHAR},
+			MSG_RESULT=#{jnlAction.msgResult, jdbcType=VARCHAR},
+			MSG_CREAT_TS=#{jnlAction.msgCreatTs, jdbcType=TIMESTAMP},
+			MSG_PROCE_TS=#{jnlAction.msgProceTs, jdbcType=TIMESTAMP},
+			MSG_COMPL_TS= #{jnlAction.msgComplTs, jdbcType=TIMESTAMP},
+			REF_MSG_ID=#{jnlAction.refMsgId, jdbcType=VARCHAR},
+			IS_AUTOCHECK=#{jnlAction.isAutoCheck, jdbcType=VARCHAR}
+		<!-- </when> <otherwise> </otherwise> </choose> -->
+	</sql>
+	
+	<insert id="SingleInsertUpdateTxJnlAction">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.InsertUpdateTxJnlAction"></include>
+	</insert>
+	<sql id="InsertUpdateTxJnlAction">
+		INSERT INTO TB_TX_JNLACTION
+		(
+			JNL_NO, MSG_ID, MSG_DIRECTION,
+			MSG_SYSTEMID, MSG_TYPE, MSG_STATUS,
+			MSG_CODE, MSG_RESULT, MSG_CREAT_TS,
+			MSG_PROCE_TS, MSG_COMPL_TS, REF_MSG_ID,
+			IS_AUTOCHECK
+		)
+		VALUES
+		(
+			#{jnlNo, jdbcType=VARCHAR}, #{msgId, jdbcType=VARCHAR}, #{msgDirection, jdbcType=VARCHAR},
+			#{msgSystemId, jdbcType=VARCHAR}, #{msgType, jdbcType=VARCHAR}, #{msgStatus, jdbcType=VARCHAR},
+			#{msgCode, jdbcType=VARCHAR}, #{msgResult, jdbcType=VARCHAR}, #{msgCreatTs, jdbcType=TIMESTAMP},
+			#{msgProceTs, jdbcType=TIMESTAMP}, #{msgComplTs, jdbcType=TIMESTAMP}, #{refMsgId, jdbcType=VARCHAR},
+			#{isAutoCheck, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY UPDATE
+			MSG_DIRECTION=#{msgDirection, jdbcType=VARCHAR},
+			MSG_SYSTEMID=#{msgSystemId, jdbcType=VARCHAR},
+			MSG_TYPE=#{msgType, jdbcType=VARCHAR},
+			MSG_STATUS=#{msgStatus, jdbcType=VARCHAR},
+			MSG_CODE=#{msgCode, jdbcType=VARCHAR},
+			MSG_RESULT=#{msgResult, jdbcType=VARCHAR},
+			MSG_CREAT_TS=#{msgCreatTs, jdbcType=TIMESTAMP},
+			MSG_PROCE_TS=#{msgProceTs, jdbcType=TIMESTAMP},
+			MSG_COMPL_TS= #{msgComplTs, jdbcType=TIMESTAMP},
+			REF_MSG_ID=#{refMsgId, jdbcType=VARCHAR},
+			IS_AUTOCHECK=#{isAutoCheck, jdbcType=VARCHAR}
+		<!-- </when> <otherwise> </otherwise> </choose> -->
+	</sql>
+	
+	<select id="inquiryByJnlNo" resultType="com.forms.ffp.persistents.bean.FFPTxJnlAction">
+		SELECT
+			*
+		FROM
+			TB_TX_JNLACTION T
+		WHERE
+			T.JNL_NO = #{jnlNo}
+	</select>
+	
+	<select id="inquiryJnlActionByMsgId" resultType="com.forms.ffp.persistents.bean.FFPTxJnlAction">
+		SELECT *
+		FROM TB_TX_JNLACTION T
+		WHERE T.MSG_ID = #{msgId}
+	</select>
+</mapper>

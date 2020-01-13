@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.framework.pacs003.dao.FFPIPacs003Dao">
+	<!-- 添加消息 -->
+	<insert id="tbMsgJnl">
+		INSERT INTO TB_MSG_JNL (
+		MSG_TRAN_ID ,
+		END_TO_END_ID,
+		MSG_REASON,
+		MSG_TRANS_STATUS
+		)
+		VALUES (
+		#{msgTranId, jdbcType=VARCHAR},
+		#{endToEndId, jdbcType=VARCHAR},
+		#{msgReason, jdbcType=VARCHAR},
+		#{msgTransStatus, jdbcType=VARCHAR}
+		)
+	</insert>
+	<insert id="tbMsgJnlAction">
+		INSERT INTO TB_MSG_JNL_ACTION (
+		MSG_TRAN_ID ,
+		MSG_ID,
+		ACTION_TYPE,
+		END_TO_END_ID,
+		ACTION_TRANS_STATUS
+		)
+		VALUES (
+		#{msgTranId, jdbcType=VARCHAR},
+		#{msgId,jdbcType=VARCHAR},
+		#{ActionType, jdbcType=VARCHAR},
+		#{endToEndId, jdbcType=VARCHAR},
+		#{actionTransStatus, jdbcType=VARCHAR}
+		)
+	</insert>
+	<insert id="tbMsgData">
+		INSERT INTO TB_MSG_DATA (
+		MSG_ID,
+		MSG_CONTENT
+		)
+		VALUES (
+		#{msgId, jdbcType=VARCHAR},
+		#{msgContent, jdbcType=VARCHAR}
+		)
+	</insert>
+</mapper>

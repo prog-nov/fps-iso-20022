@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.tx.inquiry.I100.FFPIDao_I100">
+
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERT_TB_TX_I100DAT">
+		INSERT INTO TB_TX_I100DAT
+		(
+			JNL_NO,	MSG_ID,		CCY,
+			BALANCE_TYPE_CODE, BALANCE, CREDIT_DEBIT_IND,
+			BALANCE_RPT_TS
+		)
+		VALUES
+		(
+			#{jnlNo, jdbcType=VARCHAR}, #{msgId, jdbcType=VARCHAR}, #{ccy, jdbcType=VARCHAR},	
+			#{balanceTypeCode, jdbcType=VARCHAR}, #{balance, jdbcType=DECIMAL}, #{creditDebitInd, jdbcType=VARCHAR},
+			#{balanceRptTs, jdbcType=TIMESTAMP}
+		)
+	</insert>
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<select id="inquiryByJnlNo" resultType="com.forms.ffp.persistents.bean.tx.inquiry.I100.FFPJbI100">
+		SELECT * FROM TB_TX_I100DAT 
+		WHERE JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	
+	<update id="updateI100" parameterType="com.forms.ffp.persistents.bean.tx.inquiry.I100.FFPJbI100">
+		UPDATE TB_TX_I100DAT A 
+		SET BALANCE_TYPE_CODE = #{balanceTypeCode, jdbcType=VARCHAR},
+			BALANCE = #{balance, jdbcType=DECIMAL},
+			CREDIT_DEBIT_IND = #{creditDebitInd, jdbcType=VARCHAR},
+			BALANCE_RPT_TS = #{balanceRptTs, jdbcType=TIMESTAMP}
+		WHERE A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- inquiry jnl_no by MsgId -->
+	<select id="inquiryJnlNoByMsgId" resultType="String">
+		SELECT A.JNL_NO
+		FROM tb_tx_I100DAT A
+		WHERE A.MSG_ID = #{msgId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="inquiryLastI100DATByCcy" resultType="com.forms.ffp.persistents.bean.tx.inquiry.I100.FFPJbI100">
+		SELECT *
+		FROM TB_TX_I100DAT A
+		WHERE A.CCY = #{ccy, jdbcType=VARCHAR}
+		ORDER BY A.JNL_NO DESC
+		LIMIT 1
+	</select>
+</mapper>

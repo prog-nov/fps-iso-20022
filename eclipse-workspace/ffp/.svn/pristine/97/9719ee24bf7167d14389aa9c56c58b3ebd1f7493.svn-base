@@ -1,0 +1,608 @@
+/**
+ * Copy Right Information : Forms Syntron <br>
+ * Project : 四方精创 Java EE 开发平台 <br>
+ * Description : 使用require定义国际化资源模块<br>
+ * Author : LinJisong <br>
+ * Version : 1.0.0 <br>
+ * Since : 1.0.0 <br>
+ * Date : 2016-4-5<br>
+ */
+define({
+	form	:	{
+		login	:	{
+			username	:	'user name',
+			password	:	'password'
+		}
+	},
+	title	:	{
+		add	:	'add',
+		edit:	'edit',
+		remove:	'remove',
+		detail: 'detail',
+		home  : 'home',
+		lang  : 'change language',
+		search  : 'search criteria',
+		naddress  : 'now location',
+		systemTip :'system hint',
+		systemError :'system error',
+		systemWarning:'operate remind',
+		systemConfirm:'system confirm',
+		pleaseWait:   'please wait',
+		tipDetail :   'remind details'
+	},
+	label   :   {
+		all :   'all',
+		pub :   'public',
+		pleaseSelect : 'please select'
+	},
+	button	:	{// 按钮
+		find:	'lookup',
+		add:	'add',
+		reset:	'reset',
+		submit:	'submit',
+		cancel:	'cancel',
+		save:	'save',
+		edit:	'edit',
+		remove:	'remove',
+		login:	'login',
+		close:	'close',
+		look:	'look',
+		submitSearch:'submit search'
+	},
+	check	:	{// 表单检验
+		pleaseInput	:	'please input “{1}”！',
+		pleaseSelect:	'please select “{1}”！'
+	},
+	operate		:	{// 操作提示
+		edit			:	'please select record to update！',
+		selectToRemove	:	'please select record to remove！',
+		remove			:	'are you sure remove {1} record? ',
+		removeOk   	    :	'operate success，delete {1} record！',
+		nothingRole		:	'do role not open！',
+		openTabMax		:	'open tab to max count。',
+		exitSytem       :   'exit system？',
+		closeHome       :   'are you sure close home？',
+		notClose        :   '{1}not close！',
+		doOk            :   'operate success！',
+		doFail          :   'operate Failed！',
+		load			:	'loading...',
+		systemDo		:	'system doing...',
+		selectToRecord	:   'please select record to operate！',
+		selectRecordToMore : 'select record to max, can select one record！',
+	},
+	error	:	{// 异常提示
+		loadtype		:	'不支持的资源类型，无法加载！',
+		loadjs			:	'加载JS脚本失败：{1}',
+		loadcss			:	'加载CSS样式表失败：{1}',
+		loadData		:	'load data error！',
+		loadnoregister	:	'要加载的模块 {1} 尚未注册！',
+		requestError	:	'请求数据格式非法！',
+		pageNotFound	:	'页面未找到!',
+		serverError		:	'服务器异常！',
+		loadError		:	'加载出现错误，请联系管理员',
+		requestTimeout  :   '请求超时，请重新操作。',
+		ajaxSubtmitError:   'Ajax提交出现错误，URL：{1}',
+		ajaxDebugError  :   'Ajax调试出现错误，URL：{1}，{2}',
+		ajaxSubmitError :   'Ajax提交表单出现错误，URL：{1}',
+		inputContentError:  '输入内容不正确。',
+		hasObject		:   '已经存在对象 {1}，请检查...',
+		notFindKey      :   '未找到键值为{1}的参数。',
+		notFindNode     :   '未找到节点{1}。'
+	},
+	validate :	{
+		select			:	'please select the item ...',
+		engNum			:	'请输入英文字母或数字',
+		chsEngNum		: 	'只允许汉字、英文字母或数字',
+		name			:	'用户名不合法(字母开头，允许4-16字节，允许字母数字下划线)',
+		code			:	'只允许汉字、英文字母、数字及下划线',
+		minLength		:	'最少输入 {0}个字符.',
+		maxLength		:	'最多输入 {0}个字符.',
+		tel				:	'输入的内容必须是电话号码(中国)格式.',
+		mobile			:	'输入的内容必须是移动电话号码(中国)格式.',
+		telOrMobile		:	'输入的内容必须是电话号码(中国)或移动电话号码(中国)格式.',
+		fax				:	'输入的内容必须是传真号码(中国)格式.',
+		zipCode			:	'输入的内容必须是邮政编码(中国)格式.',
+		incorrect		:	'输入内容不正确...',
+		same			:	'两次输入不一致！',
+		contains		:	'输入的内容必须包含 {0}.',
+		startsWith		:	'输入的内容必须以 {0} 作为起始字符.',
+		endsWith		:	'输入的内容必须以 {0} 作为起始字符.',
+		longDate		:	'输入的内容必须是长日期时间(yyyy-MM-dd hh:mm:ss)格式.',
+		shortDate		:	'输入的内容必须是短日期(yyyy-MM-dd)格式.',
+		existChinese	:	'输入的内容必须是包含中文汉字.',
+		chinese			:	'输入的内容必须是纯中文汉字.',
+		english			:	'输入的内容必须是纯英文字母.',
+		fileName		:	'输入的内容必须是合法的文件名(不能包含字符 \\/:*?\'<>|).',
+		ip				:	'输入的内容必须是正确的 IP地址v4 格式.',
+		url				:	'输入的内容必须是正确的 url 格式.',
+		qq				:	'输入的内容必须是正确 QQ 号码格式.',
+		carNo			:	'输入的内容必须是合法的汽车车牌号码格式.',
+		carEngineNo		:	'输入的内容必须是合法的汽车发动机序列号格式.',
+		idCard			:	'输入的内容必须是合法的身份证号码(中国)格式.',
+		integer			:	'输入的内容必须是合法的整数格式.',
+		integerRange	:	'输入的内容必须是合法的整数格式且值介于 {0} 与 {1} 之间.',
+		numeric			:	'输入的内容必须是指定类型的数字格式.',
+		numericRange	:	'输入的内容必须是指定类型的数字格式且介于 {0} 与 {1} 之间.'
+	},	
+	system  :  {
+		main :{
+			noteice : 'Noteice',
+			memo	: 'Memo'
+		},
+		news  :{
+			title  :{
+				msgTitle:'消息标题',
+				msgTypeName:'消息类型',
+				msgLevelName:'消息级别',
+				msgContent:'消息内容',
+				sendOper:'发布人',
+				sendDate:'发布日期',
+				sendTime:'发布时间'
+			},
+			content  :{
+				addTitle:'新增消息',
+				editTitle:'修改消息',
+				detailTitle:'消息详细'
+			}
+		},
+		taskrule :{
+			title:{
+				limitusers	: 'Limit Users',
+				limitorgs	: 'Limit Orgs',
+				limitroles	: 'Limit Roles',
+				linkdetail	: 'Link Detail',
+                detailmenuname: 'Link Detail menu name',
+				islinkdetail: 'Is Link Detail',
+				modify		: 'Modify Task Node',
+				insert		: 'Add Task Node',
+				gotoadduser	: 'Add Users',
+				userId		: 'User ID：',
+				userName	: '  User Name：'
+			},
+			content:{
+				userexists	: 'Users already add or exists\r\n{1}',	
+				yes			: 'Yes',
+				no			: 'No',
+				deleteAllUser: 'Are you sure to delete all users?',
+				doadd		: 'Are you sure to add this task rule?',
+				doupdate	: 'Are you sure to update this task rule?',
+				notseletuser: 'Hasn‘t chose any users,please choose what you want',
+				doOk		: 'Operated success,can continue to add;\r\nClick to close tithout adding'
+			},
+			validate:{
+				tasknodenotnull : 'Task Node cann’t be empty' 
+			}
+		},
+		multiuploader : {
+			success    : " Upload Success,The File id is ：{1}",
+			dbclickdel : "Double Click For Delete",
+			del        : "File {1} Deleted From The Queue",
+			uploading  : " Uploading : {1}%",
+			checkerror : "Environmental Check Does Not pass",
+			
+		},
+		/*gcl*/
+
+		sysmanager : {
+			user  :{
+			 username:'user name',
+			 nickName:'nick name',
+			 status:'status',
+			 agencyNumber:'agency number',
+			 IDType:'ID type',
+			 IDNumber:'ID number',
+			 mobileTelephone:'mobile telephone',
+			 phoneNumber:'phone number',
+			 emailAddress:'email address',
+			 limitationIP:'limitation IP',
+			 MaximumSessionNumber:'Maximum session number',
+			 theLockSymbol:'theLock symbol',
+			 LockTheDate:'Lock the date',
+			 lockingTime:'locking time',
+			 TryLoginFrequency:'Try login frequency',
+			 FinallyLoginIP:'Finally login IP',
+			 lastvisitDate:'lastvisit date',
+			 LastLoginTime:'Last login time',
+			 LastChangePassword:'Last change password',
+			 changeThePasswordTime:'change the password time',
+			 adduser:'adduser',
+			 usermod:'usermod',
+			 roleName:'role name',
+			 remove1:'Are you sure you want to delete the selected',
+			 remove2: 'users?',
+			 removeS:'Successful operation, delete',
+			 removeS2:'users successfully',
+			},
+			onlineuser:{
+				SessionID:'Session ID',
+				username:'username',
+				agencyNumber:'agency number',
+				serverIP:'server IP',
+				clientIP:'client IP',
+				browser:'browser',
+				operatingSystem:'operating system',
+				entryDate:'entry date',
+				LogonTime:'Logon time',
+			},
+			role:{
+				RoleCode:'Role code',
+				roleName:'role name',
+				describe:'describe',
+				AddRoles:'Add roles',
+				modifyRole:'modify role',
+				authorizationID:'authorization ID',
+				menu:'menu',
+				menuID:'menu ID',
+				remove1:'Are you sure you want to delete the selected',
+				remove2: 'roles?',
+				removeS:'Successful operation, delete',
+				removeS2:'characters successfully.',
+				RoleAssignment:'Role (assignment) name',
+				menutype:'Menu display properties',
+				operability:'Display operation',
+				uoperability:'inoperability',
+				choose:'please choose',				
+			},
+			roleallot:{
+				describe:'describe',
+				RoleAssignment:'Role (assignment) code.',
+				assignmentName:'Role (assignment) name.',
+				rolesAssignments:'New roles (assignments)',  
+				ModifyRoles:'Modify roles (assignments)', 
+				remove1:'Are you sure you want to delete the selected',
+				remove2:'roles (assignments)？',
+				removeS:'Successfully delete ',
+				removeS2:'roles (assignment)',
+				authorizationID:'authorization ID',
+				menu:'menu',
+				menuID:'menu ID',
+			},
+			rolelimit:{
+				describe:'describe',
+				role:'role',
+				tot1:'(Total',
+				tot2:'roles)',
+				NewRole:'New role constraint',
+				RoleConstraints:'Role constraints',
+				CharacterName:'Character name',
+				RoleDescription:'Role description',
+				ModifyRoleConstraint:'Modify role constraint',
+				check1:'Please check the roles that make up the constraint, at least check',
+				check2:'roles',
+				remove1:'Are you sure you want to delete the selected',
+				remove2:'group role constraint？',
+				removeS:'The operation succeeds, and the ',
+				removeS2:'group role constraint is deleted successfully.',
+			},
+			param:{
+				enum:{
+					ParametersCode:'Parameters code',
+					parameterName:'parameter name',
+					section:'section',
+					parameterCharacteristics:'parameter characteristics',
+					Canedit:'Can you edit',
+					yes:'yes',
+					no:'no',
+					definition:'New parameter definition',
+					compile:'Edit parameter definition',
+					detail:'Edit the column phenotype parameter details.',
+					dataCode:'data code',
+					TextData:'Text data',
+					DataParameter:'Data parameter',
+					orderNumber:'order number',
+					describe:'describe',
+					treeParameter:'tree parameter',
+					saveSuccessfully:'save successfully！',
+					 noContent:'There is no content to be saved！',
+					 remove1:'Are you sure you want to delete the selected',
+					 remove2:'parameter items?',
+					 removeS:'The operation was successful, and ',
+					 removeS2:' parameter items were deleted successfully',
+					 succeed1:'Added success',
+					 succeed2:'Modify the success!',
+					 node :'node',
+					 DragTheSuccess :'Drag the success',
+					 sureToDelete:'You are sure to delete the selected',
+					 sureToDelete2:'and all its child nodes.',
+					 succeedRemove:'Deleted successfully',
+					
+				},
+				difine:{
+					yes:'yes',
+					no:'no',
+					describe:'describe',
+					ParametersCode:'Parameters code',
+					parameterName:'parameter name',
+					ParametersGroup:'Parameters of the group',
+					ParameterStorageType:'Parameter storage type',
+					Canedit:'Can you edit',
+					AddParameterDefinitions:'Add parameter definitions',
+					ModifyParameterDefinition:'Modify parameter definition',
+					unmodified:"You haven't made any changes you haven't made any changes.",
+					remove1:'Are you sure you want to delete the selected',
+					remove2:'parameter items?',
+					removeS:'The operation was successful and ',
+					removeS2:'parameters were deleted successfully',
+					
+				}
+			},
+			holiday:{
+				PleaseSelectDate:'Please select date'
+			},
+			org:{
+				remove1:'You are sure to delete the selected',
+				remove2:'and all its suborganizations',
+				succeedRemove:'Deleted successfully',
+				orgQ1:'Are you sure you want to drag',
+				orgQ2:'to ',
+				orgQ3:'？',
+			},
+			syslog:{
+				login:{
+					 logout:'The user to log out',
+					 TimeoutLogout:'Timeout logout',
+					 SessionID:'Session ID',
+					 userId:'user Id',
+					 username:'username',
+					 agencyNumber:'agency number',
+					 OrganizationNames:'Organization names',
+					 serverIP:'server IP',
+					 clientIP:'client IP',
+					 browser:'browser',
+					 operatingSystem:'operating system',
+					 entryDate:'Login date',
+					 LogonTime:'The login time',
+					 LogOutDate:'Log out of date',
+					 LogOutTime:'Log out of time',
+					 AppropriateType:'Appropriate type',
+				},
+				visit:{
+					through:'through',
+					Refused:'Refused to',
+					SessionID:'Session ID',
+					 userId:'user Id',
+					 username:'username',
+					 agencyNumber:'agency number',
+					 OrganizationNames:'Organization names',
+					 AuthorizationID:'Authorization ID',
+					 serverIP:'server IP',
+					 clientIP:'client IP',
+					 browser:'browser',
+					 operatingSystem:'operating System',
+					 authorizationResult:'authorization result',
+					 menuPath:'The menu path',
+					 accessURL:'To access the URL',
+					 operationDate:'Operation date',
+					 operatingTime:'Operating time',
+					 operatingTime2:'Operating time',
+					
+				}
+			},
+			cache:{
+				cacheName:'cache name',
+				cacheType:'cache type',
+				isKinematic:'is kinematic',
+				Kb:'KB',
+				cached:'Number of cached',
+				visits:'visits',
+				hitCounts:'Hit the number',
+				attributes:'The attributes',
+				describe : 'describe',
+				wipeCache:'Clear the cache',
+				remove1:'Are you sure you want to remove the selected',
+				remove2:'bar cache entry?',
+				checkRe:'Please check the cached items that need to be removed！',
+				sureReAll:'Are you sure you want to clear all caches?',
+				sureRe:'You are sure to clear the cache',
+				checkAll:'check all',
+				removeChecked:'Removes the selected entry',	
+			},
+			taskrule:{
+				user:{
+					username:'username',
+					nickName : 'nick name',
+					status : 'status',
+					startUsing:'start using',
+					stop:'block up',
+					agencyNumber:'agency number',
+				},
+				taskrule:{
+					nodeCode:'Task node code',
+					nodeName:'Task node name',
+					LimitedRole:'Limited role',
+					QualifiedInstitutions:'Qualified institutions',
+					QualifiedPerson:'Qualified person',
+					EnterTheDetails:'Enter the details',
+					username:'username',
+					roleName:'role name',
+					organizationID:'organization ID',
+					organization:'organization',
+				}
+				
+			},
+			menulocale:{
+				guide:{
+					menuName:'The name of the menu:',
+					alertmm:'Please modify the data in the input box before performing the save operation。',
+				},
+				locale:{
+					menu:'menu',
+					alertOut:'The data has been changed, and the data has been modified？',
+					alertOk:'Please modify the data in the table to save the operation.',
+					alertIng:'Please select one line to edit.',
+					notBeingEdited:'There are no rows being edited!',
+				}
+			},
+			maintenance:{
+				roleID:'Character ID',
+				roleName:'Character name',
+				roleName2:'Role (assignment) name.',
+				addRole:'The relationship between new roles and roles (assignments).',
+				checkRole:'Please tick at least one character (assignment)!',
+				modificationRole:'Modify the relationship between roles and roles (assignments).', 
+				removeRole:'You will delete this relationship!Please tick at least one character (assignment)!',
+				notMake:"You haven't made any changes!",
+				remove1:'Are you sure you want to delete all of the selected roles (assignments) associated with',
+				remove2:'？',
+				removeS:'The operation succeeds, and the ',
+				removeS2:'group roles are deleted from the role (distribution) relationship',
+				roleID2:'Role (assignment)ID',
+				roleName2:'Role (assignment) name',
+				
+			}
+		}
+	
+	},
+
+	demo    :  { //DEMO
+		title  :{
+			add:"addproduct",
+			update:"update product",
+			remove:"delete product",
+			detail:"product info"
+		},
+		product:{//DEMO 产品信息
+			name:"product name",
+			type:"product category",
+			count:"product count",
+			oldprice:"old price",
+			newprice:"now price",
+			address:"product address",
+			description:"product description",
+			remark:"remark"
+		}
+	},
+	logout : {
+		beforeunloadtitle : "sure to exit?"
+	},
+
+	//add by zhangying
+	ffp : {
+		common : {
+			constant : {
+				CREAT:'CREAT',
+				APPST:'APPENDING',
+				TMOUT:'TIME OUT',
+				COMPL:'COMPLE',
+				RJCT:'RJCT',
+				PROCE:'PROCESSING',
+				ERROR:'ERROR',
+			},
+		},
+		cashmanagement : {
+			return_refund:{
+				jnlNo:"Serial number",
+				refund:'A refund',
+				Arefund :'Sure a refund? ',
+				debtorName:'debtor name',
+				debtorAcctno:'debtor acctno',
+				creditorName:'creditor name',
+				creditorAcctno:'creditor acctno',
+				settlementAmt:'settlement amt',
+				settlementDate:'settlement date'
+			},
+			otherbankmode : {
+				clearingCode:'Clearing System Member ID',
+				receiptMode:'Receipt Mode',
+				lastUpdateTs:'Last Update Time',
+			},
+			transactionstatus : {
+				jnlNo:'jnlNo',
+				txStat:'Transactionn Status',
+				transactionId:' Transaction Identification',
+				clrSysRef:'Clearing System Reference',
+				dbtrAgtMmbId:'Debit Member Identification',
+				cdtrAgtMmbId:'Credit Member Identification',
+				createTs:'Create Time'
+
+			},
+			fpspaymentnotification :{
+				msgId:'Msg Id', 
+				ntfctnId: 'Notification Id',
+				ntfctnCreateTs: 'Create Date',
+				ntfctnAcctId: 'Account Id',
+				ntfctnAcctType: 'Account Type',
+				ntfctnAmt: 'Amount',
+				paymentCag: 'Category',
+				paymentEndToEndId: 'END TO END ID',
+				paymentTxId: 'Transaction ID',
+				paymentClrSysRef: 'FPS Reference Number',
+				paymentDbtr: 'Debit Agent',
+				paymentCdtr: 'Credit Agent',
+				settlementTs: 'Settlement Date',
+			},
+		},
+		systemmaintenance : {
+			cutoff : {
+				title  :{
+					amendtitle:'MAINTENANCE SETTING',
+					cutofftype:'CUT OFF TYPE',
+					workdayStart:'WORKDAY START TIME',
+					workdayEnd:'WORKDAY END TIME',
+					satStart:'SATURDAY START TIME',
+					satEnd:'SATURDAY END TIME',
+					holidayStart:'HOLIDAY START TIME',
+					holidayEnd:'HOLIDAY END TIME'
+				}
+			},
+			systemstat : {
+				switchmode :{
+					BTCH : 'Change to Real-time',
+					RLTM : 'Change to Batch',
+					RLTMP: 'Processing...',
+					BTCHP: 'Processing...',
+				},
+				switchListener:{
+					R : 'Stop Listener',
+					C : 'Start Listener',
+					RP : 'Start Listener Processing...',
+					CP : 'Stop Listener Processing...',
+				},
+				switchController:{
+					R : 'Stop Controller',
+					C : 'Start Controller',
+				},
+				confirmSwitchMode: 'Do you want to switch the reception mode?',
+				confirmStartListener: 'Do you want to start listener?',
+				confirmStopListener: 'Do you want to stop listener?',
+				processing : 'Processing, Later please...',
+			},
+		},
+		transaction  :{
+			jnlNo:"jnlNo",
+			remarks:"remarks",
+			txStat:"txStat",
+			txSrc:"txSrc",
+			transactionId:"transactionId",
+			endToEndId:"endToEndId",
+			msgId:"msgId",
+			msgFromType:"msgFromType",
+			msgFrom:"msgFrom",
+			msgToType:"msgToType",
+			msgTo:"msgTo",
+			msgType:"msgType",
+			msgStatus:"msgStatus",
+			debtorName:"debtorName",
+			debtorAcctno:"debtorAcctno",
+			debtorAcctnoType:"debtorAcctnoType",
+			debtorAgtId:"debtorAgtId",
+			debtorAgtBic:"debtorAgtBic",
+			creditorName:"creditorName",
+			creditorAcctno:"creditorAcctno",
+			creditorAcctnoType:"creditorAcctnoType",
+			creditorAgtId:"creditorAgtId",
+			creditorAgtBic:"creditorAgtBic"
+		},
+		title:{
+			detail:"detail",
+			Del:"del",
+			count:"product count",
+			oldprice:"old price",
+			newprice:"now price",
+			address:"product address",
+			description:"product description",
+			remark:"remark"
+		}
+	},
+	
+});

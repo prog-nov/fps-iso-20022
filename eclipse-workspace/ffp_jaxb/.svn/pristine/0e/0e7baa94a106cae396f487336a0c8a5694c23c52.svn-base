@@ -1,0 +1,145 @@
+import java.io.StringReader;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBIntrospector;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+
+public class MainTest
+{
+
+	public static void main(String[] args) throws Exception
+	{
+		StringBuffer s = new StringBuffer();
+		s.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><fps:FpsMsg xmlns:fps=\"urn:hkicl:fps:xsd:fps.envelope.01\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:hkicl:fps:xsd:fps.envelope.01 fps.envelope.01.xsd\">");
+		s.append("  <fps:NbOfMsgs>1</fps:NbOfMsgs>");
+		s.append("  <fps:FpsPylds>");
+		s.append("    <fps:BizData>");
+		s.append("      <ah:AppHdr xmlns:ah=\"urn:iso:std:iso:20022:tech:xsd:head.001.001.01\">");
+		s.append("        <ah:Fr>");
+		s.append("          <ah:FIId>");
+		s.append("            <ah:FinInstnId>");
+		s.append("              <ah:ClrSysMmbId>");
+		s.append("                <ah:MmbId>025</ah:MmbId>");
+		s.append("              </ah:ClrSysMmbId>");
+		s.append("            </ah:FinInstnId>");
+		s.append("          </ah:FIId>");
+		s.append("        </ah:Fr>");
+		s.append("        <ah:To>");
+		s.append("          <ah:FIId>");
+		s.append("            <ah:FinInstnId>");
+		s.append("              <ah:ClrSysMmbId>");
+		s.append("                <ah:MmbId>ICL</ah:MmbId>");
+		s.append("              </ah:ClrSysMmbId>");
+		s.append("            </ah:FinInstnId>");
+		s.append("          </ah:FIId>");
+		s.append("        </ah:To>");
+		s.append("        <ah:BizMsgIdr>M02520180105143931559</ah:BizMsgIdr>");
+		s.append("        <ah:MsgDefIdr>camt.060.001.03</ah:MsgDefIdr>");
+		s.append("        <ah:BizSvc>ADMISV</ah:BizSvc>");
+		s.append("        <ah:CreDt>2018-01-05T06:39:33.175Z</ah:CreDt>");
+		s.append("      </ah:AppHdr>");
+		s.append("      <doc:Document xmlns:doc=\"urn:iso:std:iso:20022:tech:xsd:camt.060.001.03\">");
+		s.append("        <doc:AcctRptgReq>");
+		s.append("          <doc:GrpHdr>");
+		s.append("            <doc:MsgId>M02520180105143931559</doc:MsgId>");
+		s.append("            <doc:CreDtTm>2018-01-05T14:39:33.159</doc:CreDtTm>");
+		s.append("          </doc:GrpHdr>");
+		s.append("          <doc:RptgReq>");
+		s.append("            <doc:ReqdMsgNmId>camt.052.001.06</doc:ReqdMsgNmId>");
+		s.append("            <doc:Acct>");
+		s.append("              <doc:Id>");
+		s.append("                <doc:Othr>");
+		s.append("                  <doc:Id>025</doc:Id>");
+		s.append("                </doc:Othr>");
+		s.append("              </doc:Id>");
+		s.append("              <doc:Ccy>HKD</doc:Ccy>");
+		s.append("            </doc:Acct>");
+		s.append("            <doc:AcctOwnr>");
+		s.append("              <doc:Agt>");
+		s.append("                <doc:FinInstnId>");
+		s.append("                  <doc:ClrSysMmbId>");
+		s.append("                    <doc:MmbId>025</doc:MmbId>");
+		s.append("                  </doc:ClrSysMmbId>");
+		s.append("                </doc:FinInstnId>");
+		s.append("              </doc:Agt>");
+		s.append("            </doc:AcctOwnr>");
+		s.append("          </doc:RptgReq>");
+		s.append("        </doc:AcctRptgReq>");
+		s.append("      </doc:Document>");
+		s.append("    </fps:BizData>");
+		s.append("  </fps:FpsPylds>");
+		s.append("<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\"><SignedInfo><CanonicalizationMethod Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments\"/><SignatureMethod Algorithm=\"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256\"/><Reference URI=\"\"><Transforms><Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/></Transforms><DigestMethod Algorithm=\"http://www.w3.org/2001/04/xmlenc#sha256\"/><DigestValue>zKzJBwMPH3IuZyx2qNmdecrDrg0Kipb2x7zFA+x77Eg=</DigestValue></Reference></SignedInfo><SignatureValue>KDeDG9GBf1Gl6xkAjHkAebwRFRm8KXkiVGLMvxm90UzUcA61FbeyGy7WyQEg4baXtV53h2pD8pZY");
+		s.append("KdUm2TCxpKdMFwe8IhngaU52e92uToZofnXIMy1aIg1YqBCOhaazn1qWd0UY51StnBgh9hQwKg9h");
+		s.append("TykN3/IUyhGLzI1dSx5JiFXvTf+Wag+S5LnnGPXe38Cz50Bk6mikB4HyaX09fVHwySvWBP1wsHZ8");
+		s.append("X37ze5jm7Ri8aLj/g06kKEK1MBXkyjuFHQOaU8cRzFrCdAr6c20TdM87Pu/erxxirsag8+vusPMJ");
+		s.append("93GuZD+IiSiFgxuHTjOEhI+mnlYYNWF4GmVLlQ==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIC1zCCAkACBRURM1CyMA0GCSqGSIb3DQEBCwUAMGMxCzAJBgNVBAYTAkhLMQswCQYDVQQIDAJI");
+		s.append("SzELMAkGA1UEBwwCSEsxGjAYBgNVBAoMEUhLSUNMIFBBUlRJQ0lQQU5UMQ4wDAYDVQQLDAVIS0lD");
+		s.append("TDEOMAwGA1UEAwwFSEtJQ0wwHhcNMTcxMTI5MDYzNjQwWhcNMjcxMTI3MDYzNjQwWjB9MQswCQYD");
+		s.append("VQQGEwJISzESMBAGA1UECAwJSG9uZyBLb25nMRIwEAYDVQQHDAlIb25nIEtvbmcxFjAUBgNVBAoM");
+		s.append("DXBhcnRpY2lwYW50MTIxFjAUBgNVBAsMDXBhcnRpY2lwYW50MTIxFjAUBgNVBAMMDXBhcnRpY2lw");
+		s.append("YW50MTIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCadpxeAdmRKs019M3qNEX3i7ds");
+		s.append("Tcyspp2CWrLx3/PAV4SLVEporABKDxggEDRosxpEHA6nXJmPsVqb/wp6770RVFBcbMEpdXW249DV");
+		s.append("hggwuP7/wCBQc3mb9wNBGnMrv0UTohV//3n1Ed9eEvjAN0CykqEYYbuoHfEzd1ijpU0IO2zItoRM");
+		s.append("W5xmHrUSn2L/OKzWXrHBzrb2hR2kBk15L0ihA0/ELuq6J34S4j+OkxUPDjfFSeZZeLyXarQwiWzD");
+		s.append("6K66qKHDlRYCvnDDqmA2Xw9zamWp2W31sh2SuGigOG3BC/HjoYXzd86soHII0JdY2QCLHudGL+05");
+		s.append("EYlw2ypGyNilAgMBAAEwDQYJKoZIhvcNAQELBQADgYEABKKF7K8PackCKVIW+JyZTu2JTxdP4Bxp");
+		s.append("j0RU4NknGhzQccO+fCxjhTIAWVlEyToJ4CPR6UgFPSraDBOT3Gz8lnH0KLO9592O3kRcbd//7wZ0");
+		s.append("zga534H8mjr9px1SXo65VzG64dLuAJpMMRxlGJm9G1jFUWH62XkFP74XX64FdS4=</X509Certificate></X509Data></KeyInfo></Signature></fps:FpsMsg>");
+		
+		FpsMessageEnvelope fpsMessageEnvelope = null;
+		XMLStreamReader xsr = null;
+		Unmarshaller unmarshaller = null;
+		Schema schema = null;
+
+		try {
+			XMLInputFactory e = XMLInputFactory.newFactory();
+//			schema = (Schema) this._unmarshallerSchemaPool.getTarget();
+			xsr = e.createXMLStreamReader(new StreamSource(new StringReader(s.toString())));
+			
+			javax.xml.bind.JAXBContext context = javax.xml.bind.JAXBContext.newInstance("com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01:com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01:com.forms.ffp.adaptor.jaxb.iclfps.admi_004_001_02:com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_002_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_003_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_cel_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_cep_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_cex_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_cex_002_001_01:com.forms.ffp.adaptor.jaxb.iclfps.camt_052_001_06:com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06:com.forms.ffp.adaptor.jaxb.iclfps.camt_056_001_06:com.forms.ffp.adaptor.jaxb.iclfps.camt_060_001_03:com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08:com.forms.ffp.adaptor.jaxb.iclfps.pacs_003_001_07:com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07:com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06:com.forms.ffp.adaptor.jaxb.iclfps.pacs_028_001_01:com.forms.ffp.adaptor.jaxb.iclfps.pain_009_001_05:com.forms.ffp.adaptor.jaxb.iclfps.pain_010_001_05:com.forms.ffp.adaptor.jaxb.iclfps.pain_011_001_05:com.forms.ffp.adaptor.jaxb.iclfps.pain_012_001_05:com.forms.ffp.adaptor.jaxb.iclfps.pain_018_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_002_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_003_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_006_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_007_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_008_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_009_001_01:com.forms.ffp.adaptor.jaxb.iclfps.fps_edda_001_001_01:com.forms.ffp.adaptor.jaxb.iclfps.xmldsig");
+			unmarshaller = (Unmarshaller) context.createUnmarshaller();
+//			unmarshaller.setSchema(schema);
+			JAXBElement displayExpt1 = (JAXBElement) unmarshaller.unmarshal(xsr);
+			if (displayExpt1.getValue() instanceof FpsMessageEnvelope) {
+				fpsMessageEnvelope = (FpsMessageEnvelope) JAXBIntrospector.getValue(displayExpt1);
+			}
+		} catch (Exception arg23) {
+			arg23.printStackTrace();
+		} finally {
+//			if (schema != null) {
+//				try {
+//					this._unmarshallerSchemaPool.releaseTarget(schema);
+//				} catch (Exception arg22) {
+//					this._logger.error("unmarshal releaseTarget(schema) exception: " + arg22.getMessage());
+//					arg22.printStackTrace();
+//				}
+//			}
+//
+//			if (unmarshaller != null) {
+//				try {
+//					this._unmarshallerPool.releaseTarget(unmarshaller);
+//				} catch (Exception arg21) {
+//					this._logger.error("unmarshal releaseTarget(unmarshaller) exception: " + arg21.getMessage());
+//					arg21.printStackTrace();
+//				}
+//			}
+//
+//			if (xsr != null) {
+//				try {
+//					xsr.close();
+//				} catch (XMLStreamException arg20) {
+//					this._logger.error("unmarshal xsr.close() exception: " + arg20.getMessage());
+//					arg20.printStackTrace();
+//				}
+//			}
+
+		}
+	}
+
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/dom4j-1.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ffp_jaxb"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/batch_framework"/>
+	<classpathentry kind="lib" path="lib/javax.mail.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ffp"/>
+	<classpathentry kind="lib" path="/ffp/WebContent/WEB-INF/lib/spring-core-4.3.7.RELEASE.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

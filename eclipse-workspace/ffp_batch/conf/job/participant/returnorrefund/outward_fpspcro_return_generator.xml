@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>OUTWARD_FPSPCRO_RETURN_GENERATOR</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>PACS004_MESSAGE_GENERATOR</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.participant.returnorrefund.ReturnOrRefundOutwardBatchResponseFileProcessor</processor>
+			<parameters>
+					<parameter>
+						<eachMessageMaxSize>69</eachMessageMaxSize>
+						<eachMessageItemMaxNum>10000</eachMessageItemMaxNum>
+						<batchSubmissionDirectoryPath>/PARTICIPANT/OUT/</batchSubmissionDirectoryPath>
+					</parameter>
+			</parameters>
+		</action>
+		
+	<!-- 	<action>
+			<action-name>isbUpload</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.boc.cib.batch.util.IsbUploadFileJob</processor>
+			<parameters>
+					<parameter>
+						<name>transfer-name</name>
+						<value>cibisb</value>
+					</parameter>
+					<file>
+					    <remote-path>TEST/OUT/</remote-path>
+						<local-path>TEST/OUT/</local-path>
+						<local-file-name>BATCH_DETAIL_FILE_TEST</local-file-name>
+						<backup-file-path>TEST/OUT/</backup-file-path>
+						<local-file-id>TEST10000</local-file-id>		
+					</file>
+					<file>
+					    <remote-path>TEST/OUT/</remote-path>
+						<local-path>TEST/OUT/</local-path>
+						<local-file-name>BATCH_DAT_FILE</local-file-name>
+						<backup-file-path>TEST/OUT/</backup-file-path>
+						<local-file-id>TEST10001</local-file-id>		
+					</file>
+			</parameters>
+		</action> -->
+	 </action-flow>
+</job-config>

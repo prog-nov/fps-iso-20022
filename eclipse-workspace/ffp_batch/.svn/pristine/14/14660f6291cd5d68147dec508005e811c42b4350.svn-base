@@ -1,0 +1,88 @@
+package com.forms.batch.job.unit.addresssevice;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.forms.framework.persistence.EntityManager;
+
+public class AddressService {
+	private static final String NUMBERIC_ACCOUNT_PATTERN = "\\d{1,35}";
+	private static final String EMAIL_PATTERN = "[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]+";
+	private static final String MOBIL_PATTERN = "(\\+\\d{3}-\\d{8})|([1-9]{1}\\d{10})";
+	private static final String SVID_PATTERN = "\\d{1,35}";
+	private static final String CUSTOMER_IDENTIFICATION_PATTERN = "[a-zA-Z0-9]{1,35}";
+
+	public static HashMap<String, Object> getAccountNo(Connection conn, String proxyId, String proxyIdType,
+			String serviceType, String currency) throws Exception {
+		HashMap<String, Object> query_map = new HashMap<String, Object>();
+		String query_proxy_sql = "SELECT ACCT_NUM, ACCT_TP FROM tb_dt_addressing_acct WHERE PROXY_ID = ? AND PROXY_ID_TP = ? AND ACCT_CUR = ? AND SRVC_TP IN (?,?) ORDER BY ACCT_DEF ASC LIMIT 1; ";
+		String query_customer_Sql = "SELECT ACCT_NUM, ACCT_TP FROM tb_dt_addressing_acct WHERE CUS_ID = ? AND PROXY_ID_TP = ? AND ACCT_CUR = ? AND SRVC_TP IN (?,?) ORDER BY ACCT_DEF ASC LIMIT 1; ";
+		ArrayList<String> query_proxy_list = new ArrayList<>();
+		ArrayList<String> query_customer_list = new ArrayList<>();
+
+		if (conn == null) {
+			throw new IOException("Database Connection Is Null!");
+		}
+
+		switch (proxyIdType) {
+		case "BBAN":
+		case "AIIN":
+			query_map.put("ACCT_NUM", proxyId);
+			query_map.put("ACCT_TP", proxyIdType);
+			break;
+		case "EMAL":
+		case "MOBN":
+		case "SVID":
+			query_proxy_list.add(proxyId);
+			query_proxy_list.add(proxyIdType);
+			query_proxy_list.add(currency);
+			query_proxy_list.add(serviceType);
+			query_proxy_list.add("OR");
+			query_map = (HashMap<String, Object>) EntityManager.queryMap(conn, query_proxy_sql, query_proxy_list.toArray());
+
+			break;
+		case "CUST":
+			query_customer_list.add(proxyId);
+			query_customer_list.add(proxyIdType);
+			query_customer_list.add(currency);
+			query_customer_list.add(serviceType);
+			query_customer_list.add("OR");
+			query_map = (HashMap<String, Object>) EntityManager.queryMap(conn, query_customer_Sql, query_customer_list.toArray());
+
+			break;
+		default:
+			break;
+		}
+
+		return query_map;
+	}
+
+	public static boolean validateAccountWithType(String type, String account) {
+		String reg = null;
+		switch (type) {
+		case "BBAN":
+		case "AIIN":
+			reg = NUMBERIC_ACCOUNT_PATTERN;
+			break;
+		case "EMAL":
+			reg = EMAIL_PATTERN;
+			break;
+		case "MOBN":
+			reg = MOBIL_PATTERN;
+			break;
+		case "SVID":
+			reg = SVID_PATTERN;
+			break;
+		case "CUST":
+			reg = CUSTOMER_IDENTIFICATION_PATTERN;
+			break;
+		default:
+			return false;
+		}
+
+		return account.matches(reg);
+	}
+
+}

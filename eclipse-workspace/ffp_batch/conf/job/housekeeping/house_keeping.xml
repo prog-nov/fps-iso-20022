@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>HouseKeeping</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>Delete Data</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.housekeeping.HouseKeeping</processor>
+			<parameters>
+				<parameter>job/housekeeping/house-keeping-sql-job-config.xml</parameter>
+			</parameters>
+			<daybefore>180</daybefore>
+			<backup>Y</backup>
+		</action>
+	</action-flow>
+</job-config>

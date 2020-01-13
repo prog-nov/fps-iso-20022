@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE)
+-->
+<pipe-config>
+	<pipe-data></pipe-data>
+	<inputs>
+		<input name="fixfileInput"
+			class="com.forms.datapipe.input.CsvFileInput" to-valve="import">
+			<config-file>job/risp21/0175040D.p21/ris-payin-fixedfile-input-config.xml</config-file>
+		</input>
+		<!--mutil export,but one export mapping one export valve-->
+	</inputs>
+	<outputs>
+		
+		<output name="databaseOutput"
+		   class="com.forms.datapipe.output.DatabaseOutput" from-valve="export-D">
+		   <config-file>job/risp21/0175040D.p21/ris-payin-database-output-config.xml</config-file>
+		</output>
+		<output name="FixedFileOutputEm"
+		   class="com.forms.datapipe.output.FixedFileOutputEm" from-valve="export-EMPTY">
+		   <config-file>job/risdq1/0100006D.dq1/dat-file-fixedfile-output-config-em.xml</config-file>
+		</output>
+		<output name="errorOutput"
+			class="com.forms.datapipe.output.FixedFileOutput" from-valve="error-export">
+			<config-file>job/risp21/0175040D.p21/ris-payin-csvfile-output-config-error.xml</config-file>
+		</output>
+		<!--mutil export,but one export mapping one export valve-->
+	</outputs>
+
+	<global-forwards>
+		<forward name="error" next-valve="error-handler" />
+	</global-forwards>
+
+	<valves>
+		<valve name="import" class="com.forms.datapipe.valve.ImportValve">
+			<forwards>
+				<forward name="success" next-valve="data-process" />
+				<forward name="failure" next-valve="export-fail" />
+			</forwards>
+		</valve>
+		
+        <valve name="data-process" class="com.forms.batch.job.unit.risp21.RisP21DataProcessValve">
+            <forwards>
+				<forward name="success" 	next-valve="export-D"	/>
+            </forwards>
+        </valve>
+		
+		<valve name="export" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+		
+
+		<valve name="export-D" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+		
+		<valve name="export-M" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+
+		<valve name="export-EMPTY" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+		
+		<valve name="error-handler" class="com.forms.datapipe.errorhandler.ErrorHandlerValve">
+
+			<forwards>
+				<forward name="success" next-valve="error-export" />
+			</forwards>
+		</valve>
+		
+		<valve name="error-export" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+	</valves>
+	<performance>
+		<multi-thread use="true" buffer-size="500" keep-order="true" />
+		<stop-at-err>true</stop-at-err><!-- 遇錯處理模式 -->
+		<!-- 多线程设定, 字段说明:
+			use		  : 是否使用多线程, 默认是false 
+			buffer-size : 缓冲池的大小(以记录的条数为单位记)
+			keep-order  : 是否保持原纪录的顺序
+		-->
+	</performance>
+</pipe-config>

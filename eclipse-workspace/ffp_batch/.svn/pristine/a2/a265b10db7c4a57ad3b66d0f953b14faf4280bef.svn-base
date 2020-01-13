@@ -1,0 +1,53 @@
+package com.forms.batch.job.commom;
+
+public class SwiftContants
+{
+	public static final String[] SWIFT_SIGN = { "1", "2", "3", "4", "5" };
+
+	public static final String[] MT103_SWIFT_FIELD = { "20", "13C", "23B",
+			"23E", "26T", "32A", "33B", "36", "50A", "50K", "50F", "51A",
+			"52A", "52D", "53A", "53B", "53D", "54A", "54B", "54D", "55A",
+			"55B", "55D", "56A", "56C", "56D", "57A", "57B", "57C", "57D",
+			"59A", "59", "70", "71A", "71F", "71G", "72", "77B", "77T" };
+
+	public static final String[] MT202_SWIFT_FIELD = { "20", "13C", "21",
+			"32A", "50A", "50K", "50F", "52A", "52D", "53A", "53B", "53D",
+			"54A", "54B", "54D", "56A", "56D", "57A", "57B", "57D", "58A",
+			"58D", "59A", "59", "72" };
+
+	public static final String[] I996_SWIFT_FIELD = { "20", "21", "76", "77A",
+			"79", "11S", "11R"};
+
+	public static final String[] MT111_SWIFT_FIELD = { "20", "21", "30", "32A",
+			"32B", "52A", "52B", "52D", "59", "75" };
+	
+	public static final String[] MT110_SWIFT_FIELD = { "20", "21", "30", "32A",
+		"32B", "52A", "52B", "52D", "59", "72" };
+
+	public static final String HEADER_FOOTER_START = "{";
+
+	public static final String HEADER_FOOTER_END = "}";
+//	DEFAULT
+	public static final String CONTENT_START_MODE1 = "||:";
+	
+	public static final String CONTENT_START_MODE2 = "$$:";
+//	DEFAULT
+	public static final String CONTENT_END_MODE1 = "||-";
+	
+	public static final String CONTENT_END_MODE2 = "$$-";
+	
+//	79场需要特殊处理
+	public static final String CONTENT_SPECIAL_DEAL_79 = "||:79:";
+//	public static final String CONTENT_SPECIAL_DEAL_79_QUOTE = "QUOTE...";
+//	public static final String CONTENT_SPECIAL_DEAL_79_UNQUOTE = "...UNQUOTE";
+	
+//	public static final int CONTENT_START_LENGTH = CONTENT_START.length();
+
+	public static final String MSG_DELIMITER = ":";
+
+	// application header block type for input
+	public static final String APPTYPE_I = "I";
+
+	// application header block type for output
+	public static final String APPTYPE_O = "O";
+}

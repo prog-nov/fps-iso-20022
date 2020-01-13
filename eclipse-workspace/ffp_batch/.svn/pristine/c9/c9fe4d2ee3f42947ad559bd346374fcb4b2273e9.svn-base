@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch Job Configuration Files -->
+<!-- 
+	updateDate:2012-10-25
+	ModifiedBy:ZT
+	ModifiedReason:ADD JOB RISp31
+	updateVersion:12 month
+ -->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISP31</job-id>
+		<run-frequency>D</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>RISP31-COPY FILE 0175040D.p31 TO WORKING AND BACKUP</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.FtpDownloadJob</processor>
+			<parameters>
+				<parameter>
+					<name>transfer-name</name>
+					<value>isb</value>
+				</parameter>
+				<file>
+					<remote-path>RIS/IN/</remote-path>
+					<remote-file-name>0175040D.p31.gz.#{noSplitAcDate}1</remote-file-name>
+					<local-path>RIS/IN/</local-path>
+					<local-file-name>0175040D.p31.gz</local-file-name>		
+					<backup-file-path>RIS/IN/</backup-file-path>
+					<keep-file-days>$__FILE_KEEP_DAYS</keep-file-days>
+				</file>
+			</parameters>
+		</action>
+		<action>
+			<action-name>RISP31-X FILE 0175040D.p31 TO WORKING</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.XGzipFileJob</processor>
+			<current-system>$__EXECUTE_SYSTEM</current-system>
+			<parameters>
+				<file>
+					<input-file-path>RIS/IN/</input-file-path>
+					<input-file-name>0175040D.p31.gz</input-file-name>		
+				</file>
+			</parameters>
+		</action>
+		<action>
+			<action-name>RISP31-CHECK FILE 0175040D.p31</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.CheckFileJob</processor>
+			<check-list>
+				<check filepath="WORKING" file="RIS/IN/0175040D.p31" encoding="GBK">
+					<class>com.forms.batch.job.ris.CheckFileUtil</class>
+					<method>checkFileDate</method>
+					<check-file-para>DataEndDate</check-file-para>
+					<check-file-para>BATCHACDATE</check-file-para>
+				</check>
+			</check-list>
+		</action>
+		<action>
+			<action-name>RISP31-DELETE TABLE D_OVERSEAS_FILE_P31_TEMP</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<parameters>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_PAY_OUTGO_MSGDATA_SUB_TEMP WHERE APPG_DATE = REPLACE('#{acDate}','-','')</parameter>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_PAY_OUTGO_MSGDATA_TEMP WHERE APPG_DATE = REPLACE('#{acDate}','-','')</parameter>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_FILE_P31_TEMP WHERE CP04_APPG_DATE = REPLACE('#{acDate}','-','')</parameter>
+			</parameters>
+		</action>
+		<action>
+			<action-name>RISP31-READ 0175040D.p31 IN D_OVERSEAS_FILE_P31_TEMP</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/risp31/0175040D.p31/ris-payout-pipe-config.xml</config-file>
+			<input-file-path>RIS/IN/</input-file-path>
+			<output-file-path>RIS/OUT/</output-file-path>
+		</action>
+	 </action-flow>
+</job-config>

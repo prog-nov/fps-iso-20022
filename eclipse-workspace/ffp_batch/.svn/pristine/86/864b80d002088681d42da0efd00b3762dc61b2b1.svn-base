@@ -1,0 +1,465 @@
+<msg>
+	<msg-head>
+		<head index="1">
+			<field name="APP_SIGN"			    bytes="1"    	/>
+			<field name="APDU"      	        bytes="2"    	/>
+			<field name="S_R_ORG_BANK"   		bytes="12"    	/>	
+			<field name="SESSION_NUMBER"        bytes="4"    	/>
+			<field name="IO_SEQ_NUMBER"         bytes="6"    	/>
+		</head>
+		<head index="2" sign="I">
+			<field name="IO_SIGN"			    bytes="1"    	/>
+			<field name="MESSAGE_TYPE"	    	bytes="3"    	/>
+			<field name="RECV_BANK"	        	bytes="12"		/>
+			<field name="I_FILLER"								/>
+		</head>
+		<head index="2" sign="O">
+			<field name="IO_SIGN"			    bytes="1"    	/>
+			<field name="MESSAGE_TYPE"	    	bytes="3"    	/>
+			<field name="INPUT_TIME"			bytes="4"		/>
+			<field name="INPUT_DATE"			bytes="6"		/>
+			<field name="SEND_BANK"				bytes="12"		/>
+			<field name="SEND_OTHER"			bytes="10"		/>
+			<field name="OUTPUT_DATE"			bytes="6"		/>
+			<field name="OUTPUT_TIME"			bytes="4"		/>
+			<field name="PRIORITY"				bytes="1"		/>
+		</head>
+		<head index="3" sign="108">
+			<field name="MSG_USER_REF_108"	/>
+		</head>
+		<head index="3" sign="119">
+			<field name="MUR_109"			    />
+		</head>
+	</msg-head>
+	
+	<!-- 支付类报文 -->
+	<msg-content msg_type="MT103">
+		<content sign="20" processor="" match_modle="match">
+			<field name="SIT_20"					/>
+		</content>
+		<content sign="23B" processor="" match_modle="match">
+			<field name="SIT_23B"				/>
+		</content>
+		<content sign="23E" processor="com.forms.batch.job.commom.SwiftProcessor.setSign23E" match_modle="match">
+			<field name="23E_INDICATE_CODE"				/>
+		</content>
+		<content sign="26T" processor="" match_modle="match">
+			<field name="SIT_23T"				/>
+		</content>
+		<content sign="32A" processor="" match_modle="match">
+			<field name="SIT_32A"		/>
+		</content>
+		<content sign="33B" processor="" match_modle="match">
+			<field name="SIT_33B"		/>
+		</content>
+		<content sign="36" processor="" match_modle="match">
+			<field name="SIT_36"							/>
+		</content>
+		<content sign="50A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign50A" match_modle="match">
+			<field name="SIT_50_REMIT_BIC"							/>
+			<field name="SIT_50_REMIT_AC"							/>
+			<field name="SIT_50_REMIT"								/>
+		</content>
+		<content sign="50K" processor="com.forms.batch.job.commom.SwiftProcessor.setSign50K" match_modle="match">
+			<field name="SIT_50_REMIT_AC"							/>
+			<field name="SIT_50_REMIT"							/>
+		</content>
+		<content sign="50F" processor="" match_modle="match">
+			<field name="SIT_50_REMIT"							/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="53A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign53A" match_modle="match">
+			<field name="SIT_53_AG_SEND_BANK_BIC"					/>
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="53" processor="">
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="54A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign54A" match_modle="match">
+			<field name="SIT_54_AG_RECV_BANK_BIC"					/>
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="54" processor="">
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="55A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign55A" match_modle="match">
+			<field name="SIT_55_LIQUI_BANK_BIC"					/>
+			<field name="SIT_55_LIQUI_BANK"					/>
+		</content>
+		<content sign="55" processor="">
+			<field name="SIT_55_LIQUI_BANK"					/>
+		</content>
+		<content sign="56A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign56A" match_modle="match">
+			<field name="SIT_56_MID_BKNM_BIC"					/>
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		<content sign="56" processor="">
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		
+		<content sign="56A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign56A" match_modle="match">
+			<field name="SIT_56_MID_BKNM_BIC"					/>
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		<content sign="56" processor="">
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		
+		<content sign="57A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign57A" match_modle="match">
+			<field name="SIT_57_ACT_BKNM_BIC"					/>
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		<content sign="57" processor="">
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		
+		<content sign="59A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign59A" match_mode="match">
+			<field name="SIT_59_BENEFIT_ACT"					/>
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="59" processor="com.forms.batch.job.commom.SwiftProcessor.setSign59A" match_mode="match">
+			<field name="SIT_59_BENEFIT_ACT"					/>
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		
+		<content sign="70" processor="">
+			<field name="SIT_70" 						/>
+		</content>
+		
+		<content sign="71A" processor="" match_modle="match">
+			<field name="SIT_71A"							/>
+		</content>
+		<content sign="71F" processor="com.forms.batch.job.commom.SwiftProcessor.setSign71F" match_modle="match">
+			<field name="71F_DTCHG"						/>
+		</content>
+		<content sign="71G" processor="" match_modle="match">
+			<field name="SIT_71G"		/>
+		</content>
+		<content sign="72" processor="">
+			<field name="SIT_72" 							/>
+		</content>
+		<content sign="77" processor="">
+			<field name="SIT_77"							/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MT110">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="30" processor="">
+			<field name="SIT_30"						/>
+		</content>
+		<content sign="32A" processor="" match_modle="match">
+			<field name="SIT_32A"						/>
+		</content>
+		<content sign="32B" processor="" match_modle="match">
+			<field name="SIT_33B"						/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="53A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign53A" match_modle="match">
+			<field name="SIT_53_AG_SEND_BANK_BIC"					/>
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="53" processor="">
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="54A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign54A" match_modle="match">
+			<field name="SIT_54_AG_RECV_BANK_BIC"					/>
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="54" processor="">
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="59" processor="" >
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="72" processor="" match_modle="match">
+			<field name="SIT_72"							/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MT202">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="32A" processor="" match_modle="match">
+			<field name="SIT_32A"						/>
+		</content>
+		<content sign="50A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign50A" match_modle="match">
+			<field name="SIT_50_REMIT_BIC"							/>
+			<field name="SIT_50_REMIT_AC"							/>
+			<field name="SIT_50_REMIT"								/>
+		</content>
+		<content sign="50K" processor="com.forms.batch.job.commom.SwiftProcessor.setSign50K" match_modle="match">
+			<field name="SIT_50_REMIT_AC"							/>
+			<field name="SIT_50_REMIT"							/>
+		</content>
+		<content sign="50F" processor="" match_modle="match">
+			<field name="SIT_50_REMIT"							/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="53A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign53A" match_modle="match">
+			<field name="SIT_53_AG_SEND_BANK_BIC"					/>
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="53" processor="">
+			<field name="SIT_53_AG_SEND_BANK"					/>
+		</content>
+		<content sign="54A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign54A" match_modle="match">
+			<field name="SIT_54_AG_RECV_BANK_BIC"					/>
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="54" processor="">
+			<field name="SIT_54_AG_RECV_BANK"					/>
+		</content>
+		<content sign="56A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign56A" match_modle="match">
+			<field name="SIT_56_MID_BKNM_BIC"					/>
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		<content sign="56" processor="">
+			<field name="SIT_56_MID_BKNM"					/>
+		</content>
+		
+		<content sign="57A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign57A" match_modle="match">
+			<field name="SIT_57_ACT_BKNM_BIC"					/>
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		<content sign="57" processor="">
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		<content sign="58A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign58A" match_modle="match">
+			<field name="SIT_58_GATHERING_ACT"					/>
+			<field name="SIT_58_GATHERING_BIC"					/>
+		</content>
+		<content sign="58D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign58D" match_modle="match" >
+			<field name="SIT_58_GATHERING_ACT"					/>
+			<field name="SIT_58_GATHERING"					/>
+		</content>
+		<content sign="59A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign59A" match_mode="match">
+			<field name="SIT_59_BENEFIT_ACT"					/>
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="59" processor="com.forms.batch.job.commom.SwiftProcessor.setSign59A" match_mode="match">
+			<field name="SIT_59_BENEFIT_ACT"					/>
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="72">
+			<field name="SIT_72"/>
+		</content>
+	</msg-content>
+	
+	<!-- 查询类报文-->
+	<msg-content msg_type="MT111,MT112">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="30" processor="" match_modle="match">
+			<field name="SIT_30"						/>
+		</content>
+		<content sign="32A" processor="" match_modle="match">
+			<field name="SIT_32A"						/>
+		</content>
+		<content sign="32B" processor="" match_modle="match">
+			<field name="SIT_32B"						/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="59A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign59A" match_mode="match">
+			<field name="SIT_59_BENEFIT_ACT"					/>
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="59" processor="" >
+			<field name="SIT_59_BENEFICIARY"					/>
+		</content>
+		<content sign="75" processor="" match_modle="match">
+			<field name="SIT_75"							/>
+		</content>
+		<content sign="76" processor="" match_modle="match">
+			<field name="SIT_76"							/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MTn90">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="25" processor="">
+			<field name="SIT_25"					/>
+		</content>
+		<content sign="32C" processor="" match_modle="match">
+			<field name="SIT_32C"						/>
+		</content>
+		<content sign="32D" processor="" match_modle="match">
+			<field name="SIT_32D"						/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="71B" processor="">
+			<field name="SIT_71B"						/>
+		</content>
+		<content sign="72" processor="">
+			<field name="SIT_72"						/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MTn91">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="32B" processor="" match_modle="match">
+			<field name="SIT_32B"						/>
+		</content>
+		<content sign="52A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52A" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK_BIC"							/>
+		</content>
+		<content sign="52D" processor="com.forms.batch.job.commom.SwiftProcessor.setSign52D" match_modle="match">
+			<field name="SIT_52_REMIT_BANK_ACNO"							/>
+			<field name="SIT_52_REMIT_BANK"							/>
+		</content>
+		<content sign="57A" processor="com.forms.batch.job.commom.SwiftProcessor.setSign57A" match_modle="match">
+			<field name="SIT_57_ACT_BKNM_BIC"					/>
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		<content sign="57" processor="">
+			<field name="SIT_57_ACT_BKNM"					/>
+		</content>
+		<content sign="71B" processor="">
+			<field name="SIT_71B"						/>
+		</content>
+		<content sign="72" processor="">
+			<field name="SIT_72"						/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MTn92,MTn95,MTn96">
+		<content sign="20" processor="">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="21" processor="">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="11S" processor="" match_modle="match">
+			<field name="SIT_11S"						/>
+		</content>
+		<content sign="11R" processor="" match_modle="match">
+			<field name="SIT_11S"						/>
+		</content>
+		<content sign="75" processor="" match_modle="match">
+			<field name="SIT_75"							/>
+		</content>
+		<content sign="76" processor="" match_modle="match">
+			<field name="SIT_76"							/>
+		</content>
+		<content sign="77A" processor="" match_modle="match">
+			<field name="SIT_77"							/>
+		</content>
+		<content sign="79" processor="" match_modle="match">
+			<field name="SIT_79"					/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MTn98">
+		<content sign="20">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="12">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="77E">
+			<field name="SIT_77"						/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="MTn99">
+		<content sign="20">
+			<field name="SIT_20" 					/>
+		</content>
+		<content sign="12">
+			<field name="SIT_21"					/>
+		</content>
+		<content sign="79">
+			<field name="SIT_79"					/>
+		</content>
+	</msg-content>
+	
+	<msg-content msg_type="COMMON">
+	
+	</msg-content>
+	
+	<msg-foot>
+		<foot sign="MAC">
+			<field name="MAC_TRAILER"	/>
+		</foot>
+		<foot sign="CHK">
+			<field name="CHK_TRAILER"	/>
+		</foot><!--
+		<foot sign="ENC">
+			<field name="ENC_TRAILER"	bytes="8"    	/>
+		</foot>
+		<foot sign="TNG">
+			<field name="TNG_TRAILER"	bytes="12"    	/>
+		</foot>
+		<foot sign="PDE">
+			<field name="PDE_TRAILER"	bytes="12"    	/>
+		</foot>
+		<foot sign="SYS">
+			<field name="SYS_TRAILER"	bytes="12"    	/>
+		</foot>
+		<foot sign="PDM">
+			<field name="PDM_TRAILER"	bytes="12"    	/>
+		</foot>
+		<foot sign="DLM">
+			<field name="DLM_TRAILER"	bytes="12"    	/>
+		</foot>-->
+	</msg-foot>
+</msg>

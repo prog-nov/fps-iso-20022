@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.authority.access.dao.IAccessControlDao">
+
+	<!-- 根据请求URL查找所有可能的菜单权限 林济松 20160411-->
+	<select id="getPermissions" resultType="com.forms.beneform4j.security.core.access.permission.impl.Permission">
+		SELECT P.PERM_ID, P.PERM_TYPE, P.PERM_TYPE_KEY, M.PERM_LEVEL, M.PERM_URL
+		  FROM {{BF}}_PERM P
+		  JOIN (SELECT CASE WHEN B.MENU_ID IS NULL THEN A.MENU_ID ELSE B.MENU_ID END AS PERM_TYPE_KEY,
+		               CASE WHEN B.AUTHOR_LEVEL IS NULL THEN A.AUTHOR_LEVEL ELSE B.AUTHOR_LEVEL END AS PERM_LEVEL,
+		               CASE WHEN B.MENU_URL IS NULL THEN A.MENU_URL ELSE B.MENU_URL END AS PERM_URL
+		          FROM {{BF}}_MENU A
+		          LEFT JOIN {{BF}}_MENU B
+		            ON A.DEPEND_MENU_ID = B.MENU_ID
+		         <!-- 请求URL直接等于菜单URL，或者请求URL加问号能够匹配菜单URL -->
+		         WHERE A.MENU_URL = #{url, jdbcType=VARCHAR}
+		            OR A.MENU_URL LIKE #{concat(url '?%'), jdbcType=VARCHAR}) M
+		    ON P.PERM_TYPE_KEY = M.PERM_TYPE_KEY
+		   AND P.PERM_TYPE = 'MENU'
+	</select>
+
+	<insert id="writeVisitLog">
+    insert into BF_LOG_VISIT (KEY_ID, REQUEST_ID, SESSION_ID, USER_ID, 
+      PERM_ID, CLIENT_IP, SERVER_IP, 
+      BROWSER, OS, OPT_PATH, 
+      OPT_URL, OPT_PARAMS, OPT_DATE, 
+      OPT_TIME, COST_TIME, OPT_FLAG)
+    values (#{keyId,jdbcType=VARCHAR}, #{requestId,jdbcType=VARCHAR}, #{sessionId,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, 
+      #{permId,jdbcType=INTEGER}, #{clientIp,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR}, 
+      #{browser,jdbcType=VARCHAR}, #{os,jdbcType=VARCHAR}, #{optPath,jdbcType=VARCHAR}, 
+      #{optUrl,jdbcType=VARCHAR}, #{optParams,jdbcType=VARCHAR}, #{optDate,jdbcType=CHAR}, 
+      #{optTime,jdbcType=CHAR}, #{costTime,jdbcType=INTEGER}, #{optFlag,jdbcType=VARCHAR})
+  </insert>
+  
+  <delete id="deleteVisitLog">
+  	DELETE FROM {{BF}}_LOG_VISIT WHERE OPT_DATE <![CDATA[<]]> #{dateBefore}
+  </delete>
+</mapper>

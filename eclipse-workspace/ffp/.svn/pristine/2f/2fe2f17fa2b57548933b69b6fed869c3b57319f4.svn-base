@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.news.dao.INewsDao">
+	<!-- 查询消息 -->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.news.form.NewsForm">
+		SELECT    t.msg_id               ,
+				  t.msg_title            ,
+				  t.msg_content          ,
+				  t.target_url           ,
+				  t.msg_type             ,
+			 	  case
+			         when t.msg_type = '1' then
+			          '消息'
+			         when t.msg_type = '2' then
+			          '公告'
+			         when t.msg_type = '3' then
+			          '信函'
+			         else
+			          '错误'
+			      end as msg_type_name,
+				  t.msg_level            ,
+				  case
+			         when t.msg_level = '1' then
+			          '高'
+			         when t.msg_level = '2' then
+			          '中'
+			         when t.msg_level = '3' then
+			          '低'
+			         else
+			          '错误'
+			      end as msg_level_name,
+				  t.send_oper            ,
+				  t.send_date            ,
+				  t.send_time            ,
+				  t.recv_net             ,
+				  t.recv_oper            ,
+				  t.status               ,
+				  t.msg_icon             ,
+				  t.effective_flag       ,
+				  case
+			         when t.effective_flag = '1' then
+			          '永久生效'
+			         when t.effective_flag = '2' then
+			          '天数生效'
+			         when t.effective_flag = '3' then
+			          '区间生效'
+			         else
+			          ''
+			      end as effective_flag_name,
+				  t.effective_day_cnt    ,
+				  t.effective_start_date ,
+				  t.effective_start_time ,
+				  t.effective_end_date   ,
+				  t.effective_end_time  
+			FROM {{BF}}_NEWS T 
+		<where>
+	     	<if test="null != news.msgTitle and '' != news.msgTitle">
+	     		AND T.MSG_TITLE LIKE #{concat('%' news.msgTitle '%'), jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != news.sendDate and '' != news.sendDate">
+	     		AND T.SEND_DATE = replace(#{news.sendDate, jdbcType=VARCHAR}, '-' , '')
+	     	</if>
+	     	<if test="null != news.msgType and '' != news.msgType">
+	     		AND T.MSG_TYPE = #{news.msgType, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != news.msgLevel and '' != news.msgLevel">
+	     		AND T.MSG_LEVEL = #{news.msgLevel, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+	    ORDER BY T.MSG_ID
+	</select>
+	
+	<!-- 添加消息 -->
+	<insert id="dInsert">
+		INSERT INTO {{BF}}_NEWS (MSG_ID,MSG_TITLE,MSG_CONTENT,TARGET_URL,MSG_TYPE,MSG_LEVEL,
+								SEND_OPER,SEND_DATE,SEND_TIME,RECV_NET,RECV_OPER,STATUS,MSG_ICON,
+								EFFECTIVE_FLAG,EFFECTIVE_DAY_CNT,EFFECTIVE_START_DATE,EFFECTIVE_START_TIME,EFFECTIVE_END_DATE,EFFECTIVE_END_TIME)
+		  VALUES(	#{news.msgId, jdbcType=NUMERIC}, 
+				  	#{news.msgTitle, jdbcType=VARCHAR}, 
+				  	#{news.msgContent, jdbcType=VARCHAR}, 
+				  	#{news.targetUrl, jdbcType=VARCHAR}, 
+				  	#{news.msgType, jdbcType=VARCHAR}, 
+				  	#{news.msgLevel, jdbcType=VARCHAR}, 
+				  	#{news.sendOper, jdbcType=VARCHAR}, 
+				  	#{news.sendDate, jdbcType=VARCHAR}, 
+				  	#{news.sendTime, jdbcType=VARCHAR}, 
+				  	#{news.recvNet, jdbcType=VARCHAR},
+				  	#{news.recvOper, jdbcType=VARCHAR},
+				  	#{news.status, jdbcType=VARCHAR},
+				  	#{news.msgIcon, jdbcType=VARCHAR},
+				  	#{news.effectiveFlag, jdbcType=VARCHAR},
+				  	#{news.effectiveDayCnt, jdbcType=NUMERIC},
+				  	#{news.effectiveStartDate, jdbcType=VARCHAR},
+				  	#{news.effectiveStartTime, jdbcType=VARCHAR},
+				  	#{news.effectiveEndDate, jdbcType=VARCHAR},
+				  	#{news.effectiveEndTime, jdbcType=VARCHAR}
+				 )
+	</insert>
+	<!-- 根据id查对应的消息 -->
+	<select id="dFind" resultType="com.forms.beneform4j.webapp.systemmanage.news.form.NewsForm">
+		SELECT * FROM {{BF}}_NEWS T WHERE  T.MSG_ID = #{msgId}
+	</select>
+	
+	<!-- 跟新操作处理    	update 标签有问题 -->
+	<update id="dUpdate">
+		update {{BF}}_NEWS t
+		   set t.msg_title   = #{news.msgTitle, jdbcType=VARCHAR}, 
+		       t.msg_content = #{news.msgContent, jdbcType=VARCHAR}, 
+		       t.target_url  = #{news.targetUrl, jdbcType=VARCHAR}, 
+		       t.msg_type    = #{news.msgType, jdbcType=VARCHAR}, 
+		       t.msg_level   = #{news.msgLevel, jdbcType=VARCHAR}, 
+		       t.recv_net    = #{news.recvNet, jdbcType=VARCHAR},
+		       t.recv_oper   = #{news.recvOper, jdbcType=VARCHAR},
+		       t.msg_icon    = #{news.msgIcon, jdbcType=VARCHAR},
+		       t.effective_flag = #{news.effectiveFlag, jdbcType=VARCHAR},
+		       t.effective_day_cnt = #{news.effectiveDayCnt, jdbcType=NUMERIC},
+		       t.effective_start_date = #{news.effectiveStartDate, jdbcType=VARCHAR},
+		       t.effective_start_time = #{news.effectiveStartTime, jdbcType=VARCHAR},
+		       t.effective_end_date = #{news.effectiveEndDate, jdbcType=VARCHAR},
+		       t.effective_end_time = #{news.effectiveEndTime, jdbcType=VARCHAR}
+		 where t.msg_id = #{news.msgId, jdbcType=NUMERIC}
+	</update>
+	
+	<!-- 批量删除操作 -->
+	<delete id="dDelete">
+		delete from {{BF}}_NEWS where msg_id = #{msgId}
+	</delete>
+	
+	<select id="dGetMsgNum" resultType="java.lang.String">
+		SELECT COUNT(1) FROM {{BF}}_NEWS T 
+		WHERE T.STATUS = '0' AND T.MSG_TYPE='3'
+		AND (T.RECV_OPER=#{user.userId} OR (T.RECV_OPER IS NULL and T.RECV_NET=#{user.orgId}))
+		AND NOT EXISTS (
+	       SELECT 1 FROM {{BF}}_NEWS_LOG L WHERE L.USER_ID=#{user.userId} and L.MSG_ID=T.MSG_ID
+	    )
+	</select>
+	<!-- 根据userId获取未读消息 -->
+	<select id="dListNewMsg" resultType="com.forms.beneform4j.webapp.systemmanage.news.form.NewsForm">
+		SELECT T.MSG_ID,T.MSG_TITLE,T.MSG_CONTENT,T.STATUS,U.USER_NAME AS SEND_OPER,T.SEND_DATE,T.SEND_TIME
+		FROM {{BF}}_NEWS T
+		LEFT JOIN {{BF}}_USER U ON T.SEND_OPER=U.USER_ID
+		WHERE T.STATUS='0' AND T.MSG_TYPE='3'
+		AND (T.RECV_OPER=#{user.userId} OR (T.RECV_OPER IS NULL and T.RECV_NET=#{user.orgId}))
+		AND NOT EXISTS (
+	       SELECT 1 FROM {{BF}}_NEWS_LOG L WHERE L.USER_ID=#{user.userId} and L.MSG_ID=T.MSG_ID
+	    ) 
+		ORDER BY T.SEND_DATE,T.SEND_TIME
+	</select>
+	<insert id="dInsertNewsLog" >
+		INSERT INTO {{BF}}_NEWS_LOG (
+			USER_ID,
+			MSG_ID,
+			OPER_DATE,
+			OPER_TIME
+		) 
+		VALUES (
+			#{userId, jdbcType=VARCHAR}, 
+		  	#{msgId, jdbcType=VARCHAR}, 
+		  	#{operDate, jdbcType=VARCHAR}, 
+		  	#{operTime, jdbcType=VARCHAR}
+		)
+	</insert>
+</mapper>

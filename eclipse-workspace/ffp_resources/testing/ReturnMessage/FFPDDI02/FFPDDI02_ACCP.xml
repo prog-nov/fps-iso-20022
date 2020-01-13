@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ROOT>
+    <HEAD>
+        <RequestID>##RequestID##</RequestID>
+        <TransactionDate>##TransactionDate##</TransactionDate>
+        <TransactionTime>##TransactionTime##</TransactionTime>
+        <RequestRefno>##RequestRefno##</RequestRefno>
+        <AccountingDate>##AccountingDate##</AccountingDate>
+        <ResponseID>##ResponseID##</ResponseID>
+        <MessageType>##MessageType##</MessageType>
+        <SystemRefno>201311130000000000000127</SystemRefno>
+        <SystemBeginTIme>##hhmmss##</SystemBeginTIme>
+        <SystemEndTIme>##hhmmss##</SystemEndTIme>
+        <ResponseBeginTime>##hhmmss##</ResponseBeginTime>
+        <ResponseEndTime>##hhmmss##</ResponseEndTime>
+        <ResponseStatus>N</ResponseStatus>
+        <FinalNode>0</FinalNode>
+        <SystemMessageCode>000000</SystemMessageCode>
+    </HEAD>
+    <BODY>
+        <SrcRefNm>##SrcRefNm##</SrcRefNm>
+        <RsltCd>A</RsltCd>
+    </BODY>
+</ROOT>

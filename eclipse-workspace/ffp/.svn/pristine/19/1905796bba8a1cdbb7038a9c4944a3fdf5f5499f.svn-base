@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.role.dao.IRoleLimitDao">
+	<resultMap type="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleLimitBean" id="RoleLimitBean">
+		<id property="limitNo" column="LIMIT_NO" javaType="string" jdbcType="VARCHAR"/>
+		<collection property="roles" columnPrefix="ROLE" ofType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean"/>
+	</resultMap>
+	
+	<!-- 查询 -->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleLimitBean">
+		  SELECT A.LIMIT_NO, A.DES, C.ROLE_NUM, B.ROLE_ID, B.ROLE_NAME, B.DES AS ROLE_DES
+		    FROM {{BF}}_ROLE_LIMIT A
+		    JOIN (SELECT LIMIT_NO, COUNT(1) AS ROLE_NUM FROM {{BF}}_ROLE_LIMIT GROUP BY LIMIT_NO) C ON A.LIMIT_NO = C.LIMIT_NO
+		    JOIN {{BF}}_ROLE B ON A.ROLE_ID = B.ROLE_ID
+		<where>
+			<if test="null != roleId and '' != roleId and 0 != roleId">
+				AND B.ROLE_ID = #{roleId, jdbcType=INTEGER}
+			</if>
+			<if test="null != roleName and '' != roleName">
+				AND B.ROLE_NAME LIKE #{concat('%' roleName '%'), jdbcType=VARCHAR}
+			</if>
+		</where>
+		 ORDER BY A.LIMIT_NO
+	</select>
+	
+	<!-- 查询匹配的约束关系 -->
+	<select id="dListMatch" resultMap="RoleLimitBean">
+		SELECT A.LIMIT_NO, A.DES, B.ROLE_ID AS ROLE_ROLE_ID, B.ROLE_NAME AS ROLE_ROLE_NAME, B.DES AS ROLE_DES
+		  FROM {{BF}}_ROLE_LIMIT A
+		  JOIN {{BF}}_ROLE B
+		    ON A.ROLE_ID = B.ROLE_ID
+		  JOIN (SELECT T.LIMIT_NO, COUNT(1) NUM1
+		          FROM {{BF}}_ROLE_LIMIT T
+		         GROUP BY T.LIMIT_NO) C
+		    ON A.LIMIT_NO = C.LIMIT_NO
+		  JOIN (SELECT T.LIMIT_NO, COUNT(1) NUM2
+		          FROM {{BF}}_ROLE_LIMIT T
+		         WHERE T.ROLE_ID IN (<foreach item="roleId" collection="roleIds" separator=",">#{roleId, jdbcType=INTEGER}</foreach>)
+		         <if test="null != excludeLimitNo and '' != excludeLimitNo">
+				   AND T.LIMIT_NO != #{excludeLimitNo, jdbcType=VARCHAR}
+				 </if>
+		         GROUP BY T.LIMIT_NO) D
+		    ON C.LIMIT_NO = D.LIMIT_NO
+		   AND C.NUM1 = D.NUM2
+		ORDER BY A.LIMIT_NO, B.ROLE_ID
+	</select>
+	
+	<!-- 查找 -->
+	<select id="dFind" resultMap="RoleLimitBean">
+		  SELECT A.LIMIT_NO, A.DES, B.ROLE_ID AS ROLE_ROLE_ID, B.ROLE_NAME AS ROLE_ROLE_NAME, B.DES AS ROLE_DES 
+		    FROM {{BF}}_ROLE_LIMIT A
+		    JOIN {{BF}}_ROLE B
+		      ON A.ROLE_ID = B.ROLE_ID
+		   WHERE A.LIMIT_NO = #{limitNo, jdbcType=VARCHAR}
+		   ORDER BY A.LIMIT_NO, B.ROLE_ID
+	</select>
+	
+	<!-- 有权限维护的角色列表（进入到新增页面） -->
+	<select id="dListRoleForAdd" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES, 0 AS CHECKED
+		    FROM {{BF}}_ROLE A
+		   ORDER BY A.ROLE_ID
+	</select>
+	<!-- 有权限维护的角色列表（进入到编辑页面）  -->
+	<select id="dListRoleForEdit" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES,CASE WHEN B.ROLE_ID IS NULL THEN 0 ELSE 1 END AS CHECKED
+		    FROM {{BF}}_ROLE A
+		    LEFT JOIN {{BF}}_ROLE_LIMIT B
+		      ON A.ROLE_ID = B.ROLE_ID
+		     AND B.LIMIT_NO = #{limitNo, jdbcType=VARCHAR}
+		   ORDER BY A.ROLE_ID
+	</select>
+
+	<!-- 添加 -->
+	<insert id="dInsert">
+		INSERT INTO {{BF}}_ROLE_LIMIT(LIMIT_NO, ROLE_ID, DES,
+			INST_DATE, INST_TIME, INST_OPER, 
+		   	MODI_DATE, MODI_TIME, MODI_OPER) 
+		 VALUES(#{param1.limitNo, jdbcType=VARCHAR}, #{roleId, jdbcType=INTEGER}, #{param1.des, jdbcType=VARCHAR},
+		   #{param1.instDate, jdbcType=VARCHAR}, #{param1.instTime, jdbcType=VARCHAR}, #{param1.instOper, jdbcType=VARCHAR}, 
+  		   #{param1.modiDate, jdbcType=VARCHAR}, #{param1.modiTime, jdbcType=VARCHAR}, #{param1.modiOper, jdbcType=VARCHAR}
+		 )
+	</insert>
+	
+	<!-- 删除  -->
+	<delete id="dDelete">
+		DELETE FROM {{BF}}_ROLE_LIMIT WHERE LIMIT_NO = #{limitNo, jdbcType=VARCHAR}
+	</delete>
+</mapper>

@@ -1,0 +1,262 @@
+package com.forms.batch.job.unit.participant.directdebit;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpddo01.FFPMsg_RES_DDO01;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class DirectDebitOutwardBatchResponseFileProcessor extends BatchBaseJob {
+	private static Connection conn = null;
+
+	public void init() throws BatchJobException {
+
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		try {
+			if (conn == null) {
+				conn = ConnectionManager.getInstance().getConnection();
+			}
+			fpspddrMessageHandler();
+
+			List<Map<String, Object>> resMapList = querySentMessageContent();
+
+			if (resMapList != null && resMapList.size() >= 1) {
+				for (int i = 0; i < resMapList.size(); i++) {
+					try {
+						FFPMsg_RES_DDO01 ffpddo01 = new FFPMsg_RES_DDO01(resMapList.get(i));
+						String resMsg = sendResMsgToAgent(ffpddo01);
+
+						if (resMsg == null) {
+							updateSentMessageInfo((String) resMapList.get(i).get("JNL_NO"),
+									(String) resMapList.get(i).get("RES_REF_NO"),
+									FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+							throw new Exception("Get Nullpoint Response Replies!");
+						} else if (resMsg.equals("ACK")) {
+							updateSentMessageInfo((String) resMapList.get(i).get("JNL_NO"),
+									(String) resMapList.get(i).get("RES_REF_NO"),
+									FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+						}
+
+					} catch (Exception e) {
+						this.batchLogger.error(e.getMessage());
+
+						try {
+							conn.rollback();
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							this.batchLogger.error(e1);
+							throw new BatchJobException("Fail To Rollback In Handling The Message!");
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e1);
+				throw new BatchJobException("Fail To Rollback In DirectDebitOutwardBatchResponseFileProcessor!");
+			}
+			throw new BatchJobException("Error Occurred In DirectDebitOutwardBatchResponseFileProcessor!");
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					this.batchLogger.error(e.getMessage());
+					throw new BatchJobException("Error Occurred In Closing The Database!");
+				}
+			}
+		}
+
+		return true;
+	}
+
+	// handle the message pacs002
+	private void fpspddrMessageHandler() throws Exception {
+		Date handleStartTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format(
+				"Start to Handler Data In DirectDebitOutwardBatchResponseFileProcessor At %s", handleStartTime));
+		conn.setAutoCommit(false);
+		// update tb_tx_jnl ACSC message status
+		String update_jnl_acsc_sql = "UPDATE tb_tx_jnl "
+				+ "SET TX_STAT = (SELECT TXSTS FROM(SELECT A.TXSTS FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "WHERE A.`STATUS`=? AND A.TXSTS=? AND B.TX_STAT=?) AS Z) "
+				+ "WHERE JNL_NO IN ( SELECT JNL_NO FROM (SELECT B.JNL_NO FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "WHERE A.`STATUS`=? AND A.TXSTS=? AND B.TX_STAT=?) AS Y); ";
+
+		ArrayList<Object> update_jnl_acsc_list = new ArrayList<>();
+		update_jnl_acsc_list.add("I");
+		update_jnl_acsc_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ACSC.getStatus());
+		update_jnl_acsc_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+		update_jnl_acsc_list.add("I");
+		update_jnl_acsc_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ACSC.getStatus());
+		update_jnl_acsc_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+
+		EntityManager.update(conn, update_jnl_acsc_sql, update_jnl_acsc_list.toArray());
+
+		// update tb_tx_jnl RJCT message status
+		String update_jnl_rjct_sql = "UPDATE tb_tx_jnl SET TX_STAT = ?, "
+				+ "TX_REJ_CODE = (SELECT RSN FROM(SELECT A.RSN FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "WHERE A.`STATUS`=? AND A.TXSTS=? AND B.TX_STAT=? ) AS Z), "
+				+ "TX_REJ_REASON = (SELECT ADDITIONAL_INF FROM(SELECT A.ADDITIONAL_INF FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "WHERE A.`STATUS`=?  AND A.TXSTS=? AND B.TX_STAT=? ) AS Y) "
+				+ "WHERE JNL_NO IN ( SELECT JNL_NO FROM( SELECT B.JNL_NO FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "WHERE A.`STATUS`=? AND A.TXSTS=? AND B.TX_STAT=?) AS X); ";
+
+		ArrayList<Object> update_jnl_rjct_list = new ArrayList<>();
+		update_jnl_rjct_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_AGENTREJCT.getStatus());
+		update_jnl_rjct_list.add("I");
+		update_jnl_rjct_list.add("RJCT");
+		update_jnl_rjct_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+		update_jnl_rjct_list.add("I");
+		update_jnl_rjct_list.add("RJCT");
+		update_jnl_rjct_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+		update_jnl_rjct_list.add("I");
+		update_jnl_rjct_list.add("RJCT");
+		update_jnl_rjct_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+
+		EntityManager.update(conn, update_jnl_rjct_sql, update_jnl_rjct_list.toArray());
+
+		// query data from tb_tx_jnlaction request message
+		String query_jnlaction_res_sql = "SELECT B.JNL_NO, C.MSG_ID, C.MSG_TYPE FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "INNER JOIN tb_tx_jnlaction C ON B.JNL_NO = C.JNL_NO AND C.MSG_STATUS = ? WHERE A.`STATUS` = ?; ";
+
+		ArrayList<Object> query_jnlaction_res_list = new ArrayList<>();
+		query_jnlaction_res_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_APPST.getStatus());
+		query_jnlaction_res_list.add("I");
+
+		List<Map<String, Object>> queryMapList = EntityManager.queryMapList(conn, query_jnlaction_res_sql,
+				query_jnlaction_res_list.toArray());
+
+		if (queryMapList != null && queryMapList.size() >= 1) {
+			// insert tb_tx_jnlaction response message
+			for (int i = 0; i < queryMapList.size(); i++) {
+				String insert_jnlaction_res_sql = "INSERT INTO tb_tx_jnlaction(JNL_NO, MSG_ID, MSG_DIRECTION, MSG_SYSTEMID, MSG_TYPE, MSG_STATUS, MSG_CREAT_TS, MSG_PROCE_TS, REF_MSG_ID, IS_AUTOCHECK) "
+						+ "VALUES(?, ?, ?, ?, ?, ?, now(), now(), ?, ?);";
+
+				ArrayList<Object> insert_jnlaction_res_list = new ArrayList<>();
+				insert_jnlaction_res_list.add((String) queryMapList.get(i).get("JNL_NO"));
+				insert_jnlaction_res_list.add(FFPIDUtils.getRefno());
+				insert_jnlaction_res_list.add(FFPConstants.MSG_DIRECTION_OUTWARD);
+				insert_jnlaction_res_list.add(FFPConstants.MSG_CODE_AGENT);
+				insert_jnlaction_res_list.add((String) queryMapList.get(i).get("MSG_TYPE"));
+				insert_jnlaction_res_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus());
+				insert_jnlaction_res_list.add((String) queryMapList.get(i).get("MSG_ID"));
+				insert_jnlaction_res_list.add("N");
+
+				EntityManager.update(conn, insert_jnlaction_res_sql, insert_jnlaction_res_list.toArray());
+			}
+		}
+
+		// update tb_tx_jnlaction request message status
+		String update_jnlaction_req_sql = "UPDATE tb_tx_jnlaction SET MSG_STATUS = ? "
+				+ "WHERE MSG_ID IN ( SELECT MSG_ID FROM ( SELECT C.MSG_ID FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "INNER JOIN tb_tx_jnlaction C ON B.JNL_NO = C.JNL_NO AND C.MSG_STATUS = ? "
+				+ "INNER JOIN tb_tx_jnlaction D ON C.MSG_ID = D.REF_MSG_ID WHERE A.`STATUS` = ?) AS Z); ";
+
+		ArrayList<Object> update_jnlaction_req_list = new ArrayList<>();
+		update_jnlaction_req_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_jnlaction_req_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_APPST.getStatus());
+		update_jnlaction_req_list.add("I");
+
+		EntityManager.update(conn, update_jnlaction_req_sql, update_jnlaction_req_list.toArray());
+
+		// update tb_tx_res_fpspddr_temp status
+		String update_fpspddr_temp_fin_sql = "UPDATE tb_tx_res_fpspddr_temp SET `STATUS` = ? "
+				+ "WHERE FID IN ( SELECT FID FROM ( SELECT A.FID FROM tb_tx_res_fpspddr_temp A "
+				+ "INNER JOIN tb_tx_jnl B ON A.ORGNL_END_TO_END_ID = B.END_TO_END_ID AND A.ORGNL_TX_ID = B.TRANSACTION_ID "
+				+ "INNER JOIN tb_tx_jnlaction C ON B.JNL_NO = C.JNL_NO "
+				+ "INNER JOIN tb_tx_jnlaction D ON C.MSG_ID = D.REF_MSG_ID WHERE A.`STATUS`=?) AS Z); ";
+
+		ArrayList<Object> update_fpspddr_temp_fin_list = new ArrayList<>();
+		update_fpspddr_temp_fin_list.add("F");
+		update_fpspddr_temp_fin_list.add("I");
+
+		EntityManager.update(conn, update_fpspddr_temp_fin_sql, update_fpspddr_temp_fin_list.toArray());
+
+		conn.commit();
+		conn.setAutoCommit(true);
+
+		Date handleEndTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String
+				.format("Finish Handling Data In DirectDebitOutwardBatchResponseFileProcessor At %s", handleEndTime));
+		this.batchLogger.info(String.format("Check Data Between DataTable And TempTable Use %.3f Seconds",
+				(double) (handleEndTime.getTime() - handleStartTime.getTime()) / 1000));
+	}
+
+	// query response message from db
+	private List<Map<String, Object>> querySentMessageContent() throws Exception {
+		// query from tb_tx_jnl_join_jnlaction
+		String query_jnl_join_jnlaction_sql = "SELECT JNL_NO, REQ_REF_NO, RES_REF_NO, SRC_REF_NM, TRANSACTION_ID, TX_STAT, TX_REJ_CODE, TX_REJ_REASON FROM "
+				+ "(SELECT A.JNL_NO, A.MSG_ID AS REQ_REF_NO, B.MSG_ID AS RES_REF_NO, C.SRC_REF_NM, C.TRANSACTION_ID, C.TX_STAT, C.TX_REJ_CODE, C.TX_REJ_REASON FROM tb_tx_jnlaction A "
+				+ "INNER JOIN tb_tx_jnlaction B ON A.MSG_ID = B.REF_MSG_ID AND B.MSG_STATUS = ? "
+				+ "INNER JOIN tb_tx_jnl C ON A.JNL_NO = C.JNL_NO) AS Z; ";
+
+		ArrayList<Object> query_jnl_join_jnlaction_list = new ArrayList<>();
+		query_jnl_join_jnlaction_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus());
+
+		List<Map<String, Object>> resMapList = EntityManager.queryMapList(conn, query_jnl_join_jnlaction_sql,
+				query_jnl_join_jnlaction_list.toArray());
+
+		return resMapList;
+	}
+
+	// tcp socket
+	private String sendResMsgToAgent(FFPMsg_RES_DDO01 ffpmsgddo01) throws Exception {
+		String resMsg = "";
+
+		FFPAdaptorMgr ffpMsgAdaptor = FFPAdaptorMgr.getInstance();
+		FFPSendTcpMessageResp messageResp = (FFPSendTcpMessageResp) ffpMsgAdaptor.execute(ffpmsgddo01);
+		resMsg = messageResp.getRespMessage();
+
+		return resMsg;
+	}
+
+	private void updateSentMessageInfo(String jnlNo, String responseId, String status) throws Exception {
+		// update tb_tx_jnlaction response status
+		conn.setAutoCommit(false);
+		String update_tb_tx_jnlaction_res_sql = "UPDATE tb_tx_jnlaction SET MSG_STATUS = ?, MSG_COMPL_TS = now() WHERE JNL_NO = ? AND MSG_ID = ?";
+
+		ArrayList<Object> update_tb_tx_jnlaction_res_list = new ArrayList<>();
+		update_tb_tx_jnlaction_res_list.add(status);
+		update_tb_tx_jnlaction_res_list.add(jnlNo);
+		update_tb_tx_jnlaction_res_list.add(responseId);
+
+		EntityManager.update(conn, update_tb_tx_jnlaction_res_sql, update_tb_tx_jnlaction_res_list.toArray());
+
+		conn.commit();
+		conn.setAutoCommit(true);
+	}
+
+}

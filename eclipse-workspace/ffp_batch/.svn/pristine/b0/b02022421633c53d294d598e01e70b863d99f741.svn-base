@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISHUSPAYIN</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>Create History Table</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.ris.RisCreateOneYearHistoryTable</processor>
+			<table-list>
+				<table>D_OVERSEAS_PAY</table>
+				<table>D_OVERSEAS_TX_HISTORY</table>
+				<table>D_OVERSEAS_PAY_SUB</table>
+				<table>T_OVERSEAS_ARCHIVES</table>
+			</table-list>
+		</action>
+	
+		<action>
+			<action-name>Sql Job Call01</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.rishus.RisHousekeepService</processor>
+			<databaseName>risdb</databaseName>
+			<parameters>
+				<parameter>husjob/rishuspayin/rishuspayin-sql-job-config.xml</parameter>
+			</parameters>
+			<backup>N</backup>
+		</action>
+	</action-flow>
+</job-config>

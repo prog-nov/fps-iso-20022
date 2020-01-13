@@ -1,0 +1,5 @@
+CD C:\Temp\BATCH\bin\windows\
+
+SET CONFIG="job\transactioncheck\BatchTransactionCheckProcessor.xml"
+
+CALL common\RunBatchJob.BAT %CONFIG% %1 %2 %3 %4 %5

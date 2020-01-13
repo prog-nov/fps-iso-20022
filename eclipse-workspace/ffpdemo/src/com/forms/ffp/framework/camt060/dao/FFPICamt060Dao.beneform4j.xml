@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.framework.camt060.dao.FFPICamt060Dao">
+		<!-- 添加消息 -->
+		<insert id="dInsert">
+		INSERT INTO TB_MSG_TEST (
+			MSG_ID ,MSG_CONTENT
+		) 
+		VALUES (
+		  	#{bizMsgIdr, jdbcType=VARCHAR},
+		  	#{msgContent, jdbcType=VARCHAR}
+		)
+	</insert>
+</mapper>

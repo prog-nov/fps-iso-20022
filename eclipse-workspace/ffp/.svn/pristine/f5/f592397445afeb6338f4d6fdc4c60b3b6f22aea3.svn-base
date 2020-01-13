@@ -1,0 +1,23 @@
+package com.forms.ffp.persistents.service.addressing;
+
+import java.util.List;
+
+
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA110;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA110dtl;
+
+public interface FFPIDaoService_A110
+{
+	int sInsert(FFPJbA110 form) throws Exception;
+
+	int updateJnlStat(FFPJbBase form) throws Exception;
+	
+	int[] dInsertA110dtl(FFPJbA110 form);
+	
+	List<FFPJbA110dtl> inqueryAllDtlFrA110Dtl(String jnlNo);
+	
+	int updateA110Stat(String status,String jnlNo);
+	
+	String inqueryResStatus(String jnlNo);
+}

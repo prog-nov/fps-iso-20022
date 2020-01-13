@@ -1,0 +1,48 @@
+package com.forms.batch.job.unit.participant.message.ffpddo01;
+
+import java.util.Map;
+
+import com.forms.ffp.adaptor.jaxb.participant.response.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpddo01.FFPDDO01;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseResponseParticipantMessage;
+
+public class FFPMsg_RES_DDO01 extends FFPMsgBaseResponseParticipantMessage{
+	private Map<String, Object> paramsMap = null;
+	
+	public FFPMsg_RES_DDO01(Map<String, Object> paramsMap){
+		super();
+		this.paramsMap = paramsMap;
+		
+		this.requestID = FFPConstants.MSG_CODE_FFP;
+		this.responseID = FFPConstants.MSG_CODE_AGENT;
+		this.reqRefNo = (String) this.paramsMap.get("MSG_ID");
+		this.resRefNo = (String) this.paramsMap.get("resRefno");
+		this.responseSts = "N";
+		this.msgType = "FFPDDO01";
+		
+	}
+	
+	public BODY marshalMsgResBody()
+	{
+		BODY body = null;
+		FFPDDO01 ffpddo01 = new FFPDDO01();
+		
+		ffpddo01.setSrcRefNm((String) this.paramsMap.get("SRC_REF_NM"));
+		ffpddo01.setFFPTransactionId((String) this.paramsMap.get("TRANSACTION_ID"));
+		String rejCode = (String) this.paramsMap.get("REJ_CODE");
+		String rejReason = (String) this.paramsMap.get("REJ_RSN");
+
+		if (("").equals(rejCode) && ("").equals(rejReason)) {
+			ffpddo01.setRsltCd("S");
+		} else {
+			ffpddo01.setRsltCd("R");
+			ffpddo01.setRejCd(rejCode);
+			ffpddo01.setRejMsg(rejReason);
+		}
+
+		body = ffpddo01;
+		
+		return body;
+	}
+}

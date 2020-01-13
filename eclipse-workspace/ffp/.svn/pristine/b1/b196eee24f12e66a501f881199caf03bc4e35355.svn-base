@@ -1,0 +1,493 @@
+login.title=User Login
+login.userId.tips=Please input your user name
+login.password.tips=Please input password
+login.title=User Login
+login.submit=Login
+login.copyright=Recommended browser\uff1aInternet Explorer 8 version above | Mozilla Firefox (Firefox browser )<br/>\
+				Recommended resolution: 1024x768 \u4ee5\u4e0a
+
+label.userId=User Name
+label.password=Password
+label.logout=Logout
+label.langChange=Language
+
+button.submit=Submit
+button.reset=Reset
+button.search=Search
+button.add= add
+button.moreSearch=More Search
+button.mulitDelete=Mulit Delete
+button.update=Update
+button.delete=Delete
+button.save = Save
+button.look=Look
+button.submitSearch=Submit Search
+
+main.noteice=Notice
+main.graph=Chart
+main.closeOther=Close Other
+main.closeAll=Close All
+main.favorites=Collection
+
+news.add.msgId=Message Number
+news.add.msgTitle=Message Title
+news.add.msgTitle.check.required=The message mark cannot be empty.
+news.add.msgTitle.check.invalidMessage=Input format is not correct, message title word limit between 1 and 100 characters.
+news.add.msgType=Message Type
+news.add.msgLevel=Message Level
+news.add.effectiveFlag=Effective Flag
+news.add.msgContent=Message Content
+news.add.msgContent.check.required=Message content cannot be empty.
+news.add.msgContent.check.invalidMessage=Input format is not correct, message content word limit between 1 and 500 characters.
+news.add.msgIcon=Message Icon
+news.add.targetUrl=TargetURL
+news.add.targetUrl.check.invalidMessage=Input format is not correct, target URL count limit between 1 and 200 characters.
+news.add.recvNet=Receive institutions
+news.add.recvOper=Receive user
+news.add.recvOper.check.invalidMessage=The input format is not correct, receive user count limit between 1 and 20 characters.
+news.add.effectiveDayCnt=Effective days
+news.add.effectiveStartDate=Effective start date
+news.add.effectiveStartTime=Effective start time
+news.add.effectiveEndDate=Effective end date
+news.add.effectiveEndTime=Effective end time
+news.search.sendDate=Message send date
+news.list.button.add=Add message
+news.list.button.edit=Edit message
+news.list.button.del=Batch delete
+news.list.button.detail=Message detail
+news.list.head.title=Message management
+
+guide.add.menuName=Menu Name
+guide.add.guideContent=Guide Content
+guide.list.head.title=Business operation guide
+guide.list.menuName=Menu Name
+
+leader.view.current.place=Current place
+leader.view.current.tooltip=The current operating interface related business operation instructions and guidance, click to view
+leader.view.current.title=Business operation guide
+leader.view.detail.head.title=Business operation guide detail
+
+document.list.title=Document management
+document.list.addtitle=Add document
+document.list.updatetitle=Update document
+document.list.downloadtitle=Download document
+document.list.lock=Lock
+document.list.unlock=Unlock
+document.list.deletfile=Delete
+document.list.docName=Document name
+document.list.docName.check.required=Document content cannot be empty.
+document.list.docName.check.invalidMessage=Input format is not correct, document word limit between 1 and 200 characters.
+document.list.suffix=Document suffix
+document.list.docType=Document type
+document.list.docState=Document state
+document.list.checkSumType=File check type
+document.list.checkSum=File check values
+document.list.docSize=Document size
+document.list.storePath=Store path
+document.list.instDate=Add new date
+document.list.instTime=Add new time
+document.list.instOper=Upload users
+document.list.modiDate=Modification date
+document.list.modiTime=Modification time
+document.list.modiOper=Modification user
+
+demo.title.moresearch=More search criteria
+demo.product.name=Product name
+demo.product.type=Product type
+demo.product.code=product code
+demo.product.oldprice=Old price (\uffe5)
+demo.product.nowprice=Now price (\uffe5)
+demo.product.count=Count
+demo.product.datelong=Data deadline
+demo.product.datelongone=One month
+demo.product.datelongtwo=Within half a year
+demo.product.datelongthree=Within a year
+demo.product.roletype=Role type
+demo.product.roletypelc=Financial Manager
+demo.product.roletypekg=Open ark manager
+demo.product.roletypexd=Eliminate credit manager
+demo.product.roletypedt=The lobby manager
+demo.product.date=Maintenance Date
+demo.product.address=Address
+demo.product.remark=Remark
+demo.title.cstinfo=Customer personal information
+demo.title.cstfamily=Customer family background
+demo.title.cstinterest=Customer interests
+demo.button.addproduct=Add product
+demo.valid.name=Product name must be input between 1 and 50 characters
+
+portal.setting.title=Personal preferences
+portal.password.title=Personal password modification
+portal.password.oldPassword=Old Password
+portal.password.newPassword=New Password
+portal.password.confirmPassword=Confirm Password
+
+syslog.login.loginDate=Login Date
+syslog.visit.visitDate=Visit Date
+
+
+
+#FFP Start
+#CUTOFF
+ffp.systemmaintenance.cutoffsetting.edit.title=MAINTENANCE SETTING
+ffp.systemmaintenance.cutoffsetting.edit.button=MAINTENANCE SETTING
+ffp.systemmaintenance.cutoffsetting.cutofftype=CUT OFF TYPE:
+ffp.systemmaintenance.cutoffsetting.workdayStart=WORKDAY START TIME:
+ffp.systemmaintenance.cutoffsetting.workdayEnd=WORKDAY END TIME:
+ffp.systemmaintenance.cutoffsetting.satStart=SATURDAY START TIME:
+ffp.systemmaintenance.cutoffsetting.satEnd=SATURDAY END TIME:
+ffp.systemmaintenance.cutoffsetting.holidayStart=HOLIDAY START TIME:
+ffp.systemmaintenance.cutoffsetting.holidayEnd=HOLIDAY END TIME:
+
+ffp.systemmaintenance.systemstat.curDate=Cur System Date:
+ffp.systemmaintenance.systemstat.runningMode=Running Mode:
+ffp.systemmaintenance.systemstat.runningMode.RLTM=Real-Time
+ffp.systemmaintenance.systemstat.runningMode.BTCH=Batch
+ffp.systemmaintenance.systemstat.fpsReceiveMode=Receive Mode
+ffp.systemmaintenance.systemstat.fpsReceiveMode.RLTM=Real-Time
+ffp.systemmaintenance.systemstat.fpsReceiveMode.BTCH=Batch
+ffp.systemmaintenance.systemstat.fpsReceiveMode.RLTMP=Change to Real-Time...
+ffp.systemmaintenance.systemstat.fpsReceiveMode.BTCHP=Change to Batch...
+ffp.systemmaintenance.systemstat.realtimeListenerStat=Real-Time Listener Stat:
+ffp.systemmaintenance.systemstat.realtimeListenerStat.-=No Function
+ffp.systemmaintenance.systemstat.realtimeListenerStat.R=Running
+ffp.systemmaintenance.systemstat.realtimeListenerStat.C=Stopped
+ffp.systemmaintenance.systemstat.realtimeListenerStat.RP=Processing Start...
+ffp.systemmaintenance.systemstat.realtimeListenerStat.CP=Processing Stop...
+ffp.systemmaintenance.systemstat.realtimeControlStat=Real-Time Controller Stat:
+ffp.systemmaintenance.systemstat.realtimeControlStat.-=No Function
+ffp.systemmaintenance.systemstat.realtimeControlStat.R=Running
+ffp.systemmaintenance.systemstat.realtimeControlStat.C=Stopped
+ffp.systemmaintenance.systemstat.realtimeControlStat.RP=Processing Start...
+ffp.systemmaintenance.systemstat.realtimeControlStat.CP=Processing Stop...
+ffp.systemmaintenance.systemstat.batchListenerStat=Batch Listener Stat:
+ffp.systemmaintenance.systemstat.batchListenerStat.-=No Function
+ffp.systemmaintenance.systemstat.batchListenerStat.R=Running
+ffp.systemmaintenance.systemstat.batchListenerStat.C=Stopped
+ffp.systemmaintenance.systemstat.batchListenerStat.RP=Processing Start...
+ffp.systemmaintenance.systemstat.batchListenerStat.CP=Processing Stop...
+
+
+#add by zhangying
+# ffp transaction
+ffp.cashmanagement.transaction.O = OUTWARD
+ffp.cashmanagement.transaction.I = INWARD
+ffp.cashmanagement.transaction.ALL = ALL
+ffp.cashmanagement.transaction.P100 = P100
+ffp.cashmanagement.transaction.P110 = P110
+ffp.cashmanagement.transaction.P200 = P200
+ffp.cashmanagement.transaction.P210 = P210
+ffp.cashmanagement.transaction.P300 = P300
+ffp.cashmanagement.transaction.M101 = M101
+ffp.cashmanagement.transaction.A100 = A100
+ffp.cashmanagement.transaction.I110 = I110
+ffp.cashmanagement.transaction.COMPL = COMPL
+ffp.cashmanagement.transaction.ERROR = ERROR
+ffp.cashmanagement.transaction.APPST = APPST
+ffp.cashmanagement.transaction.REJCT = REJCT
+ffp.cashmanagement.transaction.CREAT = CREAT
+ffp.cashmanagement.transaction.TMOUT = TMOUT
+ffp.cashmanagement.transaction.MSYNC = MSYNC
+ffp.cashmanagement.transaction.transactionRecord= TRANSACTION RECORD
+ffp.cashmanagement.transaction.transDate= TRANSACTION DATE
+
+#tx
+ffp.cashmanagement.transaction.txJnl = TRANSACTION DATA
+ffp.cashmanagement.transaction.jnlNo = JNL NO
+ffp.cashmanagement.transaction.srcRefNm = SOURCE REFERENCE NUMBER
+ffp.cashmanagement.transaction.txStat = TRANSACTION STATUS
+ffp.cashmanagement.transaction.txCode = TRANSACTION CODE
+ffp.cashmanagement.transaction.txSrc = TRANSACTION SRC
+ffp.cashmanagement.transaction.txMode = TRANSACTION MODE
+ffp.cashmanagement.transaction.transactionId = TRANSACTION ID
+ffp.cashmanagement.transaction.endToEndId = END TO END ID
+ffp.cashmanagement.transaction.createDate = CREATE DATE
+#action
+ffp.cashmanagement.transaction.actionList = ACTION LIST
+ffp.cashmanagement.transaction.bussiData = BUSSINESS DATA
+ffp.cashmanagement.transaction.msgId = MESSAGE ID
+ffp.cashmanagement.transaction.msgDirection = MESSAGE DIRECTION
+ffp.cashmanagement.transaction.msgSystemId = MESSAGE SYSTEM ID
+ffp.cashmanagement.transaction.msgType = MESSAGE TYPE
+ffp.cashmanagement.transaction.msgStatus = MESSAGE STATUS
+ffp.cashmanagement.transaction.msgCode = MESSAGE CODE
+ffp.cashmanagement.transaction.msgResult = MESSAGE RESULT
+ffp.cashmanagement.transaction.msgCreateTs = MESSAGE CREATE TIME
+ffp.cashmanagement.transaction.msgProce_ts = MESSAGE PROCESS TIME
+ffp.cashmanagement.transaction.msgComplTs = MESSAGE COMPLE TIME
+ffp.cashmanagement.transaction.refMsgId = REFERENCE MESSAGE ID
+ffp.cashmanagement.transaction.isAutocheck = IS CHECKED
+#p100
+ffp.cashmanagement.transaction.categoryPurpose = CATEGORY PURPOSE
+ffp.cashmanagement.transaction.acctVerf = ACCOUNT VERFICATION
+ffp.cashmanagement.transaction.settlementCur = SETTLEMENT CURRENCY
+ffp.cashmanagement.transaction.settlementAmt = SETTLEMENT AMOUNT
+ffp.cashmanagement.transaction.settlementDate = SETTLEMENT DATE
+ffp.cashmanagement.transaction.debtorName = DEBTOR NAME
+ffp.cashmanagement.transaction.debtorAcctNo = DEBTOR ACCOUNT NO
+ffp.cashmanagement.transaction.debtorAcctNoType = DEBTOR ACCOUNT NO TYPE
+ffp.cashmanagement.transaction.creditorName = CREDITOR NAME
+ffp.cashmanagement.transaction.creditorAcctNo = CREDITOR ACCOUNT NO
+ffp.cashmanagement.transaction.creditorAcctNoType = CREDITOR ACCOUNT NO TYPE
+#m101
+ffp.cashmanagement.transaction.msgId = MSG ID
+ffp.cashmanagement.transaction.rcptMd = RECEPT MODE
+ffp.cashmanagement.transaction.accpStatus = ACCEPT STATUS
+ffp.cashmanagement.transaction.rjctCd = REJECT CD
+ffp.cashmanagement.transaction.createDtTm = CREATE TIME
+
+#e100
+ffp.cashmanagement.transactionstatus.transactionId =  Transaction Identification
+ffp.cashmanagement.transactionstatus.clrSysRef = Clearing System Reference
+ffp.cashmanagement.transactionstatus.dbtrAgtMmbId = Debit Member Identification
+ffp.cashmanagement.transactionstatus.cdtrAgtMmbId = Credit Member Identification
+
+
+
+ffp.cashmanagement.accountinquery.pleaseSelect=Please Select Currency:
+ffp.cashmanagement.accountinquery.accountBalance=Account Balance:
+
+ffp.cashmanagement.fpspaymentnotification.ntfctnId=Notification Id:
+ffp.cashmanagement.fpspaymentnotification.paymentCag=Transaction Category:
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXSALA=Salary and Benefits Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXMRCH=Merchant Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXBSNS=General Business Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXPSNL=General Personal Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDBILL=Bills Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDTOPU=Account Top-up Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDECOM=E-commerce Payment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDOTHR=Others(General Direct Debit Payment)
+ffp.cashmanagement.fpspaymentnotification.paymentCag.RPRTRN=Payment Return
+ffp.cashmanagement.fpspaymentnotification.paymentCag.RPRFND=Refund
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWAUTO=Auto Account Balance Sweeping
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWMANU=Manual Account Balance Sweeping
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWOPCL=Account Balance Sweeping
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWRVSL=Reversal of Balance Sweeping
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SIDRCR=SI Direct Debit/Credit
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CPBADJ=CP Balance Adjustment
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CPMERG=Balance Adjustment(Participant Merger)
+ffp.cashmanagement.fpspaymentnotification.ntfctnCreateTs=Notification Date:
+ffp.cashmanagement.fpspaymentnotification.paymentDbtr=Debit Agent:
+ffp.cashmanagement.fpspaymentnotification.paymentCdtr=Credit Agent:
+ffp.cashmanagement.fpspaymentnotification.settlementTs=Settlement Date:
+
+#system
+system.login =LOGIN
+
+#user
+system.sysmanager.user.userId = USER ID:
+system.sysmanager.user.userInf =USER INFORMATION:
+system.sysmanager.user.userIdMiss = USER ID CAN NOT BE EMPTY.
+system.sysmanager.user.userIdInvalid = INPUT FORMAT IS NOT CORRECT.THE LENGTH IS BETWEEN 6 AND 16.
+system.sysmanager.user.userName = USER NAME:
+system.sysmanager.user.userNameMiss = USER NAME CAN NOT BE EMPTY.
+system.sysmanager.user.nickName = NICK NAME:
+system.sysmanager.user.orgId = ORGANIZATION ID
+system.sysmanager.user.orgIdMiss = ORGANIZATION CAN NOT BE EMPTY.
+system.sysmanager.user.certType = Certificates TYPE:
+system.sysmanager.user.IDCard = ID CARD:
+system.sysmanager.user.centNo = ID NUMBER:
+system.sysmanager.user.telephone = TELEPHONE:
+system.sysmanager.user.mobilePhone = MOBILE PHONE:
+system.sysmanager.user.email = EMAIL:
+system.sysmanager.user.limitIp = LIMIT IP:
+system.sysmanager.user.userStatus = USER STATUS:
+system.sysmanager.user.start = START:
+system.sysmanager.user.close = CLOSE:
+system.sysmanager.user.userRoleList = USER ROLE LIST:
+system.sysmanager.user.addUser = ADD USER
+system.sysmanager.user.updateUser = UPDATE USER
+system.sysmanager.user.delete = DELETE
+system.sysmanager.user.resetPass = RESET PASSWORD
+system.sysmanager.user.unlock = UNLOCK
+system.sysmanager.user.isStart = IS IT OPEN
+system.sysmanager.user.isLock = IS IT LOCK
+
+#onlineUser
+system.sysmanager.onlineUser.offline =OFFLINE
+#role
+system.sysmanager.role.roleName =ROLE NAME:
+system.sysmanager.role.roleInf = ROLE INFORMATION
+
+system.sysmanager.role.roleNameMiss =ROLE NAME CAN NOT BE EMPTY
+system.sysmanager.role.des = DESCRIPTION
+system.sysmanager.role.roleRightsInf = ROLE RIGHTS INFORMATION
+system.sysmanager.role.roleId =ROLE ID
+system.sysmanager.role.addRole =ADD ROLE
+system.sysmanager.role.editRole =EDIT ROLE
+
+#roleallot
+system.sysmanager.roleallot.roleallotInf =ROLEALLOT INFORMATION:
+system.sysmanager.roleallot.roleallotName =ROLEALLOT NAME:
+system.sysmanager.roleallot.roleallotNameMiss =roleallotName can not be empty.
+system.sysmanager.roleallot.roleallotDes =ROLEALLOT DESCRIPTION:
+system.sysmanager.roleallot.roleallotRightsInf =ROLEALLOT RIGHTS INFORMATION:
+system.sysmanager.roleallot.roleallotId =ROLEALLOT ID:
+system.sysmanager.roleallot.addroleallot =ADD ROLEALLOT
+#maintenance
+system.sysmanager.maintenance.roleInf =ROLE INFORMATION
+system.sysmanager.maintenance.roleName =ROLE NAME
+system.sysmanager.maintenance.roleallotList =ROLEALLOT LIST
+system.sysmanager.maintenance.roleallotName =ROLEALLOT NAME
+system.sysmanager.maintenance.roleID =ROLE ID
+system.sysmanager.maintenance.roleChoose =ROLE CHOOSE
+#rolelimit
+system.sysmanager.rolelimit.roleName =ROLE NAME
+system.sysmanager.rolelimit.addRoleLimit =ADD ROLELIMIT
+#param define
+system.sysmanager.param.define.paramCode =PARAM CODE
+system.sysmanager.param.define.paramCodeMiss =paramCode can not be empty
+system.sysmanager.param.define.paramCodeInvalid = input format is not correct.the length is between 4 and 32.
+system.sysmanager.param.define.paramName =PARAM NAME
+system.sysmanager.param.define.paramNameMiss =paramName can not be empty
+system.sysmanager.param.define.storeType =STORE TYPE
+system.sysmanager.param.define.paramGroup =PARAM GROUP
+system.sysmanager.param.define.paramGroupMiss =paramGroup can not be empty
+system.sysmanager.param.define.dataType =DATA TYPE
+system.sysmanager.param.define.editable =EDITABLE
+system.sysmanager.param.define.defaultValue =DEFAULT VALUE
+system.sysmanager.param.define.valueRule =VALUE RULE
+system.sysmanager.param.define.valueRuleParam =VALUE RULE PARAM
+system.sysmanager.param.define.des =DESCRIPTION
+system.sysmanager.param.define.addParam =ADD PARAM
+system.sysmanager.param.define.editParam =EDIT PARAM
+system.sysmanager.param.define.delParam =DELETE PARAM
+#param enum
+system.sysmanager.param.enum.paramCode = PARAM CODE
+system.sysmanager.param.enum.paramName = PARAM NAME
+system.sysmanager.param.enum.paramGroup = PARAM GROUP
+system.sysmanager.param.enum.enumParamType = ENUM PARAM TYPE
+system.sysmanager.param.enum.seqNo = SEQUENCE NO
+system.sysmanager.param.enum.des = DESCRIPTION
+system.sysmanager.param.enum.supID = SUPEER ID
+system.sysmanager.param.enum.ID = ID
+system.sysmanager.param.enum.dataText = DATA TEXT
+system.sysmanager.param.enum.dataIcon = DATA ICON
+system.sysmanager.param.enum.dataParam = DATA PARAM
+system.sysmanager.param.enum.editDetail = EDIT DETAIL
+#holiday
+system.sysmanager.holiday.isHoliday = ISHOLIDAY
+system.sysmanager.holiday.holidayName = HOLIDAY NAME
+system.sysmanager.holiday.selectDates = SELECT DATAS
+#org
+system.sysmanager.org.supOrg = SUPER ORGANIZATION
+system.sysmanager.org.orgId = ORGANIZATION ID
+system.sysmanager.org.orgIdMiss = orgId can not be empty.
+system.sysmanager.org.orgName = ORGANIZATION NAME
+system.sysmanager.org.orgNameMiss = orgName can not be empty.
+system.sysmanager.org.orgLevel = ORGANIZATION LEVEL
+system.sysmanager.org.orgType = ORGNATION TYPE
+system.sysmanager.org.des = DESCRIPTION
+#syslog login
+system.sysmanager.syslog.login.orgId = orgId:
+system.sysmanager.syslog.login.userId = userId:
+system.sysmanager.syslog.login.userName = userName:
+system.sysmanager.syslog.login.loginDate = loginDate:
+#syslog visit
+system.sysmanager.syslog.visit.orgId = ORGANIZATION ID
+system.sysmanager.syslog.visit.userId = USER ID
+system.sysmanager.syslog.visit.userName = USER NAME
+system.sysmanager.syslog.visit.loginDate = LOGIN DATE
+#news
+system.sysmanager.news.title = TITLE
+system.sysmanager.news.content = CONTENT
+system.sysmanager.news.sendOper = SEND OPERATOR
+system.sysmanager.news.sendDate = SEND DATE
+#system.mainframe
+system.mainframe.title = FORMSSI
+system.mainframe.newsDetail = NEWS DETAIL
+system.mainframe.myshortCutMenu = MY SHORTCUT MENU
+system.mainframe.setshortCutMenu = SET SHORTCUT MENU
+#system.mainframe.layout
+system.mainframe.layout.title = FORMSSI
+#system.mainframe.portal
+system.mainframe.portal.notice = NOTICE
+system.mainframe.portal.noticeContent = NOTICE CONTENT
+system.mainframe.portal.sendTime = SENDDATE
+system.mainframe.portal.demo = DEMO
+system.mainframe.portal.time = TIME: FROM 9:30 TO 11:30
+system.mainframe.portal.title = TITLE: CONFERENCE AT  15:30
+system.mainframe.portal.content = REVIEW THE FUNCTION OF DESIGN...
+
+#system.mainframe.portal.slide
+system.mainframe.portal.slide.one = ONE 
+system.mainframe.portal.slide.two = TWO
+system.mainframe.portal.slide.three = THREE
+system.mainframe.portal.slide.four = FOUR
+system.mainframe.portal.slide.testTitleOne = TEST TITLE ONE
+system.mainframe.portal.slide.testTitleTwo = TEST TITLE TWO
+system.mainframe.portal.slide.testTitleThree = TEST TITLE THREE
+system.mainframe.portal.slide.testTitleFour = TEST TITLE FOUR
+#common.favorites
+common.favorites.menuId = MENU ID
+common.favorites.menuIdMiss = menuId can not be empty
+common.favorites.menuIdInvalide = Input format is not correct,it must be number.
+common.favorites.shortMenuName = SHORCUT MENU NAME
+common.favorites.shortMenuNameMiss = shortMenuName can not be empty
+common.favorites.icon = ICON
+common.favorites.seqNo = SEQUENCE NO
+common.favorites.des = DESCRIPTION
+common.favorites.iconList = ICON
+common.favorites.menuTree = MENU TREE
+common.favorites.all = ALL
+common.favorites.collected = COLLECTED
+common.favorites.uncollected = NO COLLECTED
+common.favorites.shortMenuView = SHORTCUT MENUVIEW
+common.favorites.addshortMenu = ADD SHORTCUT MENU
+common.favorites.editshortMenu = EIDT SHORTCUT MENU
+common.favorites.delshortMenu = DEL SHORTCUT MENU
+
+#common.error
+common.error.400.titlePage = 400 PAGE
+common.error.404.titlePage = 404 PAGE
+common.error.500.titlePage = 500 PAGE
+#common root
+common.authorityRefusePage = AUTHORITY REFUSE PAGE
+common.pathError = sorry can not find the function URL:
+common.sessionError = sorry session is overtime ples anew 
+common.login = LOGIN 
+common.accessAuthority = sorry u do not have the accessAuthority URL:
+common.code = CODE
+common.message = MESSAGE
+
+
+
+#common title
+common.favorite.title.shortMenuSet = SET SHORCUT MENU
+system.sysmanager.menulocale.title.menuName = MENUNAME:SYSTEM MANAGER
+system.sysmanager.menulocale.title.menulocale = MENU LOCALE
+system.sysmanager.taskrule.title.taskruleManager = TASK RULE MANAGER
+system.sysmanager.taskrule.title.chooseOrg = CHOOSE ORGANIZATION
+system.sysmanager.taskrule.title.cancleChoose = CANCLE 
+system.sysmanager.cache.title.cacheManager = CACHE MANAGER
+system.sysmanager.syslog.visit.title.visitLogSearch = VISIT LOG SEARCH
+system.sysmanager.syslog.login.title.loginLogSearch = LOGIIN LOG SEARCH
+system.sysmanager.user.title.userManager = USER MANAGER
+system.sysmanager.onlineuser.title.onlineUserManager = ONLINE USER MANAGER
+system.sysmanager.role.title.roleManager = ROLE MANAGER
+system.sysmanager.roleallot.title.roleallotManager = ROLEALLOT MANAGER
+system.sysmanager.rolelimit.title.rolelimitManager = ROLE LIMIT MANAGER
+system.sysmanager.param.define.title.paramDefine = PARAM DEFINE
+system.sysmanager.param.enum.title.enumParamMain = ENUM PARAM MAINTAINING
+system.sysmanager.param.singleParam.title.singleParamMain = SINGLE PARAM MAINTAINING
+system.sysmanager.holiday.title.holidayMain = HOLIDAY MAINING
+system.sysmanager.org.title.orgManager = ORGANIZATION MANAGER
+system.sysmanager.org.title.orgTree = ORGANIZATION TREE
+system.sysmanager.org.title.remark = (the right key operating mechanism can be dragged)
+system.sysmanager.org.title.orgMain = ORGANIZATION MAINING
+system.sysmanager.org.title.addSonOrg = ADD SUBORGANIZATION
+system.sysmanager.org.title.editOrg = EDIT ORGANIZATION
+system.sysmanager.org.title.delOrgAndSonOrg = DELETE ORGANIZATION AND SUBORGANIZATION
+system.sysmanager.guide.title.searchMenuName = SEARCH MENU NAME
+system.sysmanager.maintenance.title.roleRelMain = ROLE RELATION MAINTAINING
+
+
+#button
+system.sysmanager.button.download = DOWNLOAD
+system.sysmanager.button.save = SAVE
+system.sysmanager.button.reset = RESET
+system.sysmanager.button.refresh = REFRESH
+system.sysmanager.button.clearRefresh = CLEAR CACHE
+system.sysmanager.button.cancleEdit = CANCLE EDIT
+system.sysmanager.taskrule.button.cancleOrg = CANCLE ORGANIZE
+system.sysmanager.taskrule.button.cancleChoose = CANCLE CHOOSE

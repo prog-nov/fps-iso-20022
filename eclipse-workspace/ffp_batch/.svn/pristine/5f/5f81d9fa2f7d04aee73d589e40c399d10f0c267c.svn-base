@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>risdb</databaseName>
+	<flush-rows>500</flush-rows>
+	<field-definition>
+		<field name="CP03_APPG_MODE"			data-type="StringTypeRT"	/>
+		<field name="CP03_APPG_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_INST"					data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_MSG_SEQ_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_PROS_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_SRC_SYS"				data-type="StringTypeRT"	/>
+		<field name="CP03_MSG_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP03_DSTN_SYS"				data-type="StringTypeRT"	/>
+		<field name="CP03_SPYI_VER"				data-type="StringTypeRT"	/>
+		<field name="DP03_VALU_DATE"			data-type="StringTypeRT"	/>
+		<field name="DP03_RCPT_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_RCPT_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP03_REJ_ERR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SUSP_JRNLNO"			data-type="StringTypeRT"	/>
+		<field name="DP03_REJ_DATE"				data-type="StringTypeRT"	/>
+		<field name="CP03_REJ_TIME"				data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_CURR"				data-type="StringTypeRT"	/>
+		<field name="CP03_PAY_AMT"				data-type="StringTypeRT"	/>
+		<field name="CP03_EXTN_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_RETR"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_DEAD"			data-type="StringTypeRT"	/>
+		<field name="DP03_CHAS_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_TIME"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_ATMP"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_FREQ"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHAS_UNIT"			data-type="StringTypeRT"	/>
+		<field name="CP03_ACCT_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_BENF_DETL"			data-type="StringTypeRT"	/>
+		<field name="CP03_TRAN_NO"				data-type="StringTypeRT"	/>
+		<field name="CP03_BTCH_ID"				data-type="StringTypeRT"	/>
+		<field name="CP03_NOST_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_MUR"					data-type="StringTypeRT"	/>
+		<field name="CP03_NOST_UPD_FLAG"		data-type="StringTypeRT"	/>
+		<field name="CP03_CR_DR_IND"			data-type="StringTypeRT"	/>
+		<field name="CP03_REMIT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_CHANNEL_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_TO_ACCT_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_PAYMNT_TYPE"			data-type="StringTypeRT"	/>
+		<field name="CP03_FEE_TYPE"				data-type="StringTypeRT"	/>
+		<field name="CP03_SPYI_FEE"				data-type="StringTypeRT"	/>
+		<field name="CP03_FISC_FEE"				data-type="StringTypeRT"	/>
+		<field name="CP03_CREDIT_CODE"			data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_SPN_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_CHK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_BANK_CODE2"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_SDN_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP03_IN_CHK_CODE2"			data-type="StringTypeRT"	/>
+		<field name="CP03_FISC_SEQ"				data-type="StringTypeRT"	/>
+		<field name="CP03_INTERBANK_SEQ"		data-type="StringTypeRT"	/>
+		<field name="CP03_RETURN_REASON"		data-type="StringTypeRT"	/>
+		<field name="CP03_ORG_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_ORG_FISC_SEQ"			data-type="StringTypeRT"	/>
+		<field name="CP03_OD15_PRINT_TIME"		data-type="StringTypeRT"	/>
+		<field name="CP03_IN_PRINT_TIMES"		data-type="StringTypeRT"	/>
+		<field name="CP03_TELLER_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_TELLER_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR_TERM"			data-type="StringTypeRT"	/>
+		<field name="CP03_SENDER_NAME"			data-type="StringTypeRT"	/>
+		<field name="CP03_RECEIVER_NAME"		data-type="StringTypeRT"	/>
+		<field name="CP03_SENDER_DESC"			data-type="StringTypeRT"	/>
+		<field name="CP03_SPRVSR2_NO"			data-type="StringTypeRT"	/>
+		<field name="DP03_RESTORED_DATE"		data-type="StringTypeRT"	/>
+		<field name="DP03_SUSP_FIN_DATE"		data-type="StringTypeRT"	/>
+		<field name="CP03_ACCT_OWNER_REF_NO"	data-type="StringTypeRT"	/>
+		<field name="CP03_SUP_ID"				data-type="StringTypeRT"	/>
+		<field name="DP03_REL_DATE"				data-type="StringTypeRT"	/>
+		<field name="CP03_REL_TIME"				data-type="StringTypeRT"	/>
+		<field name="CP03_REDIR_FLAG"			data-type="StringTypeRT"	/>
+		<field name="CP03_REDIR_BANK_ID"		data-type="StringTypeRT"	/>
+		<field name="CP03_BUSINESS_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_REGION"				data-type="StringTypeRT"	/>
+		<field name="CP03_BRANCH"				data-type="StringTypeRT"	/>
+		<field name="CP03_SUB_STATUS"			data-type="StringTypeRT"	/>
+		<field name="CP03_URGENCY"				data-type="StringTypeRT"	/>
+		<field name="CP03_PRIORITY_WEIGHT"		data-type="StringTypeRT"	/>
+		<field name="CP03_RETURN_RSN"			data-type="StringTypeRT"	/>
+		<field name="CP03_PREV_STATUS"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_CASE_NO"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_TEMP_ID"			data-type="StringTypeRT"	/>
+		<field name="CP03_STL_INV_PURP"			data-type="StringTypeRT"	/>
+		<field name="CP03_FX_55067_PMCODE"		data-type="StringTypeRT"	/>
+		<field name="CP03_FX_SAFE_DEC"			data-type="StringTypeRT"	/>
+		<field name="CP03_FX_LOCAL_AMT"			data-type="StringTypeRT"	/>
+		<field name="CP03_TRAN_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_POST_DATE"			data-type="StringTypeRT"	/>
+		<field name="CP03_FILLER"				data-type="StringTypeRT"	/>
+		<field name="CP03_TXN_DATE"				data-type="StringTypeRT"	/>
+		<field name="LAST_MAINT_DATE1"			data-type="StringTypeRT"	/>
+		<field name="LAST_MAINT_FLAG1"			data-type="StringTypeRT"	/>
+		<field name="docCnt"					data-type="StringTypeRT"	/>
+	</field-definition>
+	<update-sql>
+		INSERT INTO #{schema}.D_OVERSEAS_FILE_P21_TEMP
+		(
+			CP03_APPG_MODE,			CP03_APPG_DATE,			CP03_INST,			CP03_PAY_NO,			CP03_MSG_SEQ_NO,
+			CP03_PROS_FLAG,			CP03_SRC_SYS,			CP03_MSG_TYPE,		CP03_DSTN_SYS,			CP03_SPYI_VER,
+			DP03_VALU_DATE,			DP03_RCPT_DATE,			CP03_RCPT_TIME,		CP03_REJ_ERR_NO,		CP03_SUSP_FLAG,
+			CP03_SUSP_ACCT_NO,		CP03_SUSP_JRNLNO,		DP03_REJ_DATE,		CP03_REJ_TIME,			CP03_PAY_CURR,
+			CP03_PAY_AMT,			CP03_EXTN_REF_NO,		CP03_CHAS_RETR,		CP03_CHAS_DEAD,			DP03_CHAS_DATE,
+			CP03_CHAS_TIME,			CP03_CHAS_ATMP,			CP03_CHAS_FREQ,		CP03_CHAS_UNIT,			CP03_ACCT_NO,
+			CP03_BENF_DETL,			CP03_TRAN_NO,			CP03_BTCH_ID,		CP03_NOST_ACCT_NO,		CP03_MUR,
+			CP03_NOST_UPD_FLAG,		CP03_CR_DR_IND,			CP03_REMIT_TYPE,	CP03_CHANNEL_TYPE,		CP03_TO_ACCT_NO,
+			CP03_PAYMNT_TYPE,		CP03_FEE_TYPE,			CP03_SPYI_FEE,		CP03_FISC_FEE,			CP03_CREDIT_CODE,
+			CP03_OD15_BANK_CODE2,	CP03_OD15_SPN_CODE2,	CP03_OD15_CHK_CODE2,CP03_IN_BANK_CODE2,		CP03_IN_SDN_CODE2,
+			CP03_IN_CHK_CODE2,		CP03_FISC_SEQ,			CP03_INTERBANK_SEQ,	CP03_RETURN_REASON,		CP03_ORG_REF_NO,
+			CP03_ORG_FISC_SEQ,		CP03_OD15_PRINT_TIME,	CP03_IN_PRINT_TIMES,CP03_TELLER_NO,			CP03_TELLER_TERM,
+			CP03_SPRVSR_NO,			CP03_SPRVSR_TERM,		CP03_SENDER_NAME,	CP03_RECEIVER_NAME,		CP03_SENDER_DESC,
+			CP03_SPRVSR2_NO,		DP03_RESTORED_DATE,		DP03_SUSP_FIN_DATE,	CP03_ACCT_OWNER_REF_NO,	CP03_SUP_ID,
+			DP03_REL_DATE,			CP03_REL_TIME,			CP03_REDIR_FLAG,	CP03_REDIR_BANK_ID,		CP03_BUSINESS_NO,
+			CP03_REGION,			CP03_BRANCH,			CP03_SUB_STATUS,	CP03_URGENCY,			CP03_PRIORITY_WEIGHT,
+			CP03_RETURN_RSN,		CP03_PREV_STATUS,		CP03_STL_CASE_NO,	CP03_STL_TEMP_ID,		CP03_STL_INV_PURP,
+			CP03_FX_55067_PMCODE,	CP03_FX_SAFE_DEC,		CP03_FX_LOCAL_AMT,	CP03_TRAN_DATE,			CP03_POST_DATE,
+			CP03_FILLER,			CP03_TXN_DATE,			LAST_MAINT_DATE1,	LAST_MAINT_FLAG1,		DOC_CNT
+		)VALUES
+		(
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?
+		)
+	</update-sql> 
+	<sql-parameters>    
+		<sql-parameter index="1"		field="CP03_APPG_MODE"				/>
+		<sql-parameter index="2"		field="CP03_APPG_DATE"				/>
+		<sql-parameter index="3"		field="CP03_INST"					/>  
+		<sql-parameter index="4"		field="CP03_PAY_NO"					/>  
+		<sql-parameter index="5"		field="CP03_MSG_SEQ_NO"				/>
+		<sql-parameter index="6"		field="CP03_PROS_FLAG"				/>
+		<sql-parameter index="7"		field="CP03_SRC_SYS"				/>
+		<sql-parameter index="8"		field="CP03_MSG_TYPE"				/>
+		<sql-parameter index="9"		field="CP03_DSTN_SYS"				/>
+		<sql-parameter index="10"		field="CP03_SPYI_VER"				/>
+		<sql-parameter index="11"		field="DP03_VALU_DATE"				/>
+		<sql-parameter index="12"		field="DP03_RCPT_DATE"				/>
+		<sql-parameter index="13"		field="CP03_RCPT_TIME"				/>
+		<sql-parameter index="14"		field="CP03_REJ_ERR_NO"				/>
+		<sql-parameter index="15"		field="CP03_SUSP_FLAG"				/>
+		<sql-parameter index="16"		field="CP03_SUSP_ACCT_NO"			/>            
+		<sql-parameter index="17"		field="CP03_SUSP_JRNLNO"			/>            
+		<sql-parameter index="18"		field="DP03_REJ_DATE"				/>
+		<sql-parameter index="19"		field="CP03_REJ_TIME"				/>
+		<sql-parameter index="20"		field="CP03_PAY_CURR"				/>
+		<sql-parameter index="21"		field="CP03_PAY_AMT"				/>
+		<sql-parameter index="22"		field="CP03_EXTN_REF_NO"			/>            
+		<sql-parameter index="23"		field="CP03_CHAS_RETR"				/>
+		<sql-parameter index="24"		field="CP03_CHAS_DEAD"				/>
+		<sql-parameter index="25"		field="DP03_CHAS_DATE"				/>
+		<sql-parameter index="26"		field="CP03_CHAS_TIME"				/>
+		<sql-parameter index="27"		field="CP03_CHAS_ATMP"				/>
+		<sql-parameter index="28"		field="CP03_CHAS_FREQ"				/>
+		<sql-parameter index="29"		field="CP03_CHAS_UNIT"				/>
+		<sql-parameter index="30"		field="CP03_ACCT_NO"				/>
+		<sql-parameter index="31"		field="CP03_BENF_DETL"				/>
+		<sql-parameter index="32"		field="CP03_TRAN_NO"				/>
+		<sql-parameter index="33"		field="CP03_BTCH_ID"				/>
+		<sql-parameter index="34"		field="CP03_NOST_ACCT_NO"			/>
+		<sql-parameter index="35"		field="CP03_MUR"					/>
+		<sql-parameter index="36"		field="CP03_NOST_UPD_FLAG"			/>
+		<sql-parameter index="37"		field="CP03_CR_DR_IND"				/>
+		<sql-parameter index="38"		field="CP03_REMIT_TYPE"				/>
+		<sql-parameter index="39"		field="CP03_CHANNEL_TYPE"			/>
+		<sql-parameter index="40"		field="CP03_TO_ACCT_NO"				/>
+		<sql-parameter index="41"		field="CP03_PAYMNT_TYPE"			/>
+		<sql-parameter index="42"		field="CP03_FEE_TYPE"				/>
+		<sql-parameter index="43"		field="CP03_SPYI_FEE"				/>
+		<sql-parameter index="44"		field="CP03_FISC_FEE"				/>
+		<sql-parameter index="45"		field="CP03_CREDIT_CODE"			/>            
+		<sql-parameter index="46"		field="CP03_OD15_BANK_CODE2"		/>
+		<sql-parameter index="47"		field="CP03_OD15_SPN_CODE2"			/>
+		<sql-parameter index="48"		field="CP03_OD15_CHK_CODE2"			/>
+		<sql-parameter index="49"		field="CP03_IN_BANK_CODE2"			/>
+		<sql-parameter index="50"		field="CP03_IN_SDN_CODE2"			/>
+		<sql-parameter index="51"		field="CP03_IN_CHK_CODE2"			/>
+		<sql-parameter index="52"		field="CP03_FISC_SEQ"				/>
+		<sql-parameter index="53"		field="CP03_INTERBANK_SEQ"			/>
+		<sql-parameter index="54"		field="CP03_RETURN_REASON"			/>
+		<sql-parameter index="55"		field="CP03_ORG_REF_NO"				/>
+		<sql-parameter index="56"		field="CP03_ORG_FISC_SEQ"			/>
+		<sql-parameter index="57"		field="CP03_OD15_PRINT_TIME"		/>
+		<sql-parameter index="58"		field="CP03_IN_PRINT_TIMES"			/>
+		<sql-parameter index="59"		field="CP03_TELLER_NO"				/>
+		<sql-parameter index="60"		field="CP03_TELLER_TERM"			/>
+		<sql-parameter index="61"		field="CP03_SPRVSR_NO"				/>
+		<sql-parameter index="62"		field="CP03_SPRVSR_TERM"			/>
+		<sql-parameter index="63"		field="CP03_SENDER_NAME"			/>
+		<sql-parameter index="64"		field="CP03_RECEIVER_NAME"			/>
+		<sql-parameter index="65"		field="CP03_SENDER_DESC"			/>
+		<sql-parameter index="66"		field="CP03_SPRVSR2_NO"				/>
+		<sql-parameter index="67"		field="DP03_RESTORED_DATE"			/>
+		<sql-parameter index="68"		field="DP03_SUSP_FIN_DATE"			/>
+		<sql-parameter index="69"		field="CP03_ACCT_OWNER_REF_NO"	/>          
+		<sql-parameter index="70"		field="CP03_SUP_ID"				/>  
+		<sql-parameter index="71"		field="DP03_REL_DATE"				/>
+		<sql-parameter index="72"		field="CP03_REL_TIME"				/>
+		<sql-parameter index="73"		field="CP03_REDIR_FLAG"			/>
+		<sql-parameter index="74"		field="CP03_REDIR_BANK_ID"		/>
+		<sql-parameter index="75"		field="CP03_BUSINESS_NO"			/>
+		<sql-parameter index="76"		field="CP03_REGION"					/>  
+		<sql-parameter index="77"		field="CP03_BRANCH"					/>  
+		<sql-parameter index="78"		field="CP03_SUB_STATUS"				/>
+		<sql-parameter index="79"		field="CP03_URGENCY"				/>
+		<sql-parameter index="80"		field="CP03_PRIORITY_WEIGHT"		/>          
+		<sql-parameter index="81"		field="CP03_RETURN_RSN"				/>
+		<sql-parameter index="82"		field="CP03_PREV_STATUS"			/>
+		<sql-parameter index="83"		field="CP03_STL_CASE_NO"			/>
+		<sql-parameter index="84"		field="CP03_STL_TEMP_ID"			/>
+		<sql-parameter index="85"		field="CP03_STL_INV_PURP"			/>
+		<sql-parameter index="86"		field="CP03_FX_55067_PMCODE"		/>          
+		<sql-parameter index="87"		field="CP03_FX_SAFE_DEC"			/>
+		<sql-parameter index="88"		field="CP03_FX_LOCAL_AMT"			/>
+		<sql-parameter index="89"		field="CP03_TRAN_DATE"				/>
+		<sql-parameter index="90"		field="CP03_POST_DATE"				/>
+		<sql-parameter index="91"		field="CP03_FILLER"					/>  
+		<sql-parameter index="92"		field="CP03_TXN_DATE"				/>
+		<sql-parameter index="93"		field="LAST_MAINT_DATE1"			/>
+		<sql-parameter index="94"		field="LAST_MAINT_FLAG1"			/>
+		<sql-parameter index="95"		field="docCnt"						/>
+	</sql-parameters>
+</database-output-config>

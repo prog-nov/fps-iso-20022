@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_#{agoYear}
+				SELECT *
+				FROM #{schema}.T_OVERSEAS_ARCHIVES A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.RTL_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+					AND A.TABLE_NAME = 'D_OVERSEAS_PAY'
+				)
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.RTL_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+				)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.D_OVERSEAS_TX_HISTORY_#{agoYear}
+				SELECT *
+				FROM #{schema}.D_OVERSEAS_TX_HISTORY A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.OREF_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+				)
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_TX_HISTORY A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.OREF_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+				)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.D_OVERSEAS_PAY_SUB_#{agoYear}
+				SELECT *
+				FROM #{schema}.D_OVERSEAS_PAY_SUB A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.OREF_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+				)
+			]]>
+		</sql>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_PAY_SUB A
+				WHERE EXISTS
+				(
+					SELECT	1
+					FROM #{schema}.D_OVERSEAS_PAY B
+					WHERE A.OREF_NO = B.OREF_NO
+					AND B.ORG_SEND_DATE <= '#{yearAgo}'
+				)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.D_OVERSEAS_PAY_#{agoYear}
+				SELECT * FROM #{schema}.D_OVERSEAS_PAY A
+		      	WHERE A.ORG_SEND_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_PAY A
+		      	WHERE A.ORG_SEND_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+</job-sql-configs>

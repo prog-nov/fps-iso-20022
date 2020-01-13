@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<!-- 
+	updateDate:2012-04-26
+	ModifiedBy:hch
+	ModifiedReason:CKP0840JOB
+	updateVersion:7 month
+ -->
+<database-input-config>
+	<databaseName>dbtest</databaseName>
+	<query-sql>	
+		<![CDATA[		
+			SELECT 	NO	NO,		--CHAR(14)
+					STAT1	STAT1, --CHAR(10)
+					STAT2	STAT2,	--DATE
+					CASE WHEN STAT2 IS NULL THEN 'A'
+						ELSE	'A,B'
+					END controlFlag
+			FROM #{schema}.TB_BATCH_TEST
+		]]>
+ 	</query-sql>
+	<field-definition>
+		<field name="controlFlag"   			data-type="StringType"/>
+        <field name="NO"   		                data-type="StringType"/>
+        <field name="STAT1"   		    		data-type="StringType"/>
+        <field name="STAT2"                 	data-type="StringType"/> 
+	</field-definition>
+</database-input-config>

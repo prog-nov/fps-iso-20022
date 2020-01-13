@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.M_OVERSEAS_WITHIN_#{agoYear}
+				SELECT * FROM #{schema}.M_OVERSEAS_WITHIN A
+		      	WHERE A.QRY_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.M_OVERSEAS_WITHIN A
+		      	WHERE A.QRY_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+</job-sql-configs>

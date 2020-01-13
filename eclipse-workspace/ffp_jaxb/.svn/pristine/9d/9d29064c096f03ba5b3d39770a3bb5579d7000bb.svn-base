@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPDDI01"></xs:element>
+	<xs:complexType name="FFPDDI01">
+				<xs:sequence>
+					<xs:element name="SrcRefNm" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1" />
+					<xs:element name="SrvcMode" type="UpperCaseNumericText_Exact2" minOccurs="1" maxOccurs="1" />
+					<xs:element name="PymtCatPrps" type="UpperCaseNumericText_Exact6" minOccurs="1" maxOccurs="1" />
+					<xs:element name="SettlDate" type="DateTypeNoSplit" minOccurs="1" maxOccurs="1" />
+					<xs:element name="SettlAmt" type="Restricted15Digit2AmountType"  minOccurs="1" maxOccurs="1"/>
+					<xs:element name="SettlCcy" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1"/>
+					<xs:element name="InstrAmt" type="Restricted15Digit2AmountType"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="InstrCcy" type="UpperCaseNumericText_Exact3"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="CdtrAgent" type="FPSPARTICIPANTID"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="ChrgrsAmt" type="Restricted15Digit2AmountType"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="ChrgrsCcy" type="UpperCaseNumericText_Exact3"  minOccurs="0" maxOccurs="1"/>
+					<xs:element name="CdtrNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="CdtrAcTp" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="CdtrAcNo" type="RestrictedFINZText_Max34"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="CdtrContPhone" type="PhoneNumber"  minOccurs="0" maxOccurs="1" />
+					<xs:element name="CdtrContEmailAddr" type="RestrictedFINZText_Max254"  minOccurs="0" maxOccurs="1" />
+					<xs:element name="DbtrAgent" type="FPSPARTICIPANTID"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="DbtrNm" type="RestrictedFINZText_Max34"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="DbtrAcTp" type="UpperCaseNumericText_Exact4"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="DbtrAcNo" type="RestrictedFINZText_Max34"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="DbtrRltId" type="RestrictedFINZText_Max35"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="DbtrContPhone" type="PhoneNumber"  minOccurs="0" maxOccurs="1" />
+					<xs:element name="DbtrContEmailAddr" type="RestrictedFINZText_Max254"  minOccurs="0" maxOccurs="1" />
+					<xs:element name="PytPurp" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1" />
+					<xs:element name="RemInfo" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1" />
+				</xs:sequence>
+	</xs:complexType>
+</xs:schema>

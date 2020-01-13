@@ -1,0 +1,181 @@
+package com.forms.ffp.webapp.cashmanagement.return_refund.service;
+
+import javax.annotation.Resource;
+import org.springframework.stereotype.Service;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP110;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP210;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.webapp.cashmanagement.return_refund.bean.FFPvo_Pacs004_TxInf;
+import com.forms.ffp.webapp.cashmanagement.return_refund.form.DoReturnRefundForm;
+
+/**
+ * the JNLNO IS FROM WEB
+ * find message with this jnlNo
+ * parse this message to FFPJBP300
+ * @author chengwenhua
+ *
+ */
+
+
+@Service("FFPParseMsg_JBP300")
+public class FFPParseMsg_JBP300 {
+	
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+	
+	private FFPvo_Pacs004_TxInf txinf;
+	
+	private DoReturnRefundForm form;
+	
+	private FFPJbP300 p300;
+	
+	public FFPParseMsg_JBP300(){
+		
+	}
+	
+	public void perform() throws Exception{
+		
+		this.p300=new FFPJbP300();
+		//return/refund reason
+		p300.setReasonCode(form.getRetCode());
+		p300.setAdditionalInformation(form.getRetReason());
+		p300.setSrcRefNm(FFPIDUtils.getSrcRefNm());
+		p300.setReturnId(FFPIDUtils.getTransactionId());
+		
+		
+		this.txinf= new FFPvo_Pacs004_TxInf();
+		
+		Object obj = txJnlService.inquiryByJnlNo(form.getJnlNo());
+		 if(obj instanceof FFPJbP110){
+			performP110(obj);
+		}else if(obj instanceof FFPJbP210){
+			performP210(obj);
+		}
+		 txinf.setP300(p300);
+	}
+	
+	
+	
+
+	private void performP110(Object obj) {
+		// TODO Auto-generated method stub
+		FFPJbP110 p110 = (FFPJbP110)obj;
+		p300.setTxJnl(p110.getTxJnl());
+		
+		p300.setRetIntSetAmt(p110.getSettlementAmount());
+		p300.setRetIntSetCur(p110.getSettlementCurrency());
+		
+		p300.setSettlementDate(p110.getSettlementDate());
+		/**
+		 * TODO
+		 */
+		p300.setRetInsAmt(p110.getSettlementAmount());
+		p300.setRetInsCur(p110.getSettlementCurrency());
+		p300.setOrgnlinstrAmt(p110.getInstructedAmount());
+		p300.setOrgnlinstrCcy(p110.getInstructedCurrency());
+		p300.setChargersAmount(p110.getChargersAmount());
+		p300.setChargersCurrency(p110.getChargersCurrency());
+		
+		/**
+		 * debtor information
+		 */
+		p300.setOrgnlDbtrAgtBIC(p110.getDebtorAgentBic());
+		p300.setOrgnlDbtrAgtId(p110.getDebtorAgentId());
+		p300.setOrgnlDbtrAcctNo(p110.getDebtorAccountNumber());
+		p300.setOrgnlDbtrAcctNoTp(p110.getDebtorAccountNumberType());
+		p300.setOrgnlDbtrNm(p110.getDebtorName());
+		p300.setOrgnlDbtrPhNo(p110.getDbtrContPhone());
+		p300.setOrgnlDbtrEmAddr(p110.getDbtrContEmailAddr());
+		/**
+		 * creditor information
+		 */
+		p300.setOrgnlCdtrNm(p110.getCreditorName());
+		p300.setOrgnlCdtrPhNo(p110.getCdtrContPhone());
+		p300.setOrgnlCdtrEmAddr(p110.getCdtrContEmailAddr());
+		p300.setOrgnlCdtrAcctNo(p110.getCreditorAccountNumber());
+		p300.setOrgnlCdtrAcctNoTp(p110.getCreditorAccountNumberType());
+		p300.setOrgnlCdtrAgtBIC(p110.getCreditorAgentBic());
+		p300.setOrgnlCdtrAgtId(p110.getCreditorAgentId());
+		
+		p300.setOrgnlRemtInfo(p110.getRemittanceInformation());
+		p300.setOrgnlCatgyPurp(p110.getPymtCatPrps());
+		this.txinf.setP300(p300);
+		
+	}
+
+	private void performP210(Object obj) {
+		FFPJbP210 p210 = (FFPJbP210)obj;
+		p300.setTxJnl(p210.getTxJnl());
+
+		p300.setRetIntSetAmt(p210.getSettlementAmount());
+		p300.setRetIntSetCur(p210.getSettlementCurrency());
+		p300.setSettlementDate(p210.getSettlementDate());
+		/**
+		 * TODO
+		 */
+		p300.setRetInsAmt(p210.getSettlementAmount());
+		p300.setRetInsCur(p210.getSettlementCurrency());
+		
+		p300.setOrgnlinstrAmt(p210.getInstructedAmount());
+		p300.setOrgnlinstrCcy(p210.getInstructedCurrency());
+		
+		p300.setChargersAmount(p210.getChargersAmount());
+		p300.setChargersCurrency(p210.getChargersCurrency());
+		
+		/**
+		 * debtor information
+		 */
+		p300.setOrgnlDbtrAgtBIC(p210.getDebtorAgentBic());
+		p300.setOrgnlDbtrAgtId(p210.getDebtorAgentId());
+		p300.setOrgnlDbtrAcctNo(p210.getDebtorAccountNumber());
+		p300.setOrgnlDbtrAcctNoTp(p210.getDebtorAccountNumberType());
+		p300.setOrgnlDbtrNm(p210.getDebtorName());
+		p300.setOrgnlDbtrPhNo(p210.getDbtrContPhone());
+		p300.setOrgnlDbtrEmAddr(p210.getDbtrContEmailAddr());
+		/**
+		 * creditor information
+		 */
+		p300.setOrgnlCdtrNm(p210.getCreditorName());
+		p300.setOrgnlCdtrPhNo(p210.getCdtrContPhone());
+		p300.setOrgnlCdtrEmAddr(p210.getCdtrContEmailAddr());
+		p300.setOrgnlCdtrAcctNo(p210.getCreditorAccountNumber());
+		p300.setOrgnlCdtrAcctNoTp(p210.getCreditorAccountNumberType());
+		p300.setOrgnlCdtrAgtBIC(p210.getCreditorAgentBic());
+		p300.setOrgnlCdtrAgtId(p210.getCreditorAgentId());
+		
+		p300.setOrgnlRemtInfo(p210.getRemittanceInformation());
+		p300.setOrgnlCatgyPurp(p210.getPymtCatPrps());
+		this.txinf.setP300(p300);
+		
+	}
+
+	public FFPvo_Pacs004_TxInf getTxinf() {
+		return txinf;
+	}
+
+	public void setTxinf(FFPvo_Pacs004_TxInf txinf) {
+		this.txinf = txinf;
+	}
+
+	public DoReturnRefundForm getForm() {
+		return form;
+	}
+
+	public void setForm(DoReturnRefundForm form) {
+		this.form = form;
+	}
+
+	public FFPJbP300 getP300() {
+		return p300;
+	}
+
+	public void setP300(FFPJbP300 p300) {
+		this.p300 = p300;
+	}
+	
+	
+
+	
+}

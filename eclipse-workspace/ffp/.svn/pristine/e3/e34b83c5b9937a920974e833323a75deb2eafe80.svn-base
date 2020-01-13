@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.syslog.login.dao.ILogLoginDao" >
+	<!-- 登录日志查询 欧林海 20160705 -->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.syslog.login.bean.LogLoginBean">
+		SELECT T.SESSION_ID,
+		       T.USER_ID,
+		       U.USER_NAME,
+		       U.ORG_ID,
+		       O.ORG_NAME,
+		       T.CLIENT_IP,
+		       T.SERVER_IP,
+		       T.BROWSER,
+		       T.OS,
+		       T.OPT_DATE AS LOGIN_DATE,
+		       T.OPT_TIME AS LOGIN_TIME,
+		       S.OPT_DATE AS LOGOUT_DATE,
+		       S.OPT_TIME AS LOGOUT_TIME,
+		       S.LIO_FLAG AS LOGOUT_FLAG       
+		  FROM {{BF}}_LOG_LOGIN T
+		   JOIN {{BF}}_USER U
+		    ON T.USER_ID = U.USER_ID
+		   LEFT JOIN {{BF}}_ORG O
+		    ON U.ORG_ID = O.ORG_ID
+		   LEFT JOIN {{BF}}_LOG_LOGIN S
+		    ON T.SESSION_ID = S.SESSION_ID AND T.LIO_FLAG != S.LIO_FLAG
+		<where>
+			t.LIO_FLAG = '1'
+			<if test="null != userId and '' != userId">
+	     		AND U.USER_ID = #{userId, jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != userName and '' != userName">
+	     		AND U.USER_NAME = #{userName, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != orgId and '' != orgId">
+	     		AND O.ORG_ID = #{orgId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != beginDate and '' != beginDate">
+	     		AND T.OPT_DATE >= #{beginDate, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != endDate and '' != endDate">
+	     		AND #{endDate, jdbcType=VARCHAR} >= T.OPT_DATE 
+	     	</if>
+	     	<if test="null != serverIp and '' != serverIp">
+	     		AND T.SERVER_IP = #{serverIp, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+		ORDER BY T.OPT_DATE DESC, T.OPT_TIME DESC
+	</select>
+	
+</mapper>

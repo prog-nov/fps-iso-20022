@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel-config xmlns="http://www.formssi.com/schema/beneform4j/excel"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.formssi.com/schema/beneform4j/excel http://www.formssi.com/schema/beneform4j/excel.xsd">
+	
+	<!--  用户列表	 -->
+	<tree-workbook id="userList" name="用户查询列表">
+		<td text="用户名称" expression="userName" showType="LOCK_SHOW"/>
+		<td text="用户昵称" expression="nickName"/>
+		<td text="状态" expression="userStatus"/>
+		<td text="机构号" expression="orgId"/>
+		<td text="证件类型" expression="certType"/>
+		<td text="证件号码" expression="certNo"/>
+		<td text="移动电话" expression="mobilePhone"/>
+		<td text="电话号码" expression="telephone"/>
+		<td text="电子邮箱" expression="email"/>
+		<td text="受限IP" expression="limitIp"/>
+		<td text="最大会话数" expression="onlineSessionNum" dataType="INTEGER"/>
+		<td text="锁定标志" expression="@enum.val('BOOLEAN',lockFlag)"/>
+		<td text="锁定日期" expression="lockDate" dataType="CHAR"/>
+		<td text="锁定时间" expression="lockTime" dataType="CHAR"/>
+		<td text="已尝试登录次数" expression="loginNum" dataType="INTEGER"/>
+		<td text="最后登录IP" expression="lastLoginIp"/>
+		<td text="最后登录日期" expression="lastLoginDate" dataType="CHAR"/>
+		<td text="最后登录时间" expression="lastLoginTime" dataType="CHAR"/>
+		<td text="最后修改密码日期" expression="modiPwdDate" dataType="CHAR"/>
+		<td text="最后修改密码时间" expression="modiPwdTime" dataType="CHAR"/>
+	</tree-workbook>
+</excel-config>

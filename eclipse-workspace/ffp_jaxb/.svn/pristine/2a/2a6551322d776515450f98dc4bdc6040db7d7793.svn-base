@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_Other.xsd"></xs:include>
+	
+
+	<xs:element name="BODY" type="FFPADR04"></xs:element>
+	<xs:complexType name="FFPADR04">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedFINZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="AdrSchme" type="ADDRESSINGSCHEMETYPE" minOccurs="1" maxOccurs="50" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ADDRESSINGSCHEMETYPE">
+		<xs:sequence>
+			<xs:element name="Sts" type="Exact4UpperCaseText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RsnInfCd" type="UpperCaseNumericText_Exact4"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="ProxyId" type="RestrictedFINZText_Max34" minOccurs="1" maxOccurs="1" />
+			<xs:element name="ProxyIdTp" type="UpperCaseNumericText_Exact4" minOccurs="1" maxOccurs="1" />
+			<xs:element name="PurpCd" type="UpperCaseNumericText_Exact4"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="RsltCusNm" type="CUSTOMERNAMETYPE" minOccurs="0" maxOccurs="2"/>
+			<xs:element name="RsltCusId" type="RestrictedFINZText_Max34"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="MmbId"  type="MmbIdType" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="RsltCusTp" type="UpperCaseNumericText_Exact4"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SupOpCd" type="UpperCaseNumericText_Exact4"  minOccurs="0" maxOccurs="2"/>			
+		</xs:sequence>
+	</xs:complexType>
+    
+    <xs:complexType name="CUSTOMERNAMETYPE">
+    	<xs:sequence>
+			<xs:element name="Lang" type="LangType" minOccurs="1" maxOccurs="1" />
+			<xs:element name="FullNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="DispNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1"/>
+    	</xs:sequence>
+    </xs:complexType>
+    
+     <xs:simpleType name="LangType">
+		<xs:restriction base="xs:string">
+            <xs:enumeration value="EN"/>
+            <xs:enumeration value="ZH"/>
+        </xs:restriction>
+	</xs:simpleType>
+</xs:schema>

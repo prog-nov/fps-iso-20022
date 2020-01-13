@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.common.favorites.dao.IFavoritesDao">
+	<insert id="dInsert">
+		INSERT INTO {{BF}}_SHORT_MENU (KEY_ID, PARENT_ID, USER_ID, 
+		MENU_ID, SHORT_MENU_NAME, DISPLAY_ICON, SEQNO, DES)
+		VALUES (#{fav.keyId,jdbcType=VARCHAR},
+				#{fav.parentId,jdbcType=VARCHAR},
+				#{fav.userId,jdbcType=VARCHAR},
+				#{fav.menuId,jdbcType=INTEGER},
+				#{fav.shortMenuName,jdbcType=VARCHAR},
+				#{fav.displayIcon,jdbcType=VARCHAR},
+				#{fav.seqno,jdbcType=INTEGER},
+				#{fav.des,jdbcType=VARCHAR})
+	</insert>
+	
+	<select id="dGetMaxSeqno" resultType="java.lang.Integer">
+		SELECT CASE WHEN MAX(SEQNO) IS NULL THEN 0 ELSE MAX(SEQNO) END 
+		FROM {{BF}}_SHORT_MENU WHERE USER_ID=#{userId,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="dList" resultType="com.forms.beneform4j.webapp.common.favorites.bean.FavoritesBean">
+		SELECT KEY_ID, PARENT_ID, USER_ID, MENU_ID, SHORT_MENU_NAME, 
+		DISPLAY_ICON, SEQNO, DES
+		FROM {{BF}}_SHORT_MENU
+		<where>
+	     	<if test="null != userId and '' != userId">
+	     		AND USER_ID = #{userId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != menuId and '' != menuId">
+	     		AND MENU_ID = #{menuId, jdbcType=INTEGER}
+	     	</if>
+	     	<if test="null != shortMenuName and '' != shortMenuName">
+	     		AND SHORT_MENU_NAME LIKE #{concat('%' shortMenuName '%'), jdbcType=VARCHAR} 
+	     	</if>
+		</where>
+		ORDER BY SEQNO
+	</select>
+	<update id="dUpdate">
+		UPDATE {{BF}}_SHORT_MENU 
+		   SET SHORT_MENU_NAME = #{shortMenuName, jdbcType=VARCHAR}, 
+		   	   DISPLAY_ICON = #{displayIcon, jdbcType=VARCHAR},
+		   	   SEQNO = #{seqno, jdbcType=INTEGER}, 
+		   	   DES = #{des, jdbcType=VARCHAR}
+		 WHERE KEY_ID = #{keyId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dUpdateSeqno">
+		UPDATE {{BF}}_SHORT_MENU 
+		   SET SEQNO = #{seqno, jdbcType=INTEGER}
+		 WHERE KEY_ID = #{keyId, jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="dDelete">
+		DELETE FROM {{BF}}_SHORT_MENU WHERE KEY_ID = #{keyId, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="dListMenuTree" >
+		   
+      SELECT DISTINCT M.MENU_ID        AS ID,
+                M.PARENT_MENU_ID AS PID,
+                M.MENU_NAME      AS TEXT,
+                M.SEQNO,
+                M.DISPLAY_ICON AS ICON_CLS,
+                (SELECT COUNT(1) FROM {{BF}}_MENU M2 WHERE M2.PARENT_MENU_ID = M.MENU_ID AND M2.MENU_FLAG = 0) AS COUNT,
+                CASE WHEN M.MENU_URL IS NULL OR 
+                	EXISTS (SELECT 1 FROM {{BF}}_SHORT_MENU U WHERE U.USER_ID = #{userId, jdbcType=VARCHAR} AND U.MENU_ID=M.MENU_ID)
+                THEN 0 
+                ELSE 1 END AS CAN_ADD
+		  FROM {{BF}}_MENU M
+		  JOIN {{BF}}_PERM P
+		    ON M.MENU_ID = P.PERM_TYPE_KEY
+		   AND P.PERM_TYPE = 'MENU'
+		   AND (M.PERM_TREE_FLAG IS NULL OR M.PERM_TREE_FLAG = '1')
+		   AND (M.AUTHOR_LEVEL IS NULL OR M.AUTHOR_LEVEL = '2')
+		 WHERE EXISTS (SELECT 1
+		          FROM {{BF}}_ROLE_PERM T
+		         WHERE T.PERM_ID = P.PERM_ID
+		           AND EXISTS (SELECT 1
+		                  FROM {{BF}}_USER_ROLE R
+		                 WHERE R.USER_ID = #{userId, jdbcType=VARCHAR}
+		                   AND R.ROLE_ID = T.ROLE_ID))
+		   AND M.MENU_FLAG=0
+		 <if test=" 2 == displayType">
+		   AND NOT EXISTS (SELECT 1
+		          FROM {{BF}}_SHORT_MENU SM
+		         WHERE SM.MENU_ID = M.MENU_ID AND SM.USER_ID = #{userId, jdbcType=VARCHAR})
+	     </if>
+	     <if test=" 1 == displayType">
+		   AND EXISTS (SELECT 1
+		          FROM {{BF}}_SHORT_MENU SM
+		         WHERE SM.MENU_ID = M.MENU_ID AND SM.USER_ID = #{userId, jdbcType=VARCHAR})
+	     </if>                
+		 <if test="null != menuId and '' != menuId">
+			AND M.PARENT_MENU_ID = #{menuId, jdbcType=INTEGER}
+		</if>
+		<if test="null != menuName and '' != menuName">
+			AND M.MENU_NAME LIKE #{concat('%' menuName '%'), jdbcType=VARCHAR} 
+		</if> 
+		ORDER BY M.SEQNO
+	</select>
+</mapper>

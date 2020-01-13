@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-sql-configs>
+	<!-- M101 -->
+	<transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'M101' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+			]]>
+		</sql>
+	  	<sql>
+	  		<![CDATA[
+	  			DELETE FROM #{schema}.tb_tx_m101 
+	  			WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+	  			WHERE TX_CODE = 'M101' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+	  		]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+	  			DELETE FROM #{schema}.tb_tx_jnl 
+	  			WHERE TX_CODE = 'M101' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+	  		]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- P100 -->
+ 	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_p100dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- P110 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_p110dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- P200 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P200' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_p200dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P200' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P200' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- P210 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P210' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_p210dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P210' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P210' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- P300 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P300' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_p300dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P300' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'P300' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- A100 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_a100dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A100' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- A110 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_a110dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_a110dat_dtl 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A110' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+	  
+	  <!-- A120 -->
+	  <transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnlaction 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A120' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore})
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_a120dat 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A120' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_a120dat_dtl 
+				WHERE JNL_NO IN (SELECT JNL_NO FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A120' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}) 
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.tb_tx_jnl 
+				WHERE TX_CODE = 'A120' AND DATEDIFF(DATE('#{serverDate}'),LAST_UPDATE_TS)>#{dayBefore}
+		  	]]>
+	  	</sql>
+	  </transaction>
+</job-sql-configs>

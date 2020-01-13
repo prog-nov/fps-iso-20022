@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<csvfile-input-config>
+	<file-name>#{inputFilePath}/0100006D.dq1</file-name>
+	<encoding>GBK</encoding>
+	<!-- <header-bytes>0</header-bytes> -->
+	<!-- <footer-bytes>0</footer-bytes> -->
+	<footer-lines>14</footer-lines>
+	<!-- <header-handle-class>com.forms.datapipe.input.header.FixedFileInputHeaderHandler</header-handle-class> -->
+	<footer-handle-class>com.forms.batch.job.commom.headfoot.CsvFileInputFooterHandler</footer-handle-class>
+	<buffer-size>500</buffer-size>
+	<delimiter>#{space}|#{space}</delimiter><!-- SPLIT CHAR -->
+	<line-feed>\n</line-feed>
+	<field-definition>
+		<field name="APPG_MODE"			data-type="StringTypeRT" />
+		<field name="APPG_DATE"			data-type="StringTypeRT" />
+		<field name="INST_NO"			data-type="StringTypeRT" />
+		<field name="PAY_NO"			data-type="StringTypeRT" />
+		<field name="REC_SEQ_NO"		data-type="StringTypeRT" />
+		<field name="MSG_DATA"			data-type="StringTypeRT"	column="8"/>
+		<field name="LAST_MAINT_DATE"	data-type="StringTypeRT" />
+		<field name="LAST_MAINT_STAT"	data-type="StringTypeRT" />
+		<field name="Filler"			data-type="StringTypeRT" />
+	</field-definition>
+</csvfile-input-config>

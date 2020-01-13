@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>BatchTransactionCheckProcessor</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>FileMover</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.transactioncheck.BatchTransactionCheckFileMover</processor>
+			<parameters>
+				<directory-root>D:/</directory-root>
+				<destination>/ICLFPS/IN/</destination>
+				<daybefore>-1</daybefore>
+				<transactionType>F</transactionType>
+				<transactionStartTime>000000</transactionStartTime>
+				<transactionEndTime>240000</transactionEndTime>
+				<recordFile-path>/TRANSACTIONCHECK/</recordFile-path>
+				<record-fileName>FFPTransactionCheckFilePathRecord.txt</record-fileName>
+			</parameters>
+		</action>
+
+		<action>
+			<action-name>isbDownload</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.commom.FFPDownloadJob</processor>
+			<parameters>
+				<parameter>
+					<name>transfer-name</name>
+					<value>isb</value>
+				</parameter>
+				<file>
+					<remote-path>/ICLFPS/IN/</remote-path>
+					<local-path>/ICLFPS/IN/</local-path>
+					<backup-file-path>/ICLFPS/IN/#{YYYYMMDD}/</backup-file-path>
+					<remote-file-name>FFPTXNJNL_\d{8}.txt</remote-file-name>
+				</file>
+			</parameters>
+		</action>
+
+		<action>
+			<action-name>FileReader</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.transactioncheck.BatchTransactionCheckReader</processor>
+			<parameters>
+				<local-path>/ICLFPS/IN/</local-path>
+				<recordFile-path>/TRANSACTIONCHECK/</recordFile-path>
+				<record-fileName>FFPTransactionCheckFilePathRecord.txt</record-fileName>
+			</parameters>
+		</action>
+
+		<action> 
+			<action-name>Filler</action-name> 
+			<action-type>JavaSysCall</action-type> 
+			<processor>com.forms.batch.job.unit.transactioncheck.BatchTransactionCheckResponseFiller</processor> 
+		</action>
+
+		<action> 
+			<action-name>DataChecker</action-name> 
+			<action-type>JavaSysCall</action-type> 
+			<processor>com.forms.batch.job.unit.transactioncheck.BatchTransactionCheckProcessor</processor>
+			<parameters>
+				<local-path>/ICLFPS/IN/</local-path>
+				<recordFile-path>/TRANSACTIONCHECK/</recordFile-path>
+				<record-fileName>FFPTransactionCheckFilePathRecord.txt</record-fileName>
+				<email-warning>N</email-warning>
+				<email-subject>测试邮件</email-subject>
+				<email-template>流水勾兑错误：request_ref_no={REQUEST_REF_NO}, response_ref_no={RESPONSE_REF_NO}</email-template>
+				<email-server-account>xx@qq.com</email-server-account>
+				<email-server-password>lfwgaga</email-server-password>
+				<from>xx@qq.com</from>
+				<recipients>xx@formssi.com;xx@126.com</recipients>
+				<copies></copies>
+				<blindCarbonCopies></blindCarbonCopies>
+				<smtp-host>smtp.qq.com</smtp-host>
+				<smtp-port>465</smtp-port>
+				<is-auth>true</is-auth>
+				<ssl-enable>true</ssl-enable>
+				<socket-factory-class>javax.net.ssl.SSLSocketFactory</socket-factory-class>
+				<socket-factory-fallback>false</socket-factory-fallback>
+			</parameters> 
+		</action>
+
+	</action-flow>
+</job-config>

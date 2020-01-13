@@ -1,0 +1,280 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.io.StringWriter;
+import java.util.Date;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.ObjectFactory;
+import com.forms.ffp.adaptor.prefix.FFPIclfpsMsgNamespacePrefixMapper;
+import com.forms.ffp.adaptor.xml.writer.FFPCDataXMLStreamWriter;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
+/**
+ * 
+ * @author yrd
+ *
+ */
+public class FFPParticipantMessageAckConverter {
+
+	private static Logger _logger = LoggerFactory.getLogger(FFPParticipantMessageAckConverter.class);
+	//拼装应答报文,并转成String类型
+	//参数：
+	public static String parseAck2FFPAgent(Object obj){
+		String message = null;
+		ROOT root = new ROOT();
+		
+		HEAD head = new HEAD();
+		//
+		head.setRequestID("03");
+		head.setTransactionDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setRequestRefno("111");
+		head.setAccountingDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		//
+		head.setResponseID("04");
+		//
+		head.setMessageType("FFPCTO01");
+		head.setSystemRefno("222");
+		head.setSystemBeginTIme(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setResponseRefno("333");
+		head.setResponseBeginTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setResponseEndTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		//
+		head.setResponseStatus("N");
+		//
+		head.setFinalNode("2");
+		head.setSystemMessageCode("000000");
+		head.setResponseMessageCode("444");
+		head.setResponseMessage("555");
+		root.setHEAD(head);
+		
+//		FFPCTI01 body = new FFPCTI01();
+		FFPCTO01 body = new FFPCTO01();
+		body.setSrcRefNm("04");
+		body.setFFPTransactionId(FFPIDUtils.getTransactionId());
+		body.setRsltCd("S");
+//		body.setRejCd(value);
+//		body.setRejMsg(value);
+		root.setBODY(body);
+		
+		//解析Root报文
+		try {
+			message = packageXml(root);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return message;
+	}
+	
+	public static String packageXml(Object obj) throws Exception{
+		
+		return packageXml(obj, new ValidationEventHandler()
+		{
+			public boolean handleEvent(ValidationEvent event)
+			{
+				if (event.getMessage().contains("http://www.w3.org/2000/09/xmldsig#"))
+				{
+					return true;
+				}
+				throw new RuntimeException(String.format("Marshal XML Error: %s (Object: %s)",
+						new Object[] { event.getMessage(), (event.getLocator() != null) && (event.getLocator().getObject() != null) ? event.getLocator().getObject().getClass() : "null" }));
+			}
+		});
+	}
+	
+
+	public static String packageXml(Object obj, ValidationEventHandler handler) throws Exception {
+		
+		String xml = null;
+		StringBuilder sb = null;
+		try {
+			sb = new StringBuilder();
+			//response
+			if(obj instanceof ROOT){
+				ROOT root = (ROOT)obj;
+				HEAD head = root.getHEAD();
+				//head
+				xml = packageDivideXml(head,handler);
+				sb.append(xml);
+				Object o = root.getBODY();
+				if(o instanceof FFPCTI01){
+					FFPCTI01 cti01 = (FFPCTI01)root.getBODY();
+					//body
+					xml = packageDivideXml(cti01,handler);
+					sb.append(xml);
+				}else if(o instanceof FFPCTO01){
+					FFPCTO01 cto01 = (FFPCTO01)root.getBODY();
+					//body
+					xml = packageDivideXml(cto01,handler);
+					sb.append(xml);
+				}
+			}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ROOT){
+				com.forms.ffp.adaptor.jaxb.participant.request.ROOT root = (com.forms.ffp.adaptor.jaxb.participant.request.ROOT)obj;
+				com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD head = root.getHEAD();
+				//head
+				xml = packageDivideXml(head,handler);
+				sb.append(xml);
+				Object o = root.getBODY();
+				if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01)root.getBODY();
+					//body
+					xml = packageDivideXml(cti01,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01 cto01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01)root.getBODY();
+					//body
+					xml = packageDivideXml(cto01,handler);
+					sb.append(xml);
+				}
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
+	
+	public static String packageDivideXml(Object obj, ValidationEventHandler handler) throws Exception{
+		Marshaller marshaller = null;
+		StringWriter sw = new StringWriter();
+		JAXBContext context = null;
+		StringBuilder sb = new StringBuilder();
+		boolean isHead = false;
+		
+		//response
+		if(obj instanceof HEAD){
+			context = JAXBContext.newInstance(HEAD.class);
+			marshaller = context.createMarshaller();
+			HEAD head = (HEAD)obj;
+			JAXBElement<HEAD> headEle = (new ObjectFactory()).createHEAD(head);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(headEle, sw);
+			
+			isHead = true;
+		
+			
+		}else if(obj instanceof FFPCTI01){
+			context = JAXBContext.newInstance(FFPCTI01.class);
+			marshaller = context.createMarshaller();
+			FFPCTI01 cti01 = (FFPCTI01)obj;
+			JAXBElement<FFPCTI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			//对报文进行进一步修正
+//			String msg = sw.toString();
+//			msg = msg.substring(msg.indexOf("?>")+2);
+//			sb.append(msg);
+			
+		}else if(obj instanceof FFPCTO01){
+			context = JAXBContext.newInstance(FFPCTO01.class);
+			marshaller = context.createMarshaller();
+			FFPCTO01 cto01 = (FFPCTO01)obj;
+			JAXBElement<FFPCTO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.ObjectFactory()).createBODY(cto01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			//对报文进行进一步修正
+//			String msg = sw.toString();
+//			msg = msg.substring(msg.indexOf("?>")+2);
+//			sb.append(msg);
+		}
+		//request
+		else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD head = (com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD> headEle = (new com.forms.ffp.adaptor.jaxb.participant.request.head.ObjectFactory()).createHEAD(head);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(headEle, sw);
+			
+			//对报文进行进一步修正
+//			String msg = sw.toString();
+//			String msgHead = msg.substring(0, msg.indexOf("?>")+2);
+//			msg = msg.substring(msg.indexOf("?>")+2, msg.indexOf("</HEAD>")+7);
+//			sb.append(msgHead);
+//			sb.append('\n');
+//			sb.append("<ROOT>");
+//			sb.append(msg);
+			isHead = true;
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			//对报文进行进一步修正
+//			String msg = sw.toString();
+//			msg = msg.substring(msg.indexOf("?>")+2);
+//			sb.append(msg);
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			//对报文进行进一步修正
+//			String msg = sw.toString();
+//			msg = msg.substring(msg.indexOf("?>")+2);
+//			sb.append(msg);
+			
+		}
+		
+		//对报文进行进一步修正
+		sb = xmlConsist(sw, sb, isHead);
+		return sb.toString();
+	}
+	
+	public static StringBuilder xmlConsist(StringWriter sw, StringBuilder sb, boolean isHead){
+		
+		String msg = null;
+		if(isHead){
+			msg = sw.toString();
+			String msgHead = msg.substring(0, msg.indexOf("?>")+2);
+			msg = msg.substring(msg.indexOf("?>")+2, msg.indexOf("</HEAD>")+7);
+			sb.append(msgHead);
+			sb.append('\n');
+			sb.append("<ROOT>");
+			sb.append(msg);
+		}else{
+			msg = sw.toString();
+			msg = msg.substring(msg.indexOf("?>")+2);
+			sb.append(msg);
+			sb.append("</ROOT>");
+		}
+		return sb;
+	}
+	
+	
+	public static void setMarshallerProperty(Marshaller marshaller, ValidationEventHandler handler) throws Exception{
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);// 格式化输出
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");// 设置输出编码,默认为UTF-8
+		marshaller.setEventHandler(handler); 
+	}
+	
+}

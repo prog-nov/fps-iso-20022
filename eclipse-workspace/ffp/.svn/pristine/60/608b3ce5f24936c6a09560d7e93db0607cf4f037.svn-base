@@ -1,0 +1,336 @@
+package com.forms.ffp.bussiness.iclfps.pacs004;
+
+import java.util.List;
+
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+
+public class FFPVO_Pacs004_TxInf {
+	
+	private FFPJbP300 p300;
+	
+	
+	private FFPMsgVo_Pacs004_RRI01REPLY reply;
+	
+	
+	private String RtrId;//FPS Return identification
+	private String OrgnlInstrId;
+	private String OrgnlEndToEndId;
+	private String OrgnlTxId;
+	private String OrgnlClrSysRef;
+	private String RtrdIntrBkSttlmAmt;
+	private String RtrdIntrBkSttlmCcy;
+	private String IntrBkSttlmDt;
+	private String RtrdInstdAmt;
+	private String RtrdInstdCcy;
+	//Charge ...
+	private String ChrgBr;
+	private String ChrgsInfAmt;
+	private String ChrgsInfCcy;
+	private String ChrgsInfAgtBICFI;
+	private String ChrgsInfAgtClrSysId;
+	
+	//Return reason information
+	private String RtrRsnReturnCode;
+	private List<String> RtrAddtlInf;
+	
+	private String OrgnIntrBkSttlAmt;
+	private String OrgnIntrBkSttlCcy;
+	private String OrgnIntrBkSttlDt;
+	private String OrgnCatyPurp;
+	private String OrgnMandateInfo;
+	private String OrgnRemtInfo;
+	private String OrgnDbtrNm;
+	private String OrgnDbtrAccNo;
+	private String OrgnDbtrAccType;
+	private String OrgnDbtrAgtId;
+	private String OrgnDbtrAgtBic;
+	private String OrgnCdtrNm;
+	private String OrgnCdtrAccNo;
+	private String OrgnCdtrAccType;
+	private String OrgnCdtrAgtId;
+	private String OrgnCdtrAgtBic;
+	
+	//E-mail, phone number TBC.
+
+	public FFPJbP300 getP300() {
+		return p300;
+	}
+
+	public void setP300(FFPJbP300 p300) {
+		this.p300 = p300;
+	}
+
+	public FFPMsgVo_Pacs004_RRI01REPLY getReply() {
+		return reply;
+	}
+
+	public void setReply(FFPMsgVo_Pacs004_RRI01REPLY reply) {
+		this.reply = reply;
+	}
+
+	public String getRtrId() {
+		return RtrId;
+	}
+
+	public void setRtrId(String rtrId) {
+		RtrId = rtrId;
+	}
+
+	public String getOrgnlInstrId() {
+		return OrgnlInstrId;
+	}
+
+	public void setOrgnlInstrId(String orgnlInstrId) {
+		OrgnlInstrId = orgnlInstrId;
+	}
+
+	public String getOrgnlEndToEndId() {
+		return OrgnlEndToEndId;
+	}
+
+	public void setOrgnlEndToEndId(String orgnlEndToEndId) {
+		OrgnlEndToEndId = orgnlEndToEndId;
+	}
+
+	public String getOrgnlTxId() {
+		return OrgnlTxId;
+	}
+
+	public void setOrgnlTxId(String orgnlTxId) {
+		OrgnlTxId = orgnlTxId;
+	}
+
+	public String getOrgnlClrSysRef() {
+		return OrgnlClrSysRef;
+	}
+
+	public void setOrgnlClrSysRef(String orgnlClrSysRef) {
+		OrgnlClrSysRef = orgnlClrSysRef;
+	}
+
+	public String getRtrdIntrBkSttlmAmt() {
+		return RtrdIntrBkSttlmAmt;
+	}
+
+	public void setRtrdIntrBkSttlmAmt(String rtrdIntrBkSttlmAmt) {
+		RtrdIntrBkSttlmAmt = rtrdIntrBkSttlmAmt;
+	}
+
+	public String getRtrdIntrBkSttlmCcy() {
+		return RtrdIntrBkSttlmCcy;
+	}
+
+	public void setRtrdIntrBkSttlmCcy(String rtrdIntrBkSttlmCcy) {
+		RtrdIntrBkSttlmCcy = rtrdIntrBkSttlmCcy;
+	}
+
+	public String getIntrBkSttlmDt() {
+		return IntrBkSttlmDt;
+	}
+
+	public void setIntrBkSttlmDt(String intrBkSttlmDt) {
+		IntrBkSttlmDt = intrBkSttlmDt;
+	}
+
+	public String getRtrdInstdAmt() {
+		return RtrdInstdAmt;
+	}
+
+	public void setRtrdInstdAmt(String rtrdInstdAmt) {
+		RtrdInstdAmt = rtrdInstdAmt;
+	}
+
+	public String getRtrdInstdCcy() {
+		return RtrdInstdCcy;
+	}
+
+	public void setRtrdInstdCcy(String rtrdInstdCcy) {
+		RtrdInstdCcy = rtrdInstdCcy;
+	}
+
+	public String getChrgBr() {
+		return ChrgBr;
+	}
+
+	public void setChrgBr(String chrgBr) {
+		ChrgBr = chrgBr;
+	}
+
+	public String getChrgsInfAmt() {
+		return ChrgsInfAmt;
+	}
+
+	public void setChrgsInfAmt(String chrgsInfAmt) {
+		ChrgsInfAmt = chrgsInfAmt;
+	}
+
+	public String getChrgsInfCcy() {
+		return ChrgsInfCcy;
+	}
+
+	public void setChrgsInfCcy(String chrgsInfCcy) {
+		ChrgsInfCcy = chrgsInfCcy;
+	}
+
+	public String getChrgsInfAgtBICFI() {
+		return ChrgsInfAgtBICFI;
+	}
+
+	public void setChrgsInfAgtBICFI(String chrgsInfAgtBICFI) {
+		ChrgsInfAgtBICFI = chrgsInfAgtBICFI;
+	}
+
+	public String getChrgsInfAgtClrSysId() {
+		return ChrgsInfAgtClrSysId;
+	}
+
+	public void setChrgsInfAgtClrSysId(String chrgsInfAgtClrSysId) {
+		ChrgsInfAgtClrSysId = chrgsInfAgtClrSysId;
+	}
+
+	public String getRtrRsnReturnCode() {
+		return RtrRsnReturnCode;
+	}
+
+	public void setRtrRsnReturnCode(String rtrRsnReturnCode) {
+		RtrRsnReturnCode = rtrRsnReturnCode;
+	}
+
+	public List<String> getRtrAddtlInf() {
+		return RtrAddtlInf;
+	}
+
+	public void setRtrAddtlInf(List<String> rtrAddtlInf) {
+		RtrAddtlInf = rtrAddtlInf;
+	}
+
+	public String getOrgnIntrBkSttlAmt() {
+		return OrgnIntrBkSttlAmt;
+	}
+
+	public void setOrgnIntrBkSttlAmt(String orgnIntrBkSttlAmt) {
+		OrgnIntrBkSttlAmt = orgnIntrBkSttlAmt;
+	}
+
+	public String getOrgnIntrBkSttlCcy() {
+		return OrgnIntrBkSttlCcy;
+	}
+
+	public void setOrgnIntrBkSttlCcy(String orgnIntrBkSttlCcy) {
+		OrgnIntrBkSttlCcy = orgnIntrBkSttlCcy;
+	}
+
+	public String getOrgnIntrBkSttlDt() {
+		return OrgnIntrBkSttlDt;
+	}
+
+	public void setOrgnIntrBkSttlDt(String orgnIntrBkSttlDt) {
+		OrgnIntrBkSttlDt = orgnIntrBkSttlDt;
+	}
+
+	public String getOrgnCatyPurp() {
+		return OrgnCatyPurp;
+	}
+
+	public void setOrgnCatyPurp(String orgnCatyPurp) {
+		OrgnCatyPurp = orgnCatyPurp;
+	}
+
+	public String getOrgnMandateInfo() {
+		return OrgnMandateInfo;
+	}
+
+	public void setOrgnMandateInfo(String orgnMandateInfo) {
+		OrgnMandateInfo = orgnMandateInfo;
+	}
+
+	public String getOrgnRemtInfo() {
+		return OrgnRemtInfo;
+	}
+
+	public void setOrgnRemtInfo(String orgnRemtInfo) {
+		OrgnRemtInfo = orgnRemtInfo;
+	}
+
+	public String getOrgnDbtrNm() {
+		return OrgnDbtrNm;
+	}
+
+	public void setOrgnDbtrNm(String orgnDbtrNm) {
+		OrgnDbtrNm = orgnDbtrNm;
+	}
+
+	public String getOrgnDbtrAccNo() {
+		return OrgnDbtrAccNo;
+	}
+
+	public void setOrgnDbtrAccNo(String orgnDbtrAccNo) {
+		OrgnDbtrAccNo = orgnDbtrAccNo;
+	}
+
+	public String getOrgnDbtrAccType() {
+		return OrgnDbtrAccType;
+	}
+
+	public void setOrgnDbtrAccType(String orgnDbtrAccType) {
+		OrgnDbtrAccType = orgnDbtrAccType;
+	}
+
+	public String getOrgnDbtrAgtId() {
+		return OrgnDbtrAgtId;
+	}
+
+	public void setOrgnDbtrAgtId(String orgnDbtrAgtId) {
+		OrgnDbtrAgtId = orgnDbtrAgtId;
+	}
+
+	public String getOrgnDbtrAgtBic() {
+		return OrgnDbtrAgtBic;
+	}
+
+	public void setOrgnDbtrAgtBic(String orgnDbtrAgtBic) {
+		OrgnDbtrAgtBic = orgnDbtrAgtBic;
+	}
+
+	public String getOrgnCdtrNm() {
+		return OrgnCdtrNm;
+	}
+
+	public void setOrgnCdtrNm(String orgnCdtrNm) {
+		OrgnCdtrNm = orgnCdtrNm;
+	}
+
+	public String getOrgnCdtrAccNo() {
+		return OrgnCdtrAccNo;
+	}
+
+	public void setOrgnCdtrAccNo(String orgnCdtrAccNo) {
+		OrgnCdtrAccNo = orgnCdtrAccNo;
+	}
+
+	public String getOrgnCdtrAccType() {
+		return OrgnCdtrAccType;
+	}
+
+	public void setOrgnCdtrAccType(String orgnCdtrAccType) {
+		OrgnCdtrAccType = orgnCdtrAccType;
+	}
+
+	public String getOrgnCdtrAgtId() {
+		return OrgnCdtrAgtId;
+	}
+
+	public void setOrgnCdtrAgtId(String orgnCdtrAgtId) {
+		OrgnCdtrAgtId = orgnCdtrAgtId;
+	}
+
+	public String getOrgnCdtrAgtBic() {
+		return OrgnCdtrAgtBic;
+	}
+
+	public void setOrgnCdtrAgtBic(String orgnCdtrAgtBic) {
+		OrgnCdtrAgtBic = orgnCdtrAgtBic;
+	}
+
+	
+}

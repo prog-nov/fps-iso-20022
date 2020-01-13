@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exception-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://www.formssi.com/schema/beneform4j/exception"
+	xsi:schemaLocation="http://www.formssi.com/schema/beneform4j/exception beneform4j-exception.xsd">
+	
+	<exception code="BF060000" description="Web控制层异常" messageKey="beneform4j.web">
+		<exception code="BF060001" description="上传文件IO异常" messageKey="beneform4j.web.upload_io_exception"/>
+	
+	</exception>
+</exception-config>

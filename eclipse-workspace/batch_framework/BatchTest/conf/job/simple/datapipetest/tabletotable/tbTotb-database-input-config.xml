@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database-input-config>
+	<databaseName>dbtest</databaseName>
+	<query-sql>
+		SELECT
+		  CBS_AC cbsAc,
+		  HLD_AC hldAc,
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'I' THEN AMT_BELOW ELSE NULL END) import_amount1,
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'I' THEN AUTH_CTRL ELSE '' END)import_auth_1,
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'I' THEN AMT_BELOW ELSE NULL END) import_amount2,  
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'I' THEN AUTH_CTRL ELSE '' END) import_auth_2,
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'I' THEN AMT_BELOW ELSE NULL END) import_amount3,
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'I' THEN AUTH_CTRL ELSE '' END) import_auth_3,
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'I' THEN AMT_BELOW ELSE NULL END) import_amount4,
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'I' THEN AUTH_CTRL ELSE '' END) import_auth_4,
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'I' THEN AMT_BELOW ELSE NULL END) import_amount5,
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'I' THEN AUTH_CTRL ELSE '' END) import_auth_5,
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'E' THEN AMT_BELOW ELSE NULL END) export_amount1,
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'E' THEN AUTH_CTRL ELSE '' END) export_auth_1,  
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'E' THEN AMT_BELOW ELSE NULL END) export_amount2,
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'E' THEN AUTH_CTRL ELSE '' END) export_auth_2,  
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'E' THEN AMT_BELOW ELSE NULL END) export_amount3,
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'E' THEN AUTH_CTRL ELSE '' END) export_auth_3,  
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'E' THEN AMT_BELOW ELSE NULL END) export_amount4,
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'E' THEN AUTH_CTRL ELSE '' END) export_auth_4,  
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'E' THEN AMT_BELOW ELSE NULL END) export_amount5,
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'E' THEN AUTH_CTRL ELSE '' END) export_auth_5,  
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'G' THEN AMT_BELOW ELSE NULL END) guarantee_amount1,
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'G' THEN AUTH_CTRL ELSE '' END) guarantee_auth_1,  
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'G' THEN AMT_BELOW ELSE NULL END) guarantee_amount2,
+		  MAX(CASE WHEN LINE  = 2 AND AUTH_TYPE = 'G' THEN AUTH_CTRL ELSE '' END) guarantee_auth_2,  
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'G' THEN AMT_BELOW ELSE NULL END) guarantee_amount3,
+		  MAX(CASE WHEN LINE  = 3 AND AUTH_TYPE = 'G' THEN AUTH_CTRL ELSE '' END) guarantee_auth_3,  
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'G' THEN AMT_BELOW ELSE NULL END) guarantee_amount4,
+		  MAX(CASE WHEN LINE  = 4 AND AUTH_TYPE = 'G' THEN AUTH_CTRL ELSE '' END) guarantee_auth_4,  
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'G' THEN AMT_BELOW ELSE NULL END) guarantee_amount5,
+		  MAX(CASE WHEN LINE  = 5 AND AUTH_TYPE = 'G' THEN AUTH_CTRL ELSE '' END) guarantee_auth_5,  
+		  MAX(CASE WHEN LINE  = 1 AND AUTH_TYPE = 'R' THEN AUTH_CTRL ELSE '' END) repayment_auth 
+		FROM 
+		(
+			SELECT 
+			   A.CBS_AC,A.HLD_AC,TRIM(AUTH_TYPE) AUTH_TYPE,BENE_TYPE,AMT_BELOW AMT_BELOW,
+			   TRIM(NVL(AUTH_CTRL1,'')) 
+			   || (CASE WHEN NVL(AUTH_CTRL2,'')='' AND NVL(AUTH_CTRL3,'')='' AND NVL(AUTH_CTRL4,'')='' THEN '' ELSE '/' END )
+			   || TRIM(NVL(AUTH_CTRL2,'')) 
+			   || (CASE WHEN NVL(AUTH_CTRL3,'')='' AND NVL(AUTH_CTRL4,'')='' THEN '' ELSE '/' END )
+			   || TRIM(NVL(AUTH_CTRL3,'')) 
+			   || (CASE WHEN NVL(AUTH_CTRL4,'')='' THEN '' ELSE '/' END ) 
+			   || TRIM(NVL(AUTH_CTRL4,''))   AUTH_CTRL,
+			   RANK() OVER(PARTITION BY A.CBS_AC,A.HLD_AC,AUTH_TYPE ORDER BY AMT_BELOW) LINE
+			FROM #{schema}.TB_TM_HLDAC_AUTH A
+			JOIN #{schema}.TB_TM_CBSAC_AUTH B
+			ON A.CBS_AC  = B.CBS_AC
+			JOIN #{schema}.TB_TM_CBS_HLDAC C
+			ON A.CBS_AC = C.CBS_AC
+			AND A.HLD_AC = C.HLD_AC
+			JOIN #{schema}.TB_TM_CBSAIF D
+			ON A.CBS_AC = D.CBS_AC 
+			JOIN #{schema}.TB_BH_TM_CBSAIF E
+			ON A.CBS_AC = E.CBS_AC
+			LEFT JOIN #{schema}.TB_BH_RVSCBS F
+			ON A.CBS_AC = F.CBS_AC
+			WHERE B.AUTH_MODE = 'A'
+			AND TRIM(AUTH_TYPE) IN ('I','E','G','R')
+			AND C.TYPE = 'BLS' 
+			AND D.CONVERSION_TS IS NOT NULL
+			AND F.CBS_AC IS NULL
+		) a
+		GROUP BY CBS_AC,HLD_AC
+	</query-sql>
+	<field-definition>
+		<field name="cbsAc"           data-type="StringType" 	/>
+        <field name="hldAc"           data-type="StringType" 	/>
+        <field name="import_amount1"  data-type="StringType" 	/>
+        <field name="import_auth_1"   data-type="StringType" 	/>
+        <field name="import_amount2"  data-type="StringType" 	/>
+        <field name="import_auth_2"   data-type="StringType" 	/>
+        <field name="import_amount3"  data-type="StringType" 	/>
+        <field name="import_auth_3"   data-type="StringType" 	/>
+        <field name="import_amount4"  data-type="StringType" 	/>
+        <field name="import_auth_4"   data-type="StringType" 	/>
+        <field name="import_amount5"  data-type="StringType" 	/>
+        <field name="import_auth_5"   data-type="StringType" 	/>
+        <field name="export_amount1"  data-type="StringType" 	/>
+        <field name="export_auth_1"   data-type="StringType" 	/>
+        <field name="export_amount2"  data-type="StringType" 	/>
+        <field name="export_auth_2"   data-type="StringType" 	/>
+        <field name="export_amount3"  data-type="StringType" 	/>
+        <field name="export_auth_3"   data-type="StringType" 	/>
+        <field name="export_amount4"  data-type="StringType" 	/>
+        <field name="export_auth_4"   data-type="StringType" 	/>
+        <field name="export_amount5"  data-type="StringType" 	/>
+        <field name="export_auth_5"   data-type="StringType" 	/>
+        <field name="guarantee_amount1"  data-type="StringType" 	/>
+        <field name="guarantee_auth_1"   data-type="StringType" 	/>
+        <field name="guarantee_amount2"  data-type="StringType" 	/>
+        <field name="guarantee_auth_2"   data-type="StringType" 	/>
+        <field name="guarantee_amount3"  data-type="StringType" 	/>
+        <field name="guarantee_auth_3"   data-type="StringType" 	/>
+        <field name="guarantee_amount4"  data-type="StringType" 	/>
+        <field name="guarantee_auth_4"   data-type="StringType" 	/>
+        <field name="guarantee_amount5"  data-type="StringType" 	/>
+        <field name="guarantee_auth_5"   data-type="StringType" 	/>
+        <field name="repayment_auth"     data-type="StringType" 	/>
+	</field-definition>
+</database-input-config>

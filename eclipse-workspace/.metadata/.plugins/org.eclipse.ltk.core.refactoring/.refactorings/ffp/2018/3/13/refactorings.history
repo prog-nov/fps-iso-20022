@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;FFPMsgPacs008_CTI01.java&apos; to &apos;ffp_batch/src/com.forms.batch.job.unit.iclfps.payment.message&apos;&#x0D;&#x0A;- Original project: &apos;ffp&apos;&#x0D;&#x0A;- Destination element: &apos;ffp_batch/src/com.forms.batch.job.unit.iclfps.payment.message&apos;&#x0D;&#x0A;- Original element: &apos;com.forms.ffp.bussiness.iclfps.pacs008.FFPMsgPacs008_CTI01.java&apos;" description="Copy compilation unit" destination="=ffp_batch/src&lt;com.forms.batch.job.unit.iclfps.payment.message" element1="/src&lt;com.forms.ffp.bussiness.iclfps.pacs008{FFPMsgPacs008_CTI01.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1522230344714" units="1" version="1.0"/>
+</session>

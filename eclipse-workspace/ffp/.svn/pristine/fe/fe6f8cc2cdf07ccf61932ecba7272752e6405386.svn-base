@@ -1,0 +1,130 @@
+package com.forms.ffp.webapp.cashmanagement.return_refund.service;
+
+import java.util.Date;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.participant.request.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffprro01.FFPRRO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffprro01.RTRRSNINF;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseParticipantMessage;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.ffp.webapp.cashmanagement.return_refund.bean.FFPMsgVo_Pacs004_RRO01REPLY;
+import com.forms.ffp.webapp.cashmanagement.return_refund.bean.FFPVO_Pacs004_TxInf;
+
+public class ReturnRefund_RRO01 extends FFPMsgBaseParticipantMessage{
+	
+//	private FFPMsgVo_Pacs004_RRI01REPLY rri01=null;
+//	
+	private FFPVO_Pacs004_TxInf txinf = null;
+	
+	private FFPJbP300 p300;
+//	
+	public ReturnRefund_RRO01(FFPVO_Pacs004_TxInf txinf){
+		super();
+		this.txinf=txinf;
+//		this.direction = "req";
+		this.reqRefNo=this.getReqRefNo();
+		this.requestID = FFPConstants.MSG_CODE_FFP;
+		this.responseID = FFPConstants.MSG_CODE_AGENT;
+		msgType=FFPJaxbConstants.JAXB_MSG_TYPE_FFPRRO01;
+	}
+	
+	public HEAD marshalMsgReqHead()
+	{
+		HEAD head = new HEAD();
+		// RequestID
+		// TransactionDate
+		// TransactionTime
+		// RequestRefno
+		// ResponseID
+		// MessageType
+
+		// optional
+		// SystemRefno
+		// AccountingDate
+		head.setRequestID(this.requestID);
+		head.setResponseID(this.responseID);
+		head.setRequestRefno(this.reqRefNo);
+		head.setTransactionDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setMessageType(this.msgType);
+		return head;
+	}
+	
+	public BODY marshalMsgReqBody()
+	{
+		FFPRRO01 rro = new FFPRRO01();
+		rro.setSrcRefNm(p300.getTxJnl().getSrcRefNm());
+		
+		//settlementAmout
+
+		rro.setRtrdSettlAmt(p300.getRetIntSetAmt());
+		rro.setRtrdSettlCcy(p300.getRetIntSetCur());
+		rro.setRtrdSettlDate(p300.getSettlementDate().toString());
+		
+		rro.setRtrdInstrAmt(p300.getRetInsAmt());
+		rro.setRtrdInstrCcy(p300.getRetInsCur());
+		
+		//information
+		RTRRSNINF inf = new RTRRSNINF();
+		inf.setPrtryCd(p300.getReasonCode());
+		inf.setAddtlInf(p300.getAdditionalInformation());
+		rro.setRtrRsnInf(inf);
+		
+		//debitor
+		rro.setDbtrNm(p300.getOrgnlCdtrNm());
+		rro.setDbtrAcNo(p300.getOrgnlCdtrAcctNo());
+		rro.setDbtrAcTp(p300.getOrgnlCdtrAcctNoTp());
+		rro.setDbtrContEmailAddr(p300.getOrgnlCdtrPhNo());
+		rro.setDbtrContPhone(p300.getOrgnlCdtrEmAddr());
+		
+	
+		
+		rro.setRtrdChrgrsAmt(p300.getChargersAmount());
+		rro.setRtrdChrgrsCcy(p300.getChargersCurrency());
+		
+		rro.setPymtCatPrps(p300.getOrgnlCatgyPurp());
+		
+		
+		
+
+//		txinf.setPytPurp(p300.getPytPurp());
+//		txinf.setRemInfo(p300.getRemInfo());
+
+//		rro.setOrgnlTxRef(txinf);
+		return rro;
+	}
+
+	public void unmarshalResponseMsg(String respMessage) throws Exception {
+		super.unmarshalResponseMsg(respMessage);
+		com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = FFPParticipantMessageConverter.parseXml2ReponseObject(respMessage);
+			com.forms.ffp.adaptor.jaxb.participant.response.BODY body = root.getBODY();
+			com.forms.ffp.adaptor.jaxb.participant.response.ffprro01.FFPRRO01 rro01 = (com.forms.ffp.adaptor.jaxb.participant.response.ffprro01.FFPRRO01)body;
+			
+			if(p300.getTxJnl().getSrcRefNm().equals(rro01.getSrcRefNm()))
+			{	
+				this.resRefNo=root.getHEAD().getResponseRefno();
+				FFPMsgVo_Pacs004_RRO01REPLY reply = new FFPMsgVo_Pacs004_RRO01REPLY();
+				reply.setSrcRefNm(rro01.getSrcRefNm());
+				reply.setRsltCd(rro01.getRsltCd());
+				reply.setRejCd(rro01.getRejCd());
+				reply.setRejMsg(rro01.getRejMsg());
+				txinf.setReply(reply);
+			}
+			else
+			{
+				//TODO 
+				//for test;
+			}
+		
+		return;
+		
+		
+	}
+	
+
+}

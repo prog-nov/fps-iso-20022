@@ -1,0 +1,50 @@
+package com.forms.ffp.persistents.dao.addressing;
+
+import org.springframework.stereotype.Repository;
+
+import com.forms.beneform4j.core.dao.annotation.BatchParam;
+import com.forms.beneform4j.core.dao.annotation.Execute;
+import com.forms.beneform4j.core.dao.annotation.Executes;
+import com.forms.beneform4j.core.dao.annotation.SqlRef;
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+
+@Repository("FFPIDao_A100")
+public interface FFPIDao_A100{
+	
+	@Executes({
+			// 插入交易表
+			@Execute(sqlRef = @SqlRef("INSERT_TB_TX_JNL") , param = @BatchParam(value = false, property = "txJnl") ),
+			@Execute(sqlRef = @SqlRef("INSERT_LIST_TXJNLACTION") , param = @BatchParam(item = "jnlAction", property = "jnlActionList") ),
+			@Execute(sqlRef = @SqlRef("INSERT_TB_TX_A100DAT") , param = @BatchParam(false)),
+			@Execute(sqlRef = @SqlRef("INSERT_UPDATE_TB_DT_ADDRESSING_ACCT") ,  param = @BatchParam(false)), 
+			@Execute(sqlRef = @SqlRef("INSERT_UPDATE_TB_DT_ADDRESSING") ,  param = @BatchParam(false)) 
+	})
+	public int[] dInsert(FFPJbA100 form);
+
+	@Executes({ 
+			@Execute(sqlRef = @SqlRef("UPDATE_TXJNL_STAT") , param = @BatchParam(value = false, property = "txJnl") ),
+			@Execute(sqlRef = @SqlRef("INSERT_UPDATE_LIST_TXJNLACTION") , param = @BatchParam(item = "jnlAction", property = "jnlActionList")) 
+	})
+	public int[] updateJnlStat(FFPJbBase form);
+
+	/**
+	 * inquery JNL_NO by MSG_ID
+	 * @param msgId
+	 * @return
+	 */
+	public String inqueryJnlNoByMsgId(String msgId);
+	
+
+	public FFPJbA100 inqueryJbA100ByJnlNo(String jnlNo);
+	
+	@Executes({
+		// 插入交易表
+		@Execute(sqlRef = @SqlRef("INSERT_TB_TX_JNL") , param = @BatchParam(value = false, property = "txJnl") ),
+		@Execute(sqlRef = @SqlRef("INSERT_LIST_TXJNLACTION") , param = @BatchParam(item = "jnlAction", property = "jnlActionList") ),
+	})
+	public int[] dInsertTxJnlAndJnlAction(FFPJbA100 form);
+	
+	@Execute(sqlRef = @SqlRef("dUpdateDflt") ,  param = @BatchParam(false))
+	public int[] dUpdateDflt(FFPJbA100 form);
+}

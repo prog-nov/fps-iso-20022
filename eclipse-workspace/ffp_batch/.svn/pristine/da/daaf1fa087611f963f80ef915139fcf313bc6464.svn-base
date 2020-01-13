@@ -1,0 +1,149 @@
+package com.forms.batch.job.unit.participant.outwardresponse;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP110;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP200;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP210;
+
+public class FFPVO_Pacs002_TxInfAndSts
+{
+	private String OrgnlEndToEndId;
+	private String OrgnlTxId;
+	private String TxSts;
+	private String TxStsRsnCode;
+	private List<String> TxStsAddtlInfList;
+	private Date accptncDtTm;
+	private String clrSysRef;
+	private String settlementCurrency;
+	private BigDecimal settlementAmount;
+
+	private FFPVO_Pacs002_CTO01REPLY cto01Reply;
+
+	private FFPJbP100 p100Jb;
+
+	public String getOrgnlEndToEndId()
+	{
+		return OrgnlEndToEndId;
+	}
+
+	public void setOrgnlEndToEndId(String orgnlEndToEndId)
+	{
+		OrgnlEndToEndId = orgnlEndToEndId;
+	}
+
+	public String getOrgnlTxId()
+	{
+		return OrgnlTxId;
+	}
+
+	public void setOrgnlTxId(String orgnlTxId)
+	{
+		OrgnlTxId = orgnlTxId;
+	}
+
+	public String getTxSts()
+	{
+		return TxSts;
+	}
+
+	public void setTxSts(String txSts)
+	{
+		TxSts = txSts;
+	}
+
+	public String getTxStsRsnCode()
+	{
+		return TxStsRsnCode;
+	}
+
+	public void setTxStsRsnCode(String txStsRsnCode)
+	{
+		TxStsRsnCode = txStsRsnCode;
+	}
+
+	public List<String> getTxStsAddtlInf()
+	{
+		return TxStsAddtlInfList;
+	}
+
+	public void setTxStsAddtlInf(List<String> txStsAddtlInfList)
+	{
+		TxStsAddtlInfList = txStsAddtlInfList;
+	}
+
+	public List<String> getTxStsAddtlInfList()
+	{
+		return TxStsAddtlInfList;
+	}
+
+	public void setTxStsAddtlInfList(List<String> txStsAddtlInfList)
+	{
+		TxStsAddtlInfList = txStsAddtlInfList;
+	}
+
+	public Date getAccptncDtTm()
+	{
+		return accptncDtTm;
+	}
+
+	public void setAccptncDtTm(Date accptncDtTm)
+	{
+		this.accptncDtTm = accptncDtTm;
+	}
+
+	public String getClrSysRef()
+	{
+		return clrSysRef;
+	}
+
+	public void setClrSysRef(String clrSysRef)
+	{
+		this.clrSysRef = clrSysRef;
+	}
+
+	public String getSettlementCurrency()
+	{
+		return settlementCurrency;
+	}
+
+	public void setSettlementCurrency(String settlementCurrency)
+	{
+		this.settlementCurrency = settlementCurrency;
+	}
+
+	public BigDecimal getSettlementAmount()
+	{
+		return settlementAmount;
+	}
+
+	public void setSettlementAmount(BigDecimal settlementAmount)
+	{
+		this.settlementAmount = settlementAmount;
+	}
+
+
+	public FFPJbP100 getP100Jb()
+	{
+		return p100Jb;
+	}
+
+	public void setP100Jb(FFPJbP100 p100Jb)
+	{
+		this.p100Jb = p100Jb;
+	}
+
+	public FFPVO_Pacs002_CTO01REPLY getCto01Reply()
+	{
+		return cto01Reply;
+	}
+
+	public void setCto01Reply(FFPVO_Pacs002_CTO01REPLY cto01Reply)
+	{
+		this.cto01Reply = cto01Reply;
+	}
+
+}

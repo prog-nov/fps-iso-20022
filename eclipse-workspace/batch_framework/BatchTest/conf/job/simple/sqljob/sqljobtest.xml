@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CIB Batch Job Configuration　Files　-->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to TB_BH_JOB_JNL and LOG　-->
+		<job-id>CIBHUS01</job-id>
+					
+		<run-frequency>D</run-frequency>
+		
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	
+	<action-flow>
+		<action>
+			<action-name>Sql Job Call01</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<databaseName>dbtest</databaseName>
+			<parameters>
+				<parameter isSql="Y">DELETE FROM #{schema}.TB_DI_DW85AI1</parameter>
+				<parameter>job/simple/sqljob/sql-job-config.xml</parameter>
+			</parameters>
+			<backup>N</backup>
+		</action>
+	</action-flow>
+</job-config>

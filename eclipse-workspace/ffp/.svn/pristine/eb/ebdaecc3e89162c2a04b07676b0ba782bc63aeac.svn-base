@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.dt.FFPIDao_FpsPaymentNotification">
+	<select id="dList" resultType="com.forms.ffp.persistents.bean.dt.FFPDtFpsPaymentNotification">
+		SELECT MSG_ID, MSG_Create_Ts, ntfctnId,
+				ntfctnCreateTs, ntfctnAcctId, ntfctnAcctType,
+				ntryAmt, ntryAmtCcy, ntryCdtDbtInd,
+				ntryStatus, ntryBankTransCode, ntryDetailEndToEndId,
+				ntryDetailTxId, ntryDetailMandateId, ntryDetailClrSysRef,
+				ntryDetailAmt, ntryDetailAmtCcy, ntryDetailCdtDbtInd,
+				ntryDetailChrgsAmt, ntryDetailChrgsAmtCcy, ntryDetailChrgsBr,
+				ntryDetailChrgsAgtBic, ntryDetailChrgsAgtMmbId, RltdPtiesDbtrName,
+				RltdPtiesDbtrOrgIdBIC, RltdPtiesDbtrOrgIdOthrId, RltdPtiesDbtrOrgIdOthrSchme,
+				RltdPtiesDbtrOrgIdOthrIssr, RltdPtiesDbtrPrvtIdOthrId, RltdPtiesDbtrPrvtIdOthrSchme,
+				RltdPtiesDbtrPrvtIdOthrIssr, RltdPtiesDbtrContactMobile, RltdPtiesDbtrContactEmail,
+				RltdPtiesDbtrAcctId, RltdPtiesDbtrAcctScheme, RltdPtiesCdtrName,
+				RltdPtiesCdtrOrgIdBIC, RltdPtiesCdtrOrgIdOthrId, RltdPtiesCdtrOrgIdOthrSchme,
+				RltdPtiesCdtrOrgIdOthrIssr, RltdPtiesCdtrPrvtIdOthrId, RltdPtiesCdtrPrvtIdOthrSchme,
+				RltdPtiesCdtrPrvtIdOthrIssr, RltdPtiesCdtrContactMobile, RltdPtiesCdtrContactEmail,
+				RltdPtiesCdtrAcctId, RltdPtiesCdtrAcctScheme, relatedAgentsDbtrBIC,
+				relatedAgentsDbtrMmbId, relatedAgentsCdtrBIC, relatedAgentsCdtrMmbId,
+				PurpCode, PurpOther, remitInfUstrd,
+				relatedDatesIntrSettlDate, relatedDatesTransTs, returnInfRsn,
+				returnInfMsg
+		FROM TB_DT_FPS_PAYMENT_NOTIFICATION T
+		<where>
+			<if test="null != ntfctnId and '' != ntfctnId">
+				AND T.ntfctnId = #{ntfctnId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != ntfctnCreateBeginDate and '' != ntfctnCreateBeginDate">
+				AND T.ntfctnCreateTs >= #{ntfctnCreateBeginDate, jdbcType=VARCHAR}
+			</if>
+			<if test="null != ntfctnCreateEndDate and '' != ntfctnCreateEndDate">
+				AND T.ntfctnCreateTs <![CDATA[<=]]> #{ntfctnCreateEndDate, jdbcType=VARCHAR}
+			</if>
+			<if test="null != paymentCag and '' != paymentCag">
+				AND T.ntryBankTransCode = #{paymentCag, jdbcType=VARCHAR}
+			</if>
+			<if test="null != dbtrMmbId and '' != dbtrMmbId">
+				AND T.relatedAgentsDbtrMmbId = #{dbtrMmbId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != cdtrMmbId and '' != cdtrMmbId">
+				AND T.relatedAgentsCdtrMmbId = #{cdtrMmbId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != settlementBeginDate and '' != settlementBeginDate">
+				AND T.relatedDatesTransTs >= #{settlementBeginDate, jdbcType=VARCHAR}
+			</if>
+			<if test="null != settlementEndDate and '' != settlementEndDate">
+				AND T.relatedDatesTransTs <![CDATA[<=]]> #{settlementEndDate, jdbcType=VARCHAR}
+			</if>
+		</where>
+	     ORDER BY T.ntfctnCreateTs
+	</select>
+	
+	<insert id="INSERT_LIST_NOTIFICATION">
+		INSERT INTO TB_DT_FPS_PAYMENT_NOTIFICATION
+		(
+			MSG_ID, MSG_Create_Ts, ntfctnId,
+			ntfctnCreateTs, ntfctnAcctId, ntfctnAcctType,
+			ntryAmt, ntryAmtCcy, ntryCdtDbtInd,
+			ntryStatus, ntryBankTransCode, ntryDetailEndToEndId,
+			ntryDetailTxId, ntryDetailMandateId, ntryDetailClrSysRef,
+			ntryDetailAmt, ntryDetailAmtCcy, ntryDetailCdtDbtInd,
+			ntryDetailChrgsAmt, ntryDetailChrgsAmtCcy, ntryDetailChrgsBr,
+			ntryDetailChrgsAgtBic, ntryDetailChrgsAgtMmbId, RltdPtiesDbtrName,
+			RltdPtiesDbtrOrgIdBIC, RltdPtiesDbtrOrgIdOthrId, RltdPtiesDbtrOrgIdOthrSchme,
+			RltdPtiesDbtrOrgIdOthrIssr, RltdPtiesDbtrPrvtIdOthrId, RltdPtiesDbtrPrvtIdOthrSchme,
+			RltdPtiesDbtrPrvtIdOthrIssr, RltdPtiesDbtrContactMobile, RltdPtiesDbtrContactEmail,
+			RltdPtiesDbtrAcctId, RltdPtiesDbtrAcctScheme, RltdPtiesCdtrName,
+			RltdPtiesCdtrOrgIdBIC, RltdPtiesCdtrOrgIdOthrId, RltdPtiesCdtrOrgIdOthrSchme,
+			RltdPtiesCdtrOrgIdOthrIssr, RltdPtiesCdtrPrvtIdOthrId, RltdPtiesCdtrPrvtIdOthrSchme,
+			RltdPtiesCdtrPrvtIdOthrIssr, RltdPtiesCdtrContactMobile, RltdPtiesCdtrContactEmail,
+			RltdPtiesCdtrAcctId, RltdPtiesCdtrAcctScheme, relatedAgentsDbtrBIC,
+			relatedAgentsDbtrMmbId, relatedAgentsCdtrBIC, relatedAgentsCdtrMmbId,
+			PurpCode, PurpOther, remitInfUstrd,
+			relatedDatesIntrSettlDate, relatedDatesTransTs, returnInfRsn,
+			returnInfMsg
+		)
+		VALUES
+		(
+			#{notif.msgId, jdbcType=VARCHAR}, #{notif.msgCreateTs, jdbcType=TIMESTAMP}, #{notif.ntfctnId, jdbcType=VARCHAR},
+			#{notif.ntfctnCreateTs, jdbcType=TIMESTAMP}, #{notif.ntfctnAcctId, jdbcType=VARCHAR}, #{notif.ntfctnAcctType, jdbcType=VARCHAR},
+			#{notif.ntryAmt, jdbcType=DECIMAL}, #{notif.ntryAmtCcy, jdbcType=VARCHAR}, #{notif.ntryCdtDbtInd, jdbcType=VARCHAR},
+			#{notif.ntryStatus, jdbcType=VARCHAR}, #{notif.ntryBankTransCode, jdbcType=VARCHAR}, #{notif.ntryDetailEndToEndId, jdbcType=VARCHAR},
+			#{notif.ntryDetailTxId, jdbcType=VARCHAR}, #{notif.ntryDetailMandateId, jdbcType=VARCHAR}, #{notif.ntryDetailClrSysRef, jdbcType=VARCHAR},
+			#{notif.ntryDetailAmt, jdbcType=DECIMAL}, #{notif.ntryDetailAmtCcy, jdbcType=VARCHAR}, #{notif.ntryDetailCdtDbtInd, jdbcType=VARCHAR},
+			#{notif.ntryDetailChrgsAmt, jdbcType=VARCHAR}, #{notif.ntryDetailChrgsAmtCcy, jdbcType=VARCHAR}, #{notif.ntryDetailChrgsBr, jdbcType=VARCHAR},
+			#{notif.ntryDetailChrgsAgtBic, jdbcType=VARCHAR}, #{notif.ntryDetailChrgsAgtMmbId, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrName, jdbcType=VARCHAR},
+			#{notif.RltdPtiesDbtrOrgIdBIC, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrOrgIdOthrId, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrOrgIdOthrSchme, jdbcType=VARCHAR},
+			#{notif.RltdPtiesDbtrOrgIdOthrIssr, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrPrvtIdOthrId, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrPrvtIdOthrSchme, jdbcType=VARCHAR},
+			#{notif.RltdPtiesDbtrPrvtIdOthrIssr, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrContactMobile, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrContactEmail, jdbcType=VARCHAR},
+			#{notif.RltdPtiesDbtrAcctId, jdbcType=VARCHAR}, #{notif.RltdPtiesDbtrAcctScheme, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrName, jdbcType=VARCHAR},
+			#{notif.RltdPtiesCdtrOrgIdBIC, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrOrgIdOthrId, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrOrgIdOthrSchme, jdbcType=VARCHAR},
+			#{notif.RltdPtiesCdtrOrgIdOthrIssr, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrPrvtIdOthrId, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrPrvtIdOthrSchme, jdbcType=VARCHAR},
+			#{notif.RltdPtiesCdtrPrvtIdOthrIssr, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrContactMobile, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrContactEmail, jdbcType=VARCHAR},
+			#{notif.RltdPtiesCdtrAcctId, jdbcType=VARCHAR}, #{notif.RltdPtiesCdtrAcctScheme, jdbcType=VARCHAR}, #{notif.relatedAgentsDbtrBIC, jdbcType=VARCHAR},
+			#{notif.relatedAgentsDbtrMmbId, jdbcType=VARCHAR}, #{notif.relatedAgentsCdtrBIC, jdbcType=VARCHAR}, #{notif.relatedAgentsCdtrMmbId, jdbcType=VARCHAR},
+			#{notif.PurpCode, jdbcType=VARCHAR}, #{notif.PurpOther, jdbcType=VARCHAR}, #{notif.remitInfUstrd, jdbcType=VARCHAR},
+			#{notif.relatedDatesIntrSettlDate, jdbcType=VARCHAR}, #{notif.relatedDatesTransTs, jdbcType=VARCHAR}, #{notif.returnInfRsn, jdbcType=VARCHAR},
+			#{notif.returnInfMsg, jdbcType=VARCHAR}
+		)
+	</insert>
+</mapper>

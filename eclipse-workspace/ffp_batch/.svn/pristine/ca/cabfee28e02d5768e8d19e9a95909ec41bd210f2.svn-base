@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<!-- D_OVERSEAS_PAY_SUB MOVE IN HIS AND DELETE -->
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_2007
+			SELECT A.*
+			FROM  #{schema}.T_OVERSEAS_ARCHIVES A
+			JOIN #{schema}.D_QUERY_RTS B
+			ON A.RTL_NO = B.SEND_OREF_NO
+			AND A.TABLE_NAME = 'D_QUERY_RTS'
+			LEFT JOIN #{schema}.T_OVERSEAS_ARCHIVES_2007 C 
+			ON A.RTL_NO = C.RTL_NO 
+			AND A.TABLE_NAME= C.TABLE_NAME 
+			WHERE SUBSTR(B.TRAN_DATE,1,4) = '2007'
+				AND C.RTL_NO IS NULL
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT 1
+				FROM #{schema}.D_QUERY_RTS B 
+				WHERE A.RTL_NO = B.SEND_OREF_NO 
+				AND A.TABLE_NAME = 'D_QUERY_RTS' 
+				AND SUBSTR(B.TRAN_DATE,1,4) = '2007'
+			)
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_2008
+			SELECT A.*
+			FROM  #{schema}.T_OVERSEAS_ARCHIVES A
+			JOIN #{schema}.D_QUERY_RTS B
+			ON A.RTL_NO = B.SEND_OREF_NO
+			AND A.TABLE_NAME = 'D_QUERY_RTS'
+			LEFT JOIN #{schema}.T_OVERSEAS_ARCHIVES_2008 C 
+			ON A.RTL_NO = C.RTL_NO 
+			AND A.TABLE_NAME= C.TABLE_NAME 
+			WHERE SUBSTR(B.TRAN_DATE,1,4) = '2008'
+				AND C.RTL_NO IS NULL
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT 1
+				FROM #{schema}.D_QUERY_RTS B 
+				WHERE A.RTL_NO = B.SEND_OREF_NO 
+				AND A.TABLE_NAME = 'D_QUERY_RTS' 
+				AND SUBSTR(B.TRAN_DATE,1,4) = '2008'
+			)
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_2009
+			SELECT A.*
+			FROM  #{schema}.T_OVERSEAS_ARCHIVES A
+			JOIN #{schema}.D_QUERY_RTS B
+			ON A.RTL_NO = B.SEND_OREF_NO
+			AND A.TABLE_NAME = 'D_QUERY_RTS'
+			LEFT JOIN #{schema}.T_OVERSEAS_ARCHIVES_2009 C 
+			ON A.RTL_NO = C.RTL_NO 
+			AND A.TABLE_NAME= C.TABLE_NAME 
+			WHERE SUBSTR(B.TRAN_DATE,1,4) = '2009'
+				AND C.RTL_NO IS NULL
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT 1
+				FROM #{schema}.D_QUERY_RTS B 
+				WHERE A.RTL_NO = B.SEND_OREF_NO 
+				AND A.TABLE_NAME = 'D_QUERY_RTS' 
+				AND SUBSTR(B.TRAN_DATE,1,4) = '2009'
+			)
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_2010
+			SELECT A.*
+			FROM  #{schema}.T_OVERSEAS_ARCHIVES A
+			JOIN #{schema}.D_QUERY_RTS B
+			ON A.RTL_NO = B.SEND_OREF_NO
+			AND A.TABLE_NAME = 'D_QUERY_RTS'
+			LEFT JOIN #{schema}.T_OVERSEAS_ARCHIVES_2010 C 
+			ON A.RTL_NO = C.RTL_NO 
+			AND A.TABLE_NAME= C.TABLE_NAME 
+			WHERE SUBSTR(B.TRAN_DATE,1,4) = '2010'
+				AND C.RTL_NO IS NULL
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT 1
+				FROM #{schema}.D_QUERY_RTS B 
+				WHERE A.RTL_NO = B.SEND_OREF_NO 
+				AND A.TABLE_NAME = 'D_QUERY_RTS' 
+				AND SUBSTR(B.TRAN_DATE,1,4) = '2010'
+			)
+		</sql>
+	</transaction>
+</job-sql-configs>

@@ -1,0 +1,223 @@
+package com.forms.ffp.bussiness.participant.addressing.ffpadr04;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.deser.Deserializers.Base;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr04.ADDRESSINGSCHEMETYPE;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr04.FFPADR04;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageWrapper;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPJbBase;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA120;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA120dtl;
+import com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction;
+import com.forms.ffp.persistents.service.addressing.FFPDaoService_A120;
+import com.forms.ffp.persistents.service.addressing.FFPDaoService_A120dtl;
+
+
+@Component("FFPAGENT.FFPADR04")
+@Scope("prototype")
+public class FFPTxFfpadr04 extends FFPTxBase {
+
+	@Resource(name = "FFPDaoService_A120")
+	private FFPDaoService_A120 a120service;
+	
+	
+	@Resource(name = "FFPIDao_TxJnlAction")
+	private FFPIDao_TxJnlAction actionDao;
+
+	@Resource(name = "FFPDaoService_A120dtl")
+	private FFPDaoService_A120dtl a120dtlservice;
+
+	@Override
+	public void perform() throws Exception {
+		if ("FFPAGENT.FFPADR04".equals(serviceName)) {
+			FFPVOFfpadr04 adr04 = (FFPVOFfpadr04) txVo;
+			FFPMsgAdr04_fpsadrs008 adrs008 = new FFPMsgAdr04_fpsadrs008(adr04);
+			Date locdate = new Date();
+
+			/**
+			 * FFPTxJnlAction FFP TO ICL
+			 */
+			FFPJbBase base = new FFPJbBase();
+			String jnlNo = adr04.getList().get(0).getJnlNo();
+			FFPTxJnlAction jnlAction = FFPJnlUtils.getInstance().newJnlAction( jnlNo,adrs008.getMsgID(),
+					FFPConstants.MSG_DIRECTION_OUTWARD, FFPConstants.MSG_CODE_FFP, adrs008.getMsgTypeName(),
+					FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), locdate, locdate, locdate,
+					adr04.getMsgID());
+
+
+			try {
+				// send msg to ICL
+				FFPBaseResp respAdr001 = FFPAdaptorMgr.getInstance().execute(adrs008);
+				
+			} catch (Exception e) {
+				//TODO
+			} finally {
+				actionDao.insertUpdateTxJnlAction(jnlAction);
+			}
+
+			FFPMsgFpsadrs009_Adr04 msg = null;
+
+			String flag;
+			long startTime = System.currentTimeMillis();
+			long endTime = startTime;
+			/**
+			 * Y means that ICL has sending back message
+			 */
+			while ((endTime - startTime) <= 60 * 1000) {
+				flag = a120service.iqueryA120Stat(jnlNo);				
+				if ("Y".equals(flag)) {
+					List<FFPJbA120dtl> a120dtlList = a120dtlservice.inqueryAllDtlFrA120Dtl(jnlNo);
+					msg = new FFPMsgFpsadrs009_Adr04(a120dtlList);
+					break;
+				}
+				Thread.sleep(3000);
+				endTime = System.currentTimeMillis();
+			}
+			FFPTxJnlAction jnlAction1 = null;
+
+			/**
+			 * update txjnl status
+			 */
+			FFPTxJnl txjnl = new FFPTxJnl();
+			txjnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus());
+			txjnl.setJnlNo(jnlNo);
+			txjnl.setLastUpdateTs(locdate);
+			base.setTxJnl(txjnl);
+			
+
+			try {
+				if (null != msg) {
+					FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(msg);
+					/**
+					 * FFP TO AGENT
+					 */
+					jnlAction1 = FFPJnlUtils.getInstance().newJnlAction(jnlNo, msg.getReqRefNo(),
+							FFPConstants.MSG_DIRECTION_OUTWARD, msg.getResponseID(), msg.getMsgType(),
+							FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), locdate, locdate, locdate,
+							adr04.getMsgID());
+
+					if (response != null) {
+						FFPSendTcpMessageResp msgRespFromAgent = (FFPSendTcpMessageResp) response;
+						if (msgRespFromAgent.isTimeOut()) {
+							jnlAction1.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+						} else {// TIME OUT
+								// TXJNL STATUS TIEM OUT??
+							txjnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus());
+
+						}
+					}
+
+				} else {// TIME OUT
+					
+				}
+
+			} catch (Exception e) {
+
+			} finally {
+				if(null != jnlAction1)
+					base.getJnlActionList().add(jnlAction1);
+				a120service.updateJnlStat(base);
+			}
+
+		}
+
+	}
+
+	@Override
+	public void validate() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void parseParticipantData(FFPParticipantMessageWrapper wrapper) throws Exception {
+		if ("FFPAGENT.FFPADR04".equals(serviceName)) {
+			ROOT reqRoot = wrapper.getRequestRoot();
+			FFPVOFfpadr04 vo = new FFPVOFfpadr04();
+			txVo = vo;
+			FFPADR04 adr04 = (FFPADR04) reqRoot.getBODY();
+			List<FFPJbA120> list = new ArrayList<>();
+			vo.setMsgID(reqRoot.getHEAD().getRequestRefno());
+			List<ADDRESSINGSCHEMETYPE> adrLi = adr04.getAdrSchme();
+			FFPJbA120 a120 = null;
+			String jnlNo = FFPIDUtils.getJnlNo();
+			String srcRefNm = adr04.getSrcRefNm();
+			String adrReqId = FFPIDUtils.getAdrReqId();
+			for (ADDRESSINGSCHEMETYPE c : adrLi) {
+				a120 = new FFPJbA120();
+				a120.setJnlNo(jnlNo);
+				a120.setSrcRefNm(srcRefNm);
+				a120.setAdrReqId(adrReqId);
+				a120.setStat("N");
+				a120.setProxyId(c.getProxyId());
+				a120.setProxyIdTp(c.getProxyIdTp());
+				a120.setPurpCd(c.getPurpCd());
+				a120.setMmbId(c.getMmbId());
+				list.add(a120);
+			}
+			vo.setList(list);
+			insertADR04MSGTODB(reqRoot.getHEAD(), vo, jnlNo);
+		}
+	}
+
+	/**
+	 * insert adr004 msg into db
+	 * 
+	 * @param head
+	 * @param a120
+	 * @param jnlNo
+	 * @return
+	 * @throws Exception
+	 */
+	private int insertADR04MSGTODB(HEAD head, FFPVOFfpadr04 vo, String jnlNo) throws Exception {
+		Date locdate = new Date();
+		FFPJbA120 a120 = vo.getList().get(0);
+		/**
+		 * txJnl
+		 */
+		FFPTxJnl txjnl = new FFPTxJnl();
+		txjnl.setTxStat(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus());
+		txjnl.setCreateTs(locdate);
+		txjnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_A120.getCode());
+		txjnl.setJnlNo(jnlNo);
+		txjnl.setTxSrc(FFPConstants.TX_SOURCE_AGENT);
+		txjnl.setSrcRefNm(a120.getSrcRefNm());
+		txjnl.setTxMode(FFPConstants.RUNNING_MODE_REALTIME);
+
+		/**
+		 * txJnlAction AGENT TO FFP
+		 */
+		FFPJbBase base = new FFPJbBase();
+		List<FFPTxJnlAction> listAc = base.getJnlActionList();
+		listAc.add(FFPJnlUtils.getInstance().newJnlAction(jnlNo, head.getRequestRefno(),
+				FFPConstants.MSG_DIRECTION_INWARD,	head.getRequestID(), head.getMessageType(),
+				FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), locdate, locdate, locdate, null));
+
+		
+		base.setTxJnl(txjnl);
+		a120service.updateJnlStat(base);
+		int re = a120service.insertA120Msg(vo.getList());
+		return re;
+	}
+
+}

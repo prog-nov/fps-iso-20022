@@ -1,0 +1,408 @@
+package com.forms.batch.job.unit.transactioncheck;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpchk01.FFPCHK01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class BatchTransactionCheckProcessor extends BatchBaseJob {
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static String MESSAGE_TYPE = "FFPCHK01";
+	private static int BUFFER_SIZE = 1024;
+	private static Connection conn;
+	private static String batchNo = null;
+	private static String BATCH_TRANSACTION_CHECK_FILE_NAME = "BatchTransactionCheckProcessor.xml";
+	private static int sequenceNumber;
+	private String fileName;
+	private String filePath;
+
+	public void init() throws BatchJobException {
+		conn = null;
+		batchNo = String.valueOf(new Date().getTime());
+		sequenceNumber = 0;
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		String address = this.actionElement.element("parameters").element("parameter").elementText("address");
+		int port = Integer.parseInt(this.actionElement.element("parameters").element("parameter").elementText("port"));
+		this.batchLogger.info(String.format("Read Parameters From file %s.xml, address=%s, port=%s ",
+				BATCH_TRANSACTION_CHECK_FILE_NAME, address, port));
+		try {
+			String msg = getResponseMessageFromAgent(address, port);
+
+			ArrayList<HashMap<String, String>> resList = getFileContent(msg);
+
+			if (conn == null) {
+				conn = ConnectionManager.getInstance().getConnection();
+				this.batchLogger.info("Database Is Connected");
+			}
+
+			if (batchNo == null || sequenceNumber != 0) {
+				throw new Exception("Initialization Of Application Should Have Be Done!");
+			}
+
+			insertUncheckedDataToTempTable(resList);
+
+			ArrayList<String> errorCIDList = checkDataBetweenDataTableAndTempTable();
+			if(errorCIDList == null || errorCIDList.size()>0){
+				// send email to notify managers
+				for(int i=0;i<errorCIDList.size();i++){
+					this.batchLogger.info(String.format("Error occurred CID=%s", errorCIDList.get(i)));
+				}
+			}else{
+				String[] fileNameSplitArr = this.fileName.split("\\.");
+				StringBuilder fileNameBuilder = new StringBuilder();
+				for(int i=0;i<fileNameSplitArr.length;i++){
+					if(i==fileNameSplitArr.length-1){
+						fileNameBuilder.append("_end."+fileNameSplitArr[i]);
+					}else{
+						fileNameBuilder.append(fileNameSplitArr[i]);
+					}
+				}
+				new File(filePath+fileNameBuilder.toString()).createNewFile();
+				this.batchLogger.info(String.format("Creat A Success File %s", filePath+fileNameBuilder.toString()));
+			}
+
+			return true;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return false;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return false;
+		} finally {
+			if (conn == null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				this.batchLogger.info("Database Is Closed");
+			}
+		}
+	}
+
+	// tcp socket
+	private String getResponseMessageFromAgent(String address, int port) throws Exception {
+		Socket socket = null;
+
+		String msg = generateReqMessage();
+
+		socket = new Socket(address, port);
+
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), CHARACTER_ENCODING));
+		bw.write(msg);
+		bw.flush();
+		this.batchLogger.info(String.format("Send A Message, address = %s, port = %s", address, port));
+		socket.shutdownOutput();
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), CHARACTER_ENCODING));
+		StringBuffer resMsg = new StringBuffer();
+		char[] mesBuffer = new char[BUFFER_SIZE];
+		int count = 0;
+		while ((count = br.read(mesBuffer)) != -1) {
+			resMsg.append(new String(mesBuffer, 0, count));
+		}
+
+		socket.shutdownInput();
+
+		if (bw != null) {
+			bw.close();
+		}
+
+		if (br != null) {
+			br.close();
+		}
+
+		if (socket != null) {
+			socket.close();
+		}
+
+		return resMsg.toString();
+
+	}
+
+	// generate ffpchk01 request message
+	private String generateReqMessage() throws Exception {
+		String msg = "";
+
+		this.batchLogger.info("Begin To Generate FFPCHK01 Request Message");
+		ROOT root = new ROOT();
+		HEAD head = new HEAD();
+		FFPCHK01 body = new FFPCHK01();
+		Date date = new Date();
+		SimpleDateFormat ymd = new SimpleDateFormat("YYYYMMDD");
+		SimpleDateFormat hms = new SimpleDateFormat("hhmmss");
+		head.setRequestID(FFPConstants.MSG_CODE_FFP);
+		head.setTransactionDate(ymd.format(date));
+		head.setTransactionTime(hms.format(date));
+		head.setRequestRefno(FFPIDUtils.getRefno());
+		head.setResponseID(FFPConstants.MSG_CODE_AGENT);
+		head.setMessageType(MESSAGE_TYPE);
+
+		body.setTransactionType("F");
+		body.setTransactionDate(ymd.format(date));
+		body.setTransactionStartTime("000000");
+		body.setTransactionEndTime("240000");
+
+		root.setHEAD(head);
+		root.setBODY(body);
+
+		msg = FFPParticipantMessageConverter.packageRequestObject2Xml(root);
+		this.batchLogger.info("Finishing Generating FFPCHK01 Request Message");
+
+		return msg;
+
+	}
+
+	// get the file content from ffpchk01 response message
+	private ArrayList<HashMap<String, String>> getFileContent(String message) throws Exception {
+		com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = FFPParticipantMessageConverter
+				.parseXml2ReponseObject(message);
+		com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = (com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD) root
+				.getHEAD();
+		com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01 body = (com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01) root
+				.getBODY();
+
+		if (head.getRequestID().equals(FFPConstants.MSG_CODE_AGENT)
+				&& head.getResponseID().equals(FFPConstants.MSG_CODE_FFP) && head.getMessageType().equals(MESSAGE_TYPE)
+				&& head.getResponseStatus().equals("N")) {
+
+		} else {
+			throw new Exception("The Format Of Response Message Is Error");
+		}
+
+		this.filePath = body.getFilePath();
+		this.fileName = body.getFileName();
+		int dataRecordNum = Integer.parseInt(body.getRecordCount());
+		ArrayList<HashMap<String, String>> resList = readLineFromFile(body.getFilePath() + body.getFileName(), dataRecordNum);
+
+		return resList;
+	}
+
+	// read Line From File
+	private ArrayList<HashMap<String, String>> readLineFromFile(String filePath, int dataRecordNum) throws Exception {
+		this.batchLogger.info(String.format("Start To Read File: %s", filePath));
+
+		ArrayList<HashMap<String, String>> resList = new ArrayList<>();
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), CHARACTER_ENCODING));
+		String content = "";
+		String[] titleArr = null;
+		int lineCount = 0;
+		while ((content = br.readLine()) != null) {
+			lineCount++;
+			HashMap<String, String> checkDateMap = new HashMap<>();
+			if (lineCount == 1) {
+				titleArr = content.split("\t");
+			} else if (lineCount > 1 && titleArr != null) {
+				String[] dataArr = (content + "\tend").split("\t");
+				for (int i = 0; i < titleArr.length; i++) {
+					checkDateMap.put(titleArr[i], dataArr[i]);
+				}
+
+				resList.add(checkDateMap);
+			}
+		}
+
+		if(br !=  null){
+			br.close();
+		}
+		
+		if (lineCount > dataRecordNum + 1) {
+			throw new Exception("The Count Of Data Is Out Of Index!");
+		}
+
+		this.batchLogger.info(String.format("Finish Reading File: %s", filePath));
+		
+		return resList;
+	}
+
+	// Insert File Unchecked Data To tb_tx_temp Table
+	private void insertUncheckedDataToTempTable(ArrayList<HashMap<String, String>> dataList) throws Exception {
+		// insert tb_tx_check_temp
+		String sql = "INSERT INTO tb_tx_check_temp(CID, BATCH_NO, CHECK_STATUS, REQUEST_ID, TRANSACTION_DATE, TRANSACTION_TIME, REQUEST_REF_NO, ACCOUNTING_DATE, RESPONSE_ID, MESSAGE_TYPE, SYSTEM_REF_NO, SYSTEM_BEGIN_TIME, SYSTEM_END_TIME, RESPONSE_REF_NO, RESPONSE_BEGIN_TIME, RESPONSE_END_TIME, RESPONSE_STATUS, FINAL_NODE, SYSTEM_MESSAGE_CODE, RESPONSE_MESSAGE_CODE, RESPONSE_MESSAGE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+		this.batchLogger.info(String.format("Start to Insert Date Into tb_tx_check_temp, batch_no=%s", batchNo));
+		int count = 0;
+
+		for (int i = 0; i < dataList.size(); i++) {
+			conn.setAutoCommit(false);
+			this.batchLogger.info("Database Transaction Open");
+			HashMap<String, String> data = dataList.get(i);
+			ArrayList<Object> insert_list = new ArrayList<>();
+			insert_list.add(String.format("%S%08d", batchNo, ++sequenceNumber));
+			insert_list.add(batchNo);
+			insert_list.add("I");
+			insert_list.add(data.get("﻿RequestID"));
+			insert_list.add(data.get("TransactionDate"));
+			insert_list.add(data.get("TransactionTime"));
+			insert_list.add(data.get("RequestRefno"));
+			insert_list.add(data.get("AccountingDate"));
+			insert_list.add(data.get("ResponseID"));
+			insert_list.add(data.get("MessageType"));
+			insert_list.add(data.get("SystemRefno"));
+			insert_list.add(data.get("SystemBeginTIme"));
+			insert_list.add(data.get("SystemEndTIme"));
+			insert_list.add(data.get("ResponseRefno"));
+			insert_list.add(data.get("ResponseBeginTime"));
+			insert_list.add(data.get("ResponseEndTime"));
+			insert_list.add(data.get("ResponseStatus"));
+			insert_list.add(data.get("FinalNode"));
+			insert_list.add(data.get("SystemMessageCode"));
+			insert_list.add(data.get("ResponseMessageCode"));
+			insert_list.add(data.get("ResponseMessage"));
+
+			EntityManager.update(conn, sql, insert_list.toArray());
+			conn.commit();
+			this.batchLogger.info("Database Transaction Commit");
+			count++;
+		}
+
+		this.batchLogger.info(String.format("Finish Inserting Date Into tb_tx_check_temp, batch_no=%s, countsOfData=%d",
+				batchNo, count));
+	}
+
+	// Check Data Between DataTable And TempTable
+	private ArrayList<String> checkDataBetweenDataTableAndTempTable() throws Exception {
+		this.batchLogger
+				.info(String.format("Start to Check Data Between DataTable And TempTable, batch_no=%s", batchNo));
+
+		ArrayList<String> errCIDList = new ArrayList<>();
+
+		// query tb_tx_check_temp
+		this.batchLogger.info(String.format("Start To SELECT * FROM tb_tx_check_temp WHERE BATCH_NO = %s", batchNo));
+		String query_tb_tx_check_temp_sql = "SELECT * FROM tb_tx_check_temp WHERE BATCH_NO = ? ";
+		ArrayList<Object> query_tb_tx_check_temp_list = new ArrayList<>();
+		query_tb_tx_check_temp_list.add(batchNo);
+		List<Map<String, Object>> query_tb_tx_check_temp_map_list = EntityManager.queryMapList(conn,
+				query_tb_tx_check_temp_sql, query_tb_tx_check_temp_list.toArray());
+		this.batchLogger.info(String.format("Finsh SELECT * FROM tb_tx_check_temp WHERE BATCH_NO = %s", batchNo));
+
+		// Query jnl_action_p100dat And Update tb_tx_check_temp
+		String query_jnl_action_p100dat_sql = "SELECT tb_tx_jnl.*, tb_tx_jnlaction.*, tb_tx_p100dat.* " + "FROM "
+				+ "tb_tx_jnl " + "INNER JOIN tb_tx_jnlaction ON tb_tx_jnl.JNL_NO = tb_tx_jnlaction.JNL_NO "
+				+ "INNER JOIN tb_tx_p100dat ON tb_tx_jnl.JNL_NO = tb_tx_p100dat.JNL_NO "
+				+ "WHERE tb_tx_jnl.TX_STAT = ? " + "AND tb_tx_jnlaction.MSG_ID = ? "
+				+ "AND tb_tx_jnlaction.MSG_FROM = ? " + "AND tb_tx_jnlaction.MSG_TO = ? "
+				+ "AND tb_tx_jnlaction.MSG_TYPE = ? ";
+		for (int i = 0; i < query_tb_tx_check_temp_map_list.size(); i++) {
+			Map<String, Object> query_tb_tx_check_temp_map = query_tb_tx_check_temp_map_list.get(i);
+
+			try {
+				// query request data
+				this.batchLogger.info("Start To Query Request Data FROM jnl_action_p100dat");
+				ArrayList<String> query_jnl_action_p100dat_req_list = new ArrayList<>();
+
+				if (((String) (query_tb_tx_check_temp_map.get("RESPONSE_STATUS"))).equals("N")) {
+					query_jnl_action_p100dat_req_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus());
+				} else if (((String) (query_tb_tx_check_temp_map.get("RESPONSE_STATUS"))).equals("E")) {
+					query_jnl_action_p100dat_req_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_UNHANDLE.getStatus());
+				}
+
+				query_jnl_action_p100dat_req_list.add((String) query_tb_tx_check_temp_map.get("REQUEST_REF_NO"));
+
+				query_jnl_action_p100dat_req_list.add((String) query_tb_tx_check_temp_map.get("REQUEST_ID"));
+
+				query_jnl_action_p100dat_req_list.add((String) query_tb_tx_check_temp_map.get("RESPONSE_ID"));
+
+				query_jnl_action_p100dat_req_list.add((String) query_tb_tx_check_temp_map.get("MESSAGE_TYPE"));
+
+				List<Map<String, Object>> query_jnl_action_p100dat_req_map = EntityManager.queryMapList(conn,
+						query_jnl_action_p100dat_sql, query_jnl_action_p100dat_req_list.toArray());
+				this.batchLogger.info("Finish Querying Request Data FROM jnl_action_p100dat");
+				
+				// query response data
+				this.batchLogger.info("Start To Query Response Data FROM jnl_action_p100dat");
+				ArrayList<String> query_jnl_action_p100dat_res_list = new ArrayList<>();
+
+				if (((String) (query_tb_tx_check_temp_map.get("RESPONSE_STATUS"))).equals("N")) {
+					query_jnl_action_p100dat_res_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus());
+				} else if (((String) (query_tb_tx_check_temp_map.get("RESPONSE_STATUS"))).equals("E")) {
+					query_jnl_action_p100dat_res_list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_UNHANDLE.getStatus());
+				}
+
+				query_jnl_action_p100dat_res_list.add((String) query_tb_tx_check_temp_map.get("RESPONSE_REF_NO"));
+
+				query_jnl_action_p100dat_res_list.add((String) query_tb_tx_check_temp_map.get("RESPONSE_ID"));
+				
+				query_jnl_action_p100dat_res_list.add((String) query_tb_tx_check_temp_map.get("REQUEST_ID"));
+
+				query_jnl_action_p100dat_res_list.add((String) query_tb_tx_check_temp_map.get("MESSAGE_TYPE"));
+
+				List<Map<String, Object>> query_jnl_action_p100dat_res_map = EntityManager.queryMapList(conn,
+						query_jnl_action_p100dat_sql, query_jnl_action_p100dat_res_list.toArray());
+				this.batchLogger.info("Finish Querying Response Data FROM jnl_action_p100dat");
+				
+				String checkStatus = "I";
+				if (query_jnl_action_p100dat_req_map == null || query_jnl_action_p100dat_res_map == null) {
+					errCIDList.add((String) query_tb_tx_check_temp_map.get("CID"));
+					checkStatus = "E";
+				} else
+					if (query_jnl_action_p100dat_req_map.size() == 1 && query_jnl_action_p100dat_res_map.size() == 1) {
+					checkStatus = "S";
+				} else {
+					errCIDList.add((String) query_tb_tx_check_temp_map.get("CID"));
+					checkStatus = "E";
+				}
+				
+				// update checkStatus
+				this.batchLogger.info("Start To Update tb_tx_check_temp.CHECK_STATUS");
+				String update_tb_tx_check_temp_sql = "UPDATE tb_tx_check_temp SET CHECK_STATUS = ? where CID = ?";
+				conn.setAutoCommit(false);
+				this.batchLogger.info("Database Transaction Open");
+				ArrayList<String> update_tb_tx_check_temp_list = new ArrayList<>();
+
+				update_tb_tx_check_temp_list.add(checkStatus);
+				update_tb_tx_check_temp_list.add((String)(query_tb_tx_check_temp_map.get("CID")));
+				EntityManager.update(conn,
+						update_tb_tx_check_temp_sql, update_tb_tx_check_temp_list.toArray());
+				conn.commit();
+				this.batchLogger.info("Database Transaction Commit");
+				this.batchLogger.info("Finish Updating tb_tx_check_temp.CHECK_STATUS");
+			} catch (Exception e) {
+				this.batchLogger.error(e.getMessage());
+			}
+
+		}
+
+		this.batchLogger.info(String.format("Finish Check Data Between DataTable And TempTable, batch_no=%s, errorCount=%d", batchNo, errCIDList.size()));
+		
+		return errCIDList;
+	}
+
+}

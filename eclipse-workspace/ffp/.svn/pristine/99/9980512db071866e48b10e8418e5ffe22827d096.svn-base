@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing">
+	
+	<sql id="INSERT_UPDATE_TB_DT_ADDRESSING">
+		INSERT INTO TB_DT_ADDRESSING(
+			CUS_ID,			PROXY_ID,		RPOXY_ID_TP,									
+			ACC_NUM,		ACC_TP,			ACC_CUR,				
+			ACC_DEF,		CLR_CD,			LSTUP_JNL	
+		)
+		VALUES (
+			#{CusId, jdbcType=VARCHAR},		#{ProxyId, jdbcType=VARCHAR},		#{ProxyIdTp, jdbcType=VARCHAR},	
+			#{AccNum, jdbcType=VARCHAR},	#{AccTp, jdbcType=VARCHAR},			#{AccCur, jdbcType=VARCHAR},			  	
+			#{AccDef, jdbcType=VARCHAR},	#{ClrCd, jdbcType=VARCHAR},			#{txJnl.jnlNo, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY 
+		UPDATE 
+			ACC_DEF=#{jbAdrs.AccDef, jdbcType=VARCHAR},
+			CLR_CD=#{jbAdrs.ClrCd, jdbcType=VARCHAR},
+			LSTUP_JNL=#{txJnl.jnlNo, jdbcType=VARCHAR}
+	</sql>
+	
+	<sql id="UPDATE_TB_DT_ADRESSING">
+		UPDATE 
+			tb_dt_addressing
+		SET 
+			PROXY_ID=#{ProxyId, jdbcType=VARCHAR},	
+			RPOXY_ID_TP=#{ProxyIdTp, jdbcType=VARCHAR},		
+			ACC_NUM=#{AccNum, jdbcType=VARCHAR},		
+			ACC_TP=#{AccTp, jdbcType=VARCHAR},		
+			ACC_CUR=#{AccCur, jdbcType=VARCHAR},  	
+			ACC_DEF=#{AccDef, jdbcType=VARCHAR},	
+			CUS_ID=#{CusId, jdbcType=VARCHAR},		
+			CLR_CD=#{ClrCd, jdbcType=VARCHAR}, 	
+			LSTUP_JNL=#{txJnl.jnlNo, jdbcType=VARCHAR}
+		WHERE
+			CUS_ID=#{CusId, jdbcType=VARCHAR}
+	</sql>
+	
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERT_TB_TX_A100DAT">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100.INSERT_TB_TX_A100DAT"></include>
+	</insert>
+	
+	<sql id="DETELE_TB_DT_ADDRESSING">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing.dDelete"></include>
+	</sql>
+	
+	<delete id="dDelete" parameterType="com.forms.ffp.persistents.bean.addressing.FFPJbAddressing">
+		DELETE FROM
+			tb_dt_addressing
+		WHERE 
+			PROXY_ID = #{ProxyId}
+		AND
+			RPOXY_ID_TP = #{ProxyIdTp}
+		AND
+			CLR_CD = #{ClrCd}
+	</delete>
+	
+</mapper>

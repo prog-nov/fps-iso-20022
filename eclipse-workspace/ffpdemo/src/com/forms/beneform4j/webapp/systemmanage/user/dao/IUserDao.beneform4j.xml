@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.user.dao.IUserDao">
+	
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.user.bean.UserBean">
+		SELECT U.USER_ID,
+		       U.USER_NAME,
+		       U.NICK_NAME,
+		       U.USER_STATUS,
+		       U.ORG_ID,
+		       U.CERT_TYPE,
+		       U.CERT_NO,
+		       U.MOBILE_PHONE,
+		       U.TELEPHONE,
+		       U.EMAIL,
+		       U.LIMIT_IP,
+		       U.ONLINE_SESSION_NUM,
+		       U.LOCK_FLAG,
+		       U.LOCK_DATE, 
+      		   U.LOCK_TIME, 
+      		   U.LOGIN_NUM, 
+      		   U.LAST_LOGIN_IP, 
+               U.LAST_LOGIN_DATE, 
+               U.LAST_LOGIN_TIME, 
+               U.INST_DATE, 
+               U.INST_TIME, 
+               U.INST_OPER, 
+               U.MODI_DATE, 
+               U.MODI_TIME, 
+               U.MODI_OPER, 
+               U.MODI_PWD_DATE, 
+               U.MODI_PWD_TIME
+		  FROM {{BF}}_USER U
+	     <where>
+	     	<if test="null != userId and '' != userId">
+	     		AND U.USER_ID = #{userId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != orgId and '' != orgId">
+	     		AND U.ORG_ID = #{orgId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != certNo and '' != certNo">
+	     		AND U.CERT_NO = #{certNo, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != userStatus and '' != userStatus">
+	     		AND U.USER_STATUS = #{userStatus, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != lockFlag and '' != lockFlag">
+	     	<!-- 暂未考虑超时自动解锁 -->
+	     		AND U.LOCK_FLAG = #{lockFlag, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != userName and '' != userName">
+	     		AND U.USER_NAME LIKE #{concat('%' userName '%'), jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != nickName and '' != nickName">
+	     		AND U.NICK_NAME LIKE #{concat('%' nickName '%'), jdbcType=VARCHAR}
+	     	</if>
+<!-- 	     	<if test="null != email and '' != email"> -->
+<!-- 	     		AND U.USER_STATUS IN {{paramHolder.getTreeParamCondition('PARAM_GROUP',#params.email)}} -->
+<!-- 	     	</if> -->
+	     </where>
+	     ORDER BY U.ORG_ID, U.USER_ID
+	</select>
+	
+	<!-- 有权限维护的角色列表（进入到新增用户页面） -->
+	<select id="dListRoleForAdd" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES, 0 AS CHECKED
+		    FROM {{BF}}_ROLE A
+		   ORDER BY A.ROLE_ID
+	</select>
+	<!-- 有权限维护的角色列表（进入到编辑用户页面）  -->
+	<select id="dListRoleForEdit" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES,CASE WHEN B.ROLE_ID IS NULL THEN 0 ELSE 1 END AS CHECKED
+		    FROM {{BF}}_ROLE A
+		    LEFT JOIN {{BF}}_USER_ROLE B
+		      ON A.ROLE_ID = B.ROLE_ID
+		     AND B.USER_ID = #{editedUserId, jdbcType=VARCHAR}
+		   ORDER BY A.ROLE_ID
+	</select>
+
+	<insert id="dInsertUser" >
+    insert into {{BF}}_USER (USER_ID, USER_NAME, NICK_NAME, 
+      USER_PWD, USER_STATUS, ORG_ID, 
+      CERT_TYPE, CERT_NO, MOBILE_PHONE, 
+      TELEPHONE, EMAIL, LIMIT_IP, 
+      ONLINE_SESSION_NUM, LOCK_FLAG, LOCK_DATE, 
+      LOCK_TIME, LOGIN_NUM, LAST_LOGIN_IP, 
+      LAST_LOGIN_DATE, LAST_LOGIN_TIME, INST_DATE, 
+      INST_TIME, INST_OPER, MODI_DATE, 
+      MODI_TIME, MODI_OPER, MODI_PWD_DATE, 
+      MODI_PWD_TIME)
+    values (#{userId,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{nickName,jdbcType=VARCHAR}, 
+      #{userPwd,jdbcType=VARCHAR}, #{userStatus,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR}, 
+      #{certType,jdbcType=VARCHAR}, #{certNo,jdbcType=VARCHAR}, #{mobilePhone,jdbcType=VARCHAR}, 
+      #{telephone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, #{limitIp,jdbcType=VARCHAR}, 
+      0, '0', '', 
+      '', 0, '', 
+      '', '', #{instDate,jdbcType=CHAR}, 
+      #{instTime,jdbcType=CHAR}, #{instOper,jdbcType=VARCHAR}, #{modiDate,jdbcType=CHAR}, 
+      #{modiTime,jdbcType=CHAR}, #{modiOper,jdbcType=VARCHAR}, '', 
+      '')
+  </insert>
+  <update id="dUpdateUser" >
+    update {{BF}}_USER
+    set USER_NAME = #{userName,jdbcType=VARCHAR},
+      NICK_NAME = #{nickName,jdbcType=VARCHAR},
+<!--       USER_PWD = #{userPwd,jdbcType=VARCHAR}, -->
+      USER_STATUS = #{userStatus,jdbcType=VARCHAR},
+      ORG_ID = #{orgId,jdbcType=VARCHAR},
+      CERT_TYPE = #{certType,jdbcType=VARCHAR},
+      CERT_NO = #{certNo,jdbcType=VARCHAR},
+      MOBILE_PHONE = #{mobilePhone,jdbcType=VARCHAR},
+      TELEPHONE = #{telephone,jdbcType=VARCHAR},
+      EMAIL = #{email,jdbcType=VARCHAR},
+      LIMIT_IP = #{limitIp,jdbcType=VARCHAR},
+<!--       ONLINE_SESSION_NUM = #{onlineSessionNum,jdbcType=INTEGER}, -->
+<!--       LOCK_FLAG = #{lockFlag,jdbcType=VARCHAR}, -->
+<!--       LOCK_DATE = #{lockDate,jdbcType=CHAR}, -->
+<!--       LOCK_TIME = #{lockTime,jdbcType=CHAR}, -->
+<!--       LOGIN_NUM = #{loginNum,jdbcType=INTEGER}, -->
+<!--       LAST_LOGIN_IP = #{lastLoginIp,jdbcType=VARCHAR}, -->
+<!--       LAST_LOGIN_DATE = #{lastLoginDate,jdbcType=CHAR}, -->
+<!--       LAST_LOGIN_TIME = #{lastLoginTime,jdbcType=CHAR}, -->
+<!--       INST_DATE = #{instDate,jdbcType=CHAR}, -->
+<!--       INST_TIME = #{instTime,jdbcType=CHAR}, -->
+<!--       INST_OPER = #{instOper,jdbcType=VARCHAR}, -->
+      MODI_DATE = #{modiDate,jdbcType=CHAR},
+      MODI_TIME = #{modiTime,jdbcType=CHAR},
+      MODI_OPER = #{modiOper,jdbcType=VARCHAR}
+<!--       MODI_PWD_DATE = #{modiPwdDate,jdbcType=CHAR}, -->
+<!--       MODI_PWD_TIME = #{modiPwdTime,jdbcType=CHAR} -->
+    where USER_ID = #{userId,jdbcType=VARCHAR}
+  </update>
+	
+	<!-- 添加用户角色关系 -->
+	<insert id="dInsertUserRole">
+		INSERT INTO {{BF}}_USER_ROLE(USER_ID, ROLE_ID)
+		  VALUEs(#{param1.userId, jdbcType=VARCHAR}, #{role.roleId, jdbcType=INTEGER})
+	</insert>
+	
+	<update id="dUpdatePassword" >
+	    update {{BF}}_USER
+	    set USER_PWD = #{userPwd,jdbcType=VARCHAR},
+	        MODI_PWD_DATE = #{modiPwdDate,jdbcType=CHAR},
+            MODI_PWD_TIME = #{modiPwdTime,jdbcType=CHAR}
+	    where USER_ID = #{userId,jdbcType=VARCHAR}
+	 </update>
+	<update id="dUpdateUserStatus" >
+	    update {{BF}}_USER
+	       set USER_STATUS = #{userStatus,jdbcType=VARCHAR}
+	     where USER_ID = #{userId,jdbcType=VARCHAR}
+	</update>
+	<update id="dUpdateLockFlag" >
+	    update {{BF}}_USER
+	    set LOCK_FLAG = #{lockFlag,jdbcType=VARCHAR},
+	      LOCK_DATE = #{lockDate,jdbcType=CHAR},
+	      LOCK_TIME = #{lockTime,jdbcType=CHAR}
+	    where USER_ID = #{userId,jdbcType=VARCHAR}
+	 </update>
+	 <update id="dOffline">
+	   update {{BF}}_USER
+	    set ONLINE_SESSION_NUM = 0
+	    where USER_ID = #{userId,jdbcType=VARCHAR}
+	  </update>
+	
+	<!-- 删除单个用户的设置 -->
+	<delete id="dDeleteUserCfg">
+		DELETE FROM {{BF}}_USER_CFG WHERE USER_ID = #{userId, jdbcType=VARCHAR}
+	</delete>
+	<!-- 删除单个用户的用户角色关系 -->
+	<delete id="dDeleteUserRole">
+		DELETE FROM {{BF}}_USER_ROLE WHERE USER_ID = #{userId, jdbcType=VARCHAR}
+	</delete>
+	<!-- 删除单个用户 -->
+	<delete id="dDeleteUser">
+		DELETE FROM {{BF}}_USER WHERE USER_ID = #{userId, jdbcType=VARCHAR}
+	</delete>
+</mapper>

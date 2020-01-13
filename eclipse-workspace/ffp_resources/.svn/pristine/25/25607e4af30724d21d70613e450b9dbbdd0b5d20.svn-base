@@ -1,0 +1,15 @@
+<Config>
+	<KEYS>
+		<KEY>doc.getFIToFICstmrCdtTrf.getCdtTrfTxInf.getPmtTpInf.getLclInstrm.getPrtry.value</KEY>
+	</KEYS>
+	<REPLACE_MAP>
+		<Object>
+			<NAME>##OrgnlEndToEndId##</NAME>
+			<VALUE>doc.getFIToFICstmrCdtTrf.getCdtTrfTxInf.getPmtId.getEndToEndId</VALUE>
+		</Object>
+		<Object>
+			<NAME>##OrgnlTxId##</NAME>
+			<VALUE>doc.getFIToFICstmrCdtTrf.getCdtTrfTxInf.getPmtId.getTxId</VALUE>
+		</Object>
+	</REPLACE_MAP>
+</Config>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPCHK01"></xs:element>
+	<xs:complexType name="FFPCHK01">
+		<xs:sequence>
+			<xs:element name="TransactionType" type="UpperCaseNumericText_Exact1" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="TransactionDate" type="DateTypeNoSplit" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="TransactionStartTime" type="TimeTypeNoSplit" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="TransactionEndTime" type="TimeTypeNoSplit" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

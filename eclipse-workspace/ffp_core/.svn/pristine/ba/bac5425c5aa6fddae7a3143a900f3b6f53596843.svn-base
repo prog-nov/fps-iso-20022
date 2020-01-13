@@ -1,0 +1,106 @@
+package com.forms.ffp.core.utils;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.apache.commons.io.FilenameUtils;
+
+import com.forms.ffp.core.config.runtime.FFPRuntimeConstants;
+
+public class FFPIDUtils
+{
+	private static int seq = 0;
+	
+	public synchronized static String getUploadedFileName(String originalFilename)
+	{
+		String fileName = FilenameUtils.getName(originalFilename);
+		String fileExtension = FilenameUtils.getExtension(originalFilename);
+		String date = getDateStr();
+
+		return fileName.substring(0, fileName.length() - fileExtension.length() - 1) + "_" + date + "." + fileExtension;
+	}
+
+	public synchronized static String getOtherOutwardFileName()
+	{
+		String date = getDateStr();
+		return "B" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getDirectDebitOutwardFileName()
+	{
+		String date = getDateStr();
+		return "FPSPDDO" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getCreditTransferOutwardFileName()
+	{
+		String date = getDateStr();
+		return "FPSPCRO" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getReturnRefundOutwardFileName()
+	{
+		String date = getDateStr();
+		return "FPSPCRO" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getAddressingOutwardFileName()
+	{
+		String date = getDateStr();
+		return "FPSADRO" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getEDDAOutwardFileName()
+	{
+		String date = getDateStr();
+		return "FPSEDAO" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + date.substring(0, date.length() - 1) + ".xml";
+	}
+
+	public synchronized static String getTemplateFileName(String fileId)
+	{
+		String date = getDateStr();
+		return "template_" + fileId + ".xml";
+	}
+
+	public synchronized static String getMandateRequestId(String type)
+	{
+		return "M" + type + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + getDateStr();
+	}
+
+	public synchronized static String getAddressingRequestId(String type)
+	{
+		return "A" + type + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + getDateStr();
+	}
+
+	public synchronized static String getMessageId()
+	{
+		return "M" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + getDateStr() + getSeq();
+	}
+	
+	public synchronized static String getTransactionId()
+	{
+		return "T" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + getDateStr() + getSeq();
+	}
+	
+	public synchronized static String getEndToEndId()
+	{
+		return "E" + FFPRuntimeConstants.LOCAL_FPS_PARTICIPANT_ID + getDateStr() + getSeq();
+	}
+
+	private synchronized static String getDateStr()
+	{
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+		return sdf.format(new Date());
+	}
+	
+	public synchronized static String getSeq()
+	{
+		seq ++;
+		String str = FFPStringUtils.padZero(seq, 6);
+		if(seq >= 100000)
+		{
+			seq = 0;
+		}
+		return str;
+	}
+}

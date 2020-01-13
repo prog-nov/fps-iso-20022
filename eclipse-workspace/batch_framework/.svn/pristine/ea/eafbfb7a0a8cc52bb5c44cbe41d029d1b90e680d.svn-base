@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<loopfile-output-config>
+	<file-name>#{filePath}/out2.txt</file-name><!-- 支持外部传入的参数，参数形如：#{para} -->
+	<encoding>GBK</encoding>
+	<header-handle-class></header-handle-class><!-- 必须实现自FixedFileOutputHeaderHandler，可以留空 -->
+	<flush-rows>1000</flush-rows><!-- 等待多少行数据才写，用于优化性能 -->
+	<line-feed>\r\n</line-feed> <!-- 4种：none;\r;\n;\r\n -->
+	<delimiter>~</delimiter>
+	<enclosure></enclosure>
+	<file-infos>
+		<file-info file-id="acountFile">
+			<file-name>#{filePath}/acountFile.txt</file-name>
+			<encoding>GBK</encoding>
+			<flush-rows>1000</flush-rows>
+			<line-feed>\r\n</line-feed>
+			<delimiter>~</delimiter>
+			<enclosure></enclosure>
+		</file-info>
+		<file-info file-id="testFile">
+			<file-name>#{filePath}/testFile.txt</file-name>
+			<encoding>GBK</encoding>
+			<flush-rows>1000</flush-rows>
+			<line-feed>\r\n</line-feed>
+			<delimiter>~</delimiter>
+			<enclosure></enclosure>
+		</file-info>
+	</file-infos>
+	<field-definition>
+		<field name="Field1" bytes="10" data-type="CharType8" />
+		<field name="Field2" bytes="10" data-type="CharType8" />
+		<field name="Field3" bytes="10" data-type="CharType8" />
+		<field name="accountList" file-id="acountFile">
+			<field name="key1"  key-field="Field1" />
+			<field name="key2"  key-field="Field2" />
+			<field name="account"     bytes="1"  data-type="CharType" />
+ 			<field name="testlength"  bytes="3"  data-type="CharType" />
+			<field name="testList"  file-id="testFile">
+				<field name="keyTest1"  key-field="Field1" />
+ 				<field name="keyTest2"  key-field="Field2" />
+				<field name="keyTest3"  key-field="account" />
+ 				<field name="test1"      bytes="1"  data-type="CharType" />
+				<field name="test2"      bytes="1"  data-type="CharType" />
+			</field>
+			<field name="amount"  bytes="1"  data-type="CharType" />
+		</field>
+		<field name="amt"  bytes="1"  data-type="CharType" />
+
+
+		<!--（必须按顺序）完整定义一整行的数据.
+			一些字段说明：
+			name        : pipe data field name
+			data-type   : 自定义数据类型，参考datatype-config.xml；
+		-->
+	</field-definition>
+
+</loopfile-output-config>

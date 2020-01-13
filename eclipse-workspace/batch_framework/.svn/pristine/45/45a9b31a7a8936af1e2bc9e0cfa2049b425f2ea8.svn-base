@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<!-- 
+	updateDate:2012-04-26
+	ModifiedBy:hch
+	ModifiedReason:CKP0840JOB
+	updateVersion:7 month
+ -->
+<fixedfile-output-config>
+	<file-name>#{outputFilePath}/detail-file_output_error.txt</file-name>
+	<encoding>UTF-8</encoding>
+	<header-handle-class></header-handle-class>
+	<flush-rows>5</flush-rows>
+	<line-feed>none</line-feed> 
+	<field-definition>
+		<field name="rowIndex"      bytes="6"     data-type="FixedNumberTypeRJ"/>
+		<field name="errRowValue"   bytes="300"   data-type="CharTypeLJ"/>
+	</field-definition>
+</fixedfile-output-config>

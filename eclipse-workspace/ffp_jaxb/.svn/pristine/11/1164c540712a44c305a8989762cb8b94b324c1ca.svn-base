@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2017 Hong Kong Interbank Clearing Limited
+
+Collection: HKICL - Payments - FPS - V1 - FINAL_
+Base Message: fps.admi.002.001.01
+Date of publication: 29 September 2017
+-->
+<xs:schema xmlns="urn:hkicl:fps:xsd:fps.admi.002.001.01"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="urn:hkicl:fps:xsd:fps.admi.002.001.01">
+    
+    <xs:simpleType name="ISODateTimeType1">
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])\.\d{3}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max35Text">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z !@#$%^&amp;\*\(\)_+~\{\}|:&quot;&lt;&gt;?`\-=\[\]\\;',\./]{1,35}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="35"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="OriginalGroupHeader">
+        <xs:sequence>
+            <xs:element name="MsgId" type="Max35Text"/>
+        </xs:sequence>
+    </xs:complexType>    
+    
+    <xs:simpleType name="ReceiptMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="BTCH"/>
+            <xs:enumeration value="RLTM"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="RejectCode">
+        <xs:restriction base="xs:string">
+        	<xs:pattern value="[0-9A-Z]{1,8}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="8"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="GroupHeader">
+        <xs:sequence>
+            <xs:element name="MsgId" type="Max35Text"/>
+            <xs:element name="CreDtTm" type="ISODateTimeType1"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="Document" type="Document"/>
+    <xs:complexType name="Document">
+        <xs:sequence>
+            <xs:element name="RcptMdSwtchgRpt" type="MessageRoot"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MessageRoot">
+        <xs:sequence>
+            <xs:element name="GrpHdr" type="GroupHeader"/>
+            <xs:element name="OrgnlGrpHdr" type="OriginalGroupHeader"/>
+            <xs:element name="RcptMdRslt" type="Result"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="Result">
+        <xs:sequence>
+            <xs:element name="Accptd" type="xs:boolean"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="RjctRsn" type="RejectReason"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="RcptMd" type="ReceiptMode"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="SwtchgTm" type="ISODateTimeType1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RejectReason">
+        <xs:sequence>
+            <xs:element name="Cd" type="RejectCode"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

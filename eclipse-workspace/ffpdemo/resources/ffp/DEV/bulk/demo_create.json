@@ -1,0 +1,61 @@
+{
+  "threads": {
+	"noOfThreads": 1,
+	"sleepTime": 0
+  },
+  "noOfRequest": 40,
+  "sendMessage": false,
+  "savePath": "C:/Temp/fpsBankSim/bulk/",
+  "variables": {
+    "prefix": "DEMO"
+  },
+  "participants": {
+    "012": {
+      "ratio": 0.5,
+      "variables": {
+		"toPtCod": "024"
+	  },
+      "templates": [
+        {
+          "fileName": "template_demo1.xml",
+          "ratio": 0.5,
+		  "priority": "H",
+          "variables": {
+			
+		  }
+        },
+        {
+          "fileName": "template_demo2.xml",
+          "ratio": 0.5,
+		  "priority": "M",
+          "variables": {
+
+		  }
+        }
+      ]
+    },
+	"024": {
+      "ratio": 0.5,
+      "variables": {
+		"toPtCod": "012"
+	  },
+      "templates": [
+        {
+          "fileName": "template_demo1.xml",
+          "ratio": 0.5,
+		  "priority": "H",
+          "variables": {
+		  }
+        },
+        {
+          "fileName": "template_demo2.xml",
+          "ratio": 0.5,
+		  "priority": "H",
+          "variables": {
+
+		  }
+        }
+      ]
+    }
+  }
+}

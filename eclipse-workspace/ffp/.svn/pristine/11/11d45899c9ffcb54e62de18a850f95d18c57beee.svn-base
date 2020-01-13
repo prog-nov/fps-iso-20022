@@ -1,0 +1,73 @@
+package com.forms.ffp.persistents.bean.addressing;
+
+public class FFPJbAddressing {
+	
+	private String ProxyId;
+	private String ProxyIdTp;
+	private String CusId;
+	private String AccNum;
+	private String AccTp;
+	private String AccCur;
+	private String AccDef;
+	private String ClrCd;
+	private String LstUpJnl;
+	
+	
+	public void setLstUpJnl(String lstUpJnl) {
+		LstUpJnl = lstUpJnl;
+	}
+	public String getLstUpJnl() {
+		return LstUpJnl;
+	}
+	
+	
+	public String getClrCd() {
+		return ClrCd;
+	}
+	public void setClrCd(String clrCd) {
+		ClrCd = clrCd;
+	}
+	public String getAccNum() {
+		return AccNum;
+	}
+	public void setAccNum(String accNum) {
+		AccNum = accNum;
+	}
+	public String getAccTp() {
+		return AccTp;
+	}
+	public void setAccTp(String accTp) {
+		AccTp = accTp;
+	}
+	public String getAccCur() {
+		return AccCur;
+	}
+	public void setAccCur(String accCur) {
+		AccCur = accCur;
+	}
+	public String getAccDef() {
+		return AccDef;
+	}
+	public void setAccDef(String accDef) {
+		AccDef = accDef;
+	}
+	public String getProxyId() {
+		return ProxyId;
+	}
+	public void setProxyId(String proxyId) {
+		ProxyId = proxyId;
+	}
+	public String getProxyIdTp() {
+		return ProxyIdTp;
+	}
+	public void setProxyIdTp(String proxyIdTp) {
+		ProxyIdTp = proxyIdTp;
+	}
+	public String getCusId() {
+		return CusId;
+	}
+	public void setCusId(String cusId) {
+		CusId = cusId;
+	}
+
+}

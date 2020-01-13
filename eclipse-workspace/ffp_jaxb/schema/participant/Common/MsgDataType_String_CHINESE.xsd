@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">	
+	<!-- Unicode -->
+	<xs:simpleType name="RestrictedUnicodeTextMax140">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^\n\r\t]{1,140}"/>
+            <xs:minLength value="1"/>
+            <xs:maxLength value="140"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

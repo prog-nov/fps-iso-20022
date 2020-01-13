@@ -1,0 +1,6 @@
+#注意：獲取校驗的值需要使用${validatedValue}語法（有美元符號），獲取校驗注解參數使用類似{min}（沒有美元符號）語法
+NotBlank.roleForm.roleName=角色名稱不能爲空
+Size.orgForm.orgId=機構ID“${validatedValue}”不符合要求，長度必須在[{min},{max}]之間
+Size.orgForm.orgName=機構名稱“${validatedValue}”不符合要求，長度必須大于{min}
+NotBlank.orgForm.orgName=機構名稱不能爲空
+Size.orgForm.supOrgId=父機構ID“${validatedValue}”不符合要求，長度必須在[{min},{max}]之間

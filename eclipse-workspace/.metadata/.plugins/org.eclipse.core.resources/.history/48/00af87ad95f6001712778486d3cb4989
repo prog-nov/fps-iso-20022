@@ -1,0 +1,13 @@
+package com.forms.fps.bussiness;
+
+public interface BankToIcl 
+{
+	//bank->forms FPS
+	
+	//FORMS FPS business
+	public Object report();
+	
+	public Object persistent();
+	
+	
+}

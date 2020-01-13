@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<case-valve-config>
+	<filter-cases>
+		<filter-case>
+			<name>case1</name>
+			<forward>case_CFIB</forward>
+			<logic-express><![CDATA[
+			transFlag
+			]]>
+			</logic-express>
+			<!-- javascript express -->
+		</filter-case>
+		<filter-case>
+			<name>case2</name>
+			<forward>case_AGNT</forward>
+			<logic-express><![CDATA[
+			!transFlag
+			]]>
+			</logic-express>
+			<!-- javascript express -->
+		</filter-case>
+	</filter-cases>
+</case-valve-config>

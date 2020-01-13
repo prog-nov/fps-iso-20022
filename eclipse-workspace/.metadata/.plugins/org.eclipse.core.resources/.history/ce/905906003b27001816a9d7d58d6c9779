@@ -1,0 +1,140 @@
+package com.forms.ffp.core.exception;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class FFPSystemException extends Exception implements FFPExceptionInterface
+{
+	private static final long serialVersionUID = 1L;
+
+	public FFPSystemException(String ip_logLevel, String ip_message) throws Exception
+	{
+		super();
+		this.setErrorLevel(ip_logLevel);
+		this.setException(ip_message);
+	}
+	
+	public static final Class<FFPSystemException> CLASS_NAME = FFPSystemException.class;
+	
+	public static final String ERROR_CODE = FFPTeErrorMsg.getErrorCode(CLASS_NAME, 0);
+	
+	private static Logger logger = LoggerFactory.getLogger(CLASS_NAME);
+	
+	private StringBuffer txPath = new StringBuffer();
+	
+	private String errorCode;
+	
+	private String exception;
+	
+	private String errorLevel;
+	
+	private FFPSystemException(Throwable cause)
+	{
+		super(cause);
+		errorCode = "";
+		txPath = null;
+		exception = "";
+		errorLevel = "";
+	}
+	
+	public FFPSystemException(
+			String ip_str_errCode,
+			String ip_str_taPath,
+			String ip_str_exception,
+			String ip_str_errorLevel) throws FFPSystemException
+	{
+		super(ip_str_errCode);
+		
+		setErrorCode(ip_str_errCode);
+		txPath.append(ip_str_taPath);
+		exception = ip_str_exception;
+		setErrorLevel(ip_str_errorLevel);
+	}
+	
+	
+	public FFPSystemException(
+			String ip_str_errCode,
+			String ip_str_taPath,
+			String ip_str_exception,
+			String ip_str_errorLevel,
+			Throwable cause) throws FFPSystemException
+	{
+		super(ip_str_errCode, cause);
+		
+		setErrorCode(ip_str_errCode);
+		txPath.append(ip_str_taPath);
+		exception = ip_str_exception;
+		setErrorLevel(ip_str_errorLevel);
+	}
+	
+	
+	@Override
+	public String getTxPath() {
+		return txPath.toString();
+	}
+
+	@Override
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	@Override
+	public String getException() {
+		return exception;
+	}
+
+	@Override
+	public String getErrorLevel() {
+		return errorLevel;
+	}
+
+	@Override
+	public void setTxPath(String ip_txPath) {
+		txPath.append(ip_txPath);
+	}
+
+	@Override
+	public void setErrorCode(String ip_errCode) throws FFPSystemException {
+		if(ip_errCode == null)
+		{
+			logger.error(CLASS_NAME.getName() +"-> Null error code found");
+		}
+		
+		errorCode = ip_errCode;
+	}
+
+	@Override
+	public void setException(String ip_exception) {
+		exception = ip_exception;
+	}
+
+	@Override
+	public void setErrorLevel(String ip_errorLevel) throws FFPSystemException {
+		if(ip_errorLevel == null)
+		{
+			logger.error(CLASS_NAME.getName() + ".setErrorLevel() ->Null error level input");
+		}
+		
+		if(!FFPErrorLevel.ERR_LEVEL_ERRO.equals(ip_errorLevel) && 
+				!FFPErrorLevel.ERR_LEVEL_INFO.equals(ip_errorLevel) && 
+				!FFPErrorLevel.ERR_LEVEL_WARN.equals(ip_errorLevel))
+		{
+			logger.error(CLASS_NAME.getName() + ".setErrorLevel() ->Unkown error type(" + ip_errorLevel + ")");
+		}
+	}
+	
+	public String toString()
+	{
+		return new StringBuffer()
+				.append(getErrorLevel())
+				.append("/")
+				.append(getErrorCode())
+				.append("/")
+				.append(getTxPath())
+				.append("/")
+				.append(getException())
+				.append("/")
+				.append(super.toString()).toString();
+	}
+	
+}

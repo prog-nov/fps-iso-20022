@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.org.dao.IOrgDao">
+	
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.org.bean.OrgBean">
+		SELECT O.ORG_ID,
+			   O.ORG_NAME,
+			   O.SUP_ORG_ID,
+			   O.ORG_LEVEL,
+			   O.ORG_TYPE,
+			   O.DES
+		  FROM {{BF}}_ORG O
+		 ORDER BY O.ORG_ID
+	</select>
+	
+	<select id="dLoadTreeNodes" resultType="com.forms.beneform4j.webapp.systemmanage.org.bean.OrgNode">
+		SELECT O.ORG_ID AS CODE,
+			   O.ORG_NAME AS TEXT,
+			   O.SUP_ORG_ID AS PARENT_CODE,
+			   O.ORG_LEVEL,
+			   O.ORG_TYPE,
+			   O.DES
+		  FROM {{BF}}_ORG O
+		 <where>
+		 	<if test="-1 != minOrgLevel">
+			 	<!-- 机构级别数值越小，级别越大，因此这里需要选择数值小于最小机构级别的数据 -->
+			   AND #{minOrgLevel,jdbcType=INTEGER} >= O.ORG_LEVEL
+			</if>
+		 </where>
+		 ORDER BY O.ORG_ID
+	</select>
+	
+	<select id="dGetChildren" resultType="com.forms.beneform4j.webapp.systemmanage.org.bean.OrgBean">
+		SELECT O.ORG_ID,
+			   O.ORG_NAME,
+			   O.SUP_ORG_ID,
+			   O.ORG_LEVEL,
+			   O.ORG_TYPE,
+			   O.DES,
+			   (SELECT COUNT(1)
+			      FROM {{BF}}_ORG
+			     WHERE SUP_ORG_ID = O.ORG_ID
+			    <if test="-1 != minOrgLevel">
+			       <!-- 机构级别条件针对子表，不能针对父表 -->
+			       AND #{minOrgLevel, jdbcType=INTEGER} >= ORG_LEVEL
+			    </if>
+			   ) AS COUNT
+		  FROM {{BF}}_ORG O
+		 <where>
+		  <!-- 1.如果传入父节点，则根据父节点查询 2.否则根据节点ID查询-->
+		    <choose>
+		    	<when test="null != supOrgId and '' != supOrgId">
+			    	AND O.SUP_ORG_ID = #{supOrgId, jdbcType=VARCHAR}
+		    	</when>
+		    	<otherwise>
+		    	    AND O.ORG_ID = #{orgId, jdbcType=VARCHAR}
+		    	</otherwise>
+		    </choose>
+		 	<if test="-1 != minOrgLevel">
+			 	<!-- 机构级别数值越小，级别越大，因此这里需要选择数值小于最小机构级别的数据 -->
+			   AND #{minOrgLevel,jdbcType=INTEGER} >= O.ORG_LEVEL
+			</if>
+		 </where>
+		 ORDER BY O.ORG_ID
+	</select>
+	
+	<select id="dFind" resultType="com.forms.beneform4j.webapp.systemmanage.org.bean.OrgBean">
+		SELECT * FROM {{BF}}_ORG T WHERE  T.ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="dInsert">
+		INSERT INTO {{BF}}_ORG
+		  (ORG_ID, ORG_NAME, SUP_ORG_ID, 
+		   ORG_LEVEL, ORG_TYPE, DES,
+		   INST_DATE, INST_TIME, INST_OPER,
+		   MODI_DATE, MODI_TIME, MODI_OPER)
+		 VALUES(#{orgId, jdbcType=VARCHAR}, #{orgName, jdbcType=VARCHAR}, #{supOrgId, jdbcType=VARCHAR}, 
+		        #{orgLevel, jdbcType=INTEGER}, #{orgType, jdbcType=VARCHAR},#{des, jdbcType=VARCHAR}, 
+		        #{instDate, jdbcType=VARCHAR}, #{instTime, jdbcType=VARCHAR},#{instOper, jdbcType=VARCHAR}, 
+				#{modiDate, jdbcType=VARCHAR}, #{modiTime, jdbcType=VARCHAR},#{modiOper, jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="dUpdate">
+		UPDATE {{BF}}_ORG 
+		   SET ORG_NAME = #{orgName, jdbcType=VARCHAR}, 
+		   	   ORG_TYPE = #{orgType, jdbcType=VARCHAR}, 
+		   	   DES = #{des, jdbcType=VARCHAR},
+		   	   MODI_DATE = #{modiDate, jdbcType=VARCHAR},
+		       MODI_TIME = #{modiTime, jdbcType=VARCHAR},
+		       MODI_OPER = #{modiOper, jdbcType=VARCHAR} 
+		 WHERE ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dMove">
+		UPDATE {{BF}}_ORG 
+		   SET SUP_ORG_ID = #{supOrgId, jdbcType=VARCHAR}, 
+		   	   ORG_LEVEL = #{orgLevel, jdbcType=INTEGER}
+		 WHERE ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="dDelete">
+		DELETE FROM {{BF}}_ORG 
+		 WHERE ORG_ID = #{orgId, jdbcType=VARCHAR}
+	</delete>
+	<delete id="dDeleteInvalidNodes">
+		<choose>
+		 	<when test="_databaseId == 'mysql'">
+		 		DELETE A
+				  FROM {{BF}}_ORG A
+				  LEFT JOIN {{BF}}_ORG B
+				    ON A.SUP_ORG_ID = B.ORG_ID
+				 WHERE B.ORG_ID IS NULL
+				 <choose>
+				 	<when test="null != rootId and '' != rootId">
+				 		AND A.ORG_ID != #{rootId, jdbcType=VARCHAR}
+				 	</when>
+				 	<otherwise>
+				 		AND A.SUP_ORG_ID IS NOT NULL
+				 		AND A.SUP_ORG_ID != ''
+				 	</otherwise>
+				 </choose> 
+		 	</when>
+		 	<otherwise>
+		 		DELETE FROM {{BF}}_ORG 
+				 WHERE SUP_ORG_ID NOT IN(SELECT ORG_ID FROM {{BF}}_ORG )
+				 <choose>
+				 	<when test="null != rootId and '' != rootId">
+				 		AND ORG_ID != #{rootId, jdbcType=VARCHAR}
+				 	</when>
+				 	<otherwise>
+				 		AND SUP_ORG_ID IS NOT NULL
+				 		AND SUP_ORG_ID != ''
+				 	</otherwise>
+				 </choose> 
+		 	</otherwise>
+		</choose>
+	</delete>
+</mapper>

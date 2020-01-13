@@ -1,0 +1,158 @@
+package com.forms.ffp.bussiness.iclfps.fpsadrs005;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01.AddressingScheme;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01.GroupHeader;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01.MessageRoot;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.bussiness.iclfps.fpsadrs005.FFPVOFpsadrs005.AdrSchme;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.MSG_STATUS;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.bean.addressing.FFPJbAddressing;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.addressing.FFPIDaoService_A100;
+
+@Component("com.forms.ffp.bussiness.iclfps.fpsadrs005.FFPTxFpsadr005")
+@Scope("prototype")
+public class FFPTxFpsadrs005 extends FFPTxBase{
+	
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+
+	@Resource(name = "FFPDaoService_A100")
+	private FFPIDaoService_A100 a100Service;
+	
+	@Override
+	public void perform() throws Exception {
+		FFPVOFpsadrs005 locVo = (FFPVOFpsadrs005) txVo;
+		FFPJbA100 jbA100 = locVo.getJbA100();
+		List<FFPTxJnlAction> jnlActionList = jbA100.getJnlActionList();
+		Date loc_date = new Date();
+		
+//		FFPTxJnlAction jnlAction = FFPJnlUtils.getInstance().newJnlAction(jbA100.getTxJnl().getJnlNo(), locVo.getMsgId(),
+//				locVo.getFromClrSysMmbId() != null ? FFPConstants.MSG_TYPE_FPS_CLRSYSMMBID : FFPConstants.MSG_TYPE_FPS_BICFI,
+//				locVo.getFromClrSysMmbId() != null ? locVo.getFromClrSysMmbId() : locVo.getFromBic(), FFPConstants.MSG_TYPE_FFP,
+//				locVo.getToClrSysMmbId() != null ? locVo.getToClrSysMmbId() : locVo.getToBic(), locVo.getMsgDefIdr(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(),
+//				locVo.getCreateDate(), loc_date, loc_date);
+//		jnlActionList.add(jnlAction);
+		jbA100.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+		a100Service.updateJnlStat(jbA100);
+		
+		FFPMsgFpsadrs005_AUN01 locAdrs005 = new FFPMsgFpsadrs005_AUN01(locVo,0);
+		try
+		{
+			FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(locAdrs005);
+			if (response != null){
+				FFPSendTcpMessageResp msgResp = (FFPSendTcpMessageResp) response;
+				locAdrs005.unmarshalResponseMsg(msgResp.getRespMessage());
+				FFPVoFpsadrs005_AUN01REPLY aun01Reply = locVo.getReply();
+//				jnlAction.setMsgStatus(aun01Reply.getRsltCd());
+//				if ("R".equals(aun01Reply.getRsltCd())){
+//					jnlAction.setRejCode(aun01Reply.getRejCd());
+//					jnlAction.setRejRsn(aun01Reply.getRejMsg());
+//				}
+			}else{
+//				jnlAction.setMsgStatus(MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+			}
+		} catch (Exception ip_e){
+			// TODO
+		} finally{
+			a100Service.updateJnlStat(jbA100);
+		}
+	}
+
+	@Override
+	public void validate() throws Exception {
+		
+	}
+
+	@Override
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+		if ("ICL.fps.adrs.005.001.01".equals(this.serviceName)) {
+			parseISO20022BizDataHead(bizData);
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			
+			FFPJbA100 jbA100 = new FFPJbA100();
+			
+			txVo = new FFPVOFpsadrs005();
+			FFPVOFpsadrs005 locVo = (FFPVOFpsadrs005) txVo;
+			
+			MessageRoot mr = doc.getAdrStsUpdRpt();
+			GroupHeader hdr = mr.getGrpHdr();
+			locVo.setMsgId(hdr.getMsgId());
+			locVo.setCreDtTm(hdr.getCreDtTm().toGregorianCalendar().getTime());
+			AddressingScheme scheme = mr.getAdrSchme().get(0);
+			
+			List<FFPVOFpsadrs005.AdrSchme> asList = new ArrayList<>();
+			FFPVOFpsadrs005.AdrSchme as = new FFPVOFpsadrs005().new AdrSchme();
+			as.setAdrRptId(scheme.getAdrRptId());
+			as.setCusId(scheme.getCusId());
+			as.setDefaultIndicator(scheme.getDflt().name());
+			as.setMmbId(scheme.getInstgAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+			as.setProxyId(scheme.getId());
+			as.setProxyIdType(scheme.getTp().name());
+			as.setStatus(scheme.getSts().name());
+			asList.add(as);
+			
+			locVo.setAdrSchmes(asList);
+			
+			Date loc_date = new Date();
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_ADRS.getCode());
+			txJnl.setJnlNo(FFPIDUtils.getJnlNo());
+			txJnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+			txJnl.setTxSrc(FFPConstants.TX_SOURCE_HKICL);
+			txJnl.setCreateTs(loc_date);
+			txJnl.setLastUpdateTs(loc_date);
+			jbA100.setTxJnl(txJnl);
+
+			List<FFPTxJnlAction> txJnlActionList = new ArrayList<>();
+//			txJnlActionList.add(FFPJnlUtils.getInstance().newJnlAction(jbA100.getTxJnl().getJnlNo(), locVo.getMsgId(),
+//					locVo.getFromClrSysMmbId() != null ? FFPConstants.MSG_TYPE_FPS_CLRSYSMMBID
+//							: FFPConstants.MSG_TYPE_FPS_BICFI,
+//					locVo.getFromClrSysMmbId() != null ? locVo.getFromClrSysMmbId() : locVo.getFromBic(),
+//					FFPConstants.MSG_TYPE_FFP,
+//					locVo.getToClrSysMmbId() != null ? locVo.getToClrSysMmbId() : locVo.getToBic(),
+//					locVo.getMsgDefIdr(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), locVo.getCreateDate(),
+//					loc_date, loc_date));
+			jbA100.setJnlActionList(txJnlActionList);
+			locVo.setJbA100(jbA100);
+			
+			//update
+			AdrSchme a = locVo.getAdrSchmes().get(0);
+			FFPJbAddressing jbAdr = new FFPJbAddressing();
+			jbAdr.setCusId(a.getCusId());
+			jbAdr.setProxyId(a.getProxyId());
+			jbAdr.setProxyIdTp(a.getProxyIdType());
+			if("CNCL".equals(a.getStatus())){
+				jbAdr.setAccDef("-");
+			}else if("AMND".equals(a.getStatus())){
+				jbAdr.setAccDef(a.getDefaultIndicator());
+			}else if("NWRG".equals(a.getStatus())){
+				jbAdr.setAccDef(a.getDefaultIndicator());
+			}
+			jbAdr.setMmbId(a.getMmbId());
+			
+			a100Service.updateAddressing(jbA100);
+		}
+	}
+}

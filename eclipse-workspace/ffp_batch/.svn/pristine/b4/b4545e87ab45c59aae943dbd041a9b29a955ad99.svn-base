@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>FFPHUS01</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>UPDATE BATCH ACDT</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<parameters>
+				<parameter isSql="Y">UPDATE #{schema}.TB_SS_SYSTEM SET BATCH_ACDT = curdate() WHERE DATA_KEY='0000'</parameter>
+			</parameters>
+		</action>
+	 </action-flow>
+</job-config>

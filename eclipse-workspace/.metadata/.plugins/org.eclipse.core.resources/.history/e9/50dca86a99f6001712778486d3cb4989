@@ -1,0 +1,30 @@
+package com.forms.fps.business.proxy;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+public class BankToIclFpsProxy implements InvocationHandler
+{
+	private Object bankToIcl;
+	
+	
+	public Object bind(Object target)
+	{
+		this.bankToIcl = target;
+		
+		return Proxy.newProxyInstance(target.getClass().getClassLoader(), target.getClass().getInterfaces(), this);
+	}
+	
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable 
+	{
+		Object result = null;
+		
+		
+		result = method.invoke(bankToIcl, args);
+		
+		return result;
+	}
+
+}

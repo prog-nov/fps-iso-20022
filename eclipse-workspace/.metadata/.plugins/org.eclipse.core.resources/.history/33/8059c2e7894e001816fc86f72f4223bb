@@ -1,0 +1,321 @@
+package com.forms.ffp.persistents.bean.payment.returnrefund;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.forms.ffp.persistents.bean.FFPJbBaseFin;
+
+public class FFPJbP300 extends FFPJbBaseFin {
+
+	@SuppressWarnings("unused")
+	private static final long serialVersionUID = 1L;
+
+	private String SrcRefNm;
+	private String SrvcMode;
+//	private String PymtCatPrps; // Payment Category Purpose Code
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date settlementDate;
+
+	// JNL_REF
+	private String jnlRef;
+	//
+	private String returnId;
+
+	private String retIntSetCur;
+
+	private BigDecimal retIntSetAmt;
+
+	private String retInsCur;
+
+	private BigDecimal retInsAmt;
+
+	private String chgAgtID;
+
+	private String chgAgtBIC;
+
+	private String reasonCode;
+
+	private String additionalInformation;
+
+	private BigDecimal OrgnlinstrAmt;
+
+	private String OrgnlinstrCcy;
+
+	private String chargersCurrency;
+
+	private BigDecimal chargersAmount;
+	
+	private BigDecimal OrgnlInterbankSettAmt;
+	
+	private String OrgnlInterbankSettCcy;
+	
+	private Date OrgnlInterbankSettDate;
+	
+	private String OrgnlCatgyPurp;
+	
+	private String OrgnlMandateInfo;
+	
+	private String OrgnlRemtInfo;				
+
+	private String OrgnlDbtrNm;
+
+	private String OrgnlDbtrAcctNo;
+
+	private String OrgnlDbtrAcctNoTp;
+
+	private String OrgnlDbtrAgtId;
+
+	private String OrgnlDbtrAgtBIC;
+
+	private String OrgnlDbtrPhNo;
+	
+	private String OrgnlDbtrEmAddr;
+
+	private String OrgnlCdtrNm;
+
+	private String OrgnlCdtrAcctNo;
+
+	private String OrgnlCdtrAcctNoTp;
+
+	private String OrgnlCdtrAgtId;
+
+	private String OrgnlCdtrAgtBIC;
+
+	private String OrgnlCdtrPhNo;
+	private String OrgnlCdtrEmAddr;
+	public String getSrcRefNm() {
+		return SrcRefNm;
+	}
+	public String getSrvcMode() {
+		return SrvcMode;
+	}
+//	public String getPymtCatPrps() {
+//		return PymtCatPrps;
+//	}
+	public Date getSettlementDate() {
+		return settlementDate;
+	}
+	public String getJnlRef() {
+		return jnlRef;
+	}
+	public String getReturnId() {
+		return returnId;
+	}
+	public String getRetIntSetCur() {
+		return retIntSetCur;
+	}
+	public BigDecimal getRetIntSetAmt() {
+		return retIntSetAmt;
+	}
+	public String getRetInsCur() {
+		return retInsCur;
+	}
+	public BigDecimal getRetInsAmt() {
+		return retInsAmt;
+	}
+	public String getChgAgtID() {
+		return chgAgtID;
+	}
+	public String getChgAgtBIC() {
+		return chgAgtBIC;
+	}
+	public String getReasonCode() {
+		return reasonCode;
+	}
+	public String getAdditionalInformation() {
+		return additionalInformation;
+	}
+	public BigDecimal getOrgnlinstrAmt() {
+		return OrgnlinstrAmt;
+	}
+	public String getOrgnlinstrCcy() {
+		return OrgnlinstrCcy;
+	}
+	public String getChargersCurrency() {
+		return chargersCurrency;
+	}
+	public BigDecimal getChargersAmount() {
+		return chargersAmount;
+	}
+	public BigDecimal getOrgnlInterbankSettAmt() {
+		return OrgnlInterbankSettAmt;
+	}
+	public String getOrgnlInterbankSettCcy() {
+		return OrgnlInterbankSettCcy;
+	}
+	public Date getOrgnlInterbankSettDate() {
+		return OrgnlInterbankSettDate;
+	}
+	public String getOrgnlCatgyPurp() {
+		return OrgnlCatgyPurp;
+	}
+	public String getOrgnlMandateInfo() {
+		return OrgnlMandateInfo;
+	}
+	public String getOrgnlRemtInfo() {
+		return OrgnlRemtInfo;
+	}
+	public String getOrgnlDbtrNm() {
+		return OrgnlDbtrNm;
+	}
+	public String getOrgnlDbtrAcctNo() {
+		return OrgnlDbtrAcctNo;
+	}
+	public String getOrgnlDbtrAcctNoTp() {
+		return OrgnlDbtrAcctNoTp;
+	}
+	public String getOrgnlDbtrAgtId() {
+		return OrgnlDbtrAgtId;
+	}
+	public String getOrgnlDbtrAgtBIC() {
+		return OrgnlDbtrAgtBIC;
+	}
+	public String getOrgnlDbtrPhNo() {
+		return OrgnlDbtrPhNo;
+	}
+	public String getOrgnlDbtrEmAddr() {
+		return OrgnlDbtrEmAddr;
+	}
+	public String getOrgnlCdtrNm() {
+		return OrgnlCdtrNm;
+	}
+	public String getOrgnlCdtrAcctNo() {
+		return OrgnlCdtrAcctNo;
+	}
+	public String getOrgnlCdtrAcctNoTp() {
+		return OrgnlCdtrAcctNoTp;
+	}
+	public String getOrgnlCdtrAgtId() {
+		return OrgnlCdtrAgtId;
+	}
+	public String getOrgnlCdtrAgtBIC() {
+		return OrgnlCdtrAgtBIC;
+	}
+	public String getOrgnlCdtrPhNo() {
+		return OrgnlCdtrPhNo;
+	}
+	public String getOrgnlCdtrEmAddr() {
+		return OrgnlCdtrEmAddr;
+	}
+	public void setSrcRefNm(String srcRefNm) {
+		SrcRefNm = srcRefNm;
+	}
+	public void setSrvcMode(String srvcMode) {
+		SrvcMode = srvcMode;
+	}
+//	public void setPymtCatPrps(String pymtCatPrps) {
+//		PymtCatPrps = pymtCatPrps;
+//	}
+	public void setSettlementDate(Date settlementDate) {
+		this.settlementDate = settlementDate;
+	}
+	public void setJnlRef(String jnlRef) {
+		this.jnlRef = jnlRef;
+	}
+	public void setReturnId(String returnId) {
+		this.returnId = returnId;
+	}
+	public void setRetIntSetCur(String retIntSetCur) {
+		this.retIntSetCur = retIntSetCur;
+	}
+	public void setRetIntSetAmt(BigDecimal retIntSetAmt) {
+		this.retIntSetAmt = retIntSetAmt;
+	}
+	public void setRetInsCur(String retInsCur) {
+		this.retInsCur = retInsCur;
+	}
+	public void setRetInsAmt(BigDecimal retInsAmt) {
+		this.retInsAmt = retInsAmt;
+	}
+	public void setChgAgtID(String chgAgtID) {
+		this.chgAgtID = chgAgtID;
+	}
+	public void setChgAgtBIC(String chgAgtBIC) {
+		this.chgAgtBIC = chgAgtBIC;
+	}
+	public void setReasonCode(String reasonCode) {
+		this.reasonCode = reasonCode;
+	}
+	public void setAdditionalInformation(String additionalInformation) {
+		this.additionalInformation = additionalInformation;
+	}
+	public void setOrgnlinstrAmt(BigDecimal orgnlinstrAmt) {
+		OrgnlinstrAmt = orgnlinstrAmt;
+	}
+	public void setOrgnlinstrCcy(String orgnlinstrCcy) {
+		OrgnlinstrCcy = orgnlinstrCcy;
+	}
+	public void setChargersCurrency(String chargersCurrency) {
+		this.chargersCurrency = chargersCurrency;
+	}
+	public void setChargersAmount(BigDecimal chargersAmount) {
+		this.chargersAmount = chargersAmount;
+	}
+	public void setOrgnlInterbankSettAmt(BigDecimal orgnlInterbankSettAmt) {
+		OrgnlInterbankSettAmt = orgnlInterbankSettAmt;
+	}
+	public void setOrgnlInterbankSettCcy(String orgnlInterbankSettCcy) {
+		OrgnlInterbankSettCcy = orgnlInterbankSettCcy;
+	}
+	public void setOrgnlInterbankSettDate(Date orgnlInterbankSettDate) {
+		OrgnlInterbankSettDate = orgnlInterbankSettDate;
+	}
+	public void setOrgnlCatgyPurp(String orgnlCatgyPurp) {
+		OrgnlCatgyPurp = orgnlCatgyPurp;
+	}
+	public void setOrgnlMandateInfo(String orgnlMandateInfo) {
+		OrgnlMandateInfo = orgnlMandateInfo;
+	}
+	public void setOrgnlRemtInfo(String orgnlRemtInfo) {
+		OrgnlRemtInfo = orgnlRemtInfo;
+	}
+	public void setOrgnlDbtrNm(String orgnlDbtrNm) {
+		OrgnlDbtrNm = orgnlDbtrNm;
+	}
+	public void setOrgnlDbtrAcctNo(String orgnlDbtrAcctNo) {
+		OrgnlDbtrAcctNo = orgnlDbtrAcctNo;
+	}
+	public void setOrgnlDbtrAcctNoTp(String orgnlDbtrAcctNoTp) {
+		OrgnlDbtrAcctNoTp = orgnlDbtrAcctNoTp;
+	}
+	public void setOrgnlDbtrAgtId(String orgnlDbtrAgtId) {
+		OrgnlDbtrAgtId = orgnlDbtrAgtId;
+	}
+	public void setOrgnlDbtrAgtBIC(String orgnlDbtrAgtBIC) {
+		OrgnlDbtrAgtBIC = orgnlDbtrAgtBIC;
+	}
+	public void setOrgnlDbtrPhNo(String orgnlDbtrPhNo) {
+		OrgnlDbtrPhNo = orgnlDbtrPhNo;
+	}
+	public void setOrgnlDbtrEmAddr(String orgnlDbtrEmAddr) {
+		OrgnlDbtrEmAddr = orgnlDbtrEmAddr;
+	}
+	public void setOrgnlCdtrNm(String orgnlCdtrNm) {
+		OrgnlCdtrNm = orgnlCdtrNm;
+	}
+	public void setOrgnlCdtrAcctNo(String orgnlCdtrAcctNo) {
+		OrgnlCdtrAcctNo = orgnlCdtrAcctNo;
+	}
+	public void setOrgnlCdtrAcctNoTp(String orgnlCdtrAcctNoTp) {
+		OrgnlCdtrAcctNoTp = orgnlCdtrAcctNoTp;
+	}
+	public void setOrgnlCdtrAgtId(String orgnlCdtrAgtId) {
+		OrgnlCdtrAgtId = orgnlCdtrAgtId;
+	}
+	public void setOrgnlCdtrAgtBIC(String orgnlCdtrAgtBIC) {
+		OrgnlCdtrAgtBIC = orgnlCdtrAgtBIC;
+	}
+	public void setOrgnlCdtrPhNo(String orgnlCdtrPhNo) {
+		OrgnlCdtrPhNo = orgnlCdtrPhNo;
+	}
+	public void setOrgnlCdtrEmAddr(String orgnlCdtrEmAddr) {
+		OrgnlCdtrEmAddr = orgnlCdtrEmAddr;
+	}
+
+	//private String pytPurp;
+	//private String RemInfo;
+
+}

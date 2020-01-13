@@ -1,0 +1,264 @@
+package com.forms.batch.job.unit.participant.receivefile;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class FFPReceiveFileServerThread implements Runnable {
+
+	BatchLogger _logger = BatchLogger.getLogger("RECEIVE_FILE_SERVER_SESSION",
+			String.valueOf(Thread.currentThread().getId()), FFPReceiveFileServerThread.class);
+	private String jnlNo;
+	private String transactionId;
+	private String end2endId;
+	private Timestamp createTs;
+	private String seqNo;
+	Socket socket = null;// 和本线程相关的Socket
+
+	String outputPath = null;
+
+	public FFPReceiveFileServerThread(String outputPath, Socket socket) {
+		this.outputPath = outputPath;
+		this.socket = socket;
+	}
+
+	public FFPReceiveFileServerThread(Socket socket) {
+		this.socket = socket;
+	}
+
+	@Override
+	public void run() {
+		BatchLogger logger = BatchLogger.getLogger("RECEIVE_FILE_SERVER_SESSION",
+				String.valueOf(Thread.currentThread().getId()), FFPReceiveFileServerThread.class);
+		///////初始化各种id//////////////////
+		init();
+		
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+		OutputStream os = null;
+		PrintWriter pw = null;
+
+		StringBuffer sb = new StringBuffer();
+		String data = "";
+		ROOT root = null;
+		try {
+			// 与客户端建立通信，获取输入流，读取取客户端提供的信息
+			is = socket.getInputStream();
+			isr = new InputStreamReader(is, "UTF-8");
+			br = new BufferedReader(isr);
+
+			char[] mesBuffer = new char[256];
+			int count = 0;
+			while ((count = br.read(mesBuffer)) != -1) {
+				// 循环读取客户端的信息
+				data = String.valueOf(mesBuffer, 0, count);
+				sb.append(data);
+			}
+			logger.info("我是服务器，客户端提交信息为：" + sb.toString());
+
+			socket.shutdownInput();// 关闭输入流
+			///////处理xml//////////////////
+			String xml = "";
+			try {
+				logger.info("我是服务器，客户端提交信息为：" + sb.toString());
+				root = FFPParticipantMessageConverter.parseXml2RequestObject(sb.toString());
+			} catch (Exception e) {
+				logger.error("parse error");
+			}
+			try{
+				xml = executeXmlfFFPCTO01(root);
+			}catch (Exception e) {
+				logger.error("execute error");
+			}
+			// 获取输出流，响应客户端的请求
+			os = socket.getOutputStream();
+			pw = new PrintWriter(os);
+			pw.write(xml.equals("")?"ACK":xml);
+			pw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pw != null)
+					pw.close();
+				if (os != null)
+					os.close();
+				if (br != null)
+					br.close();
+				if (isr != null)
+					isr.close();
+				if (is != null)
+					is.close();
+				if (socket != null)
+					socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+		///////将信息保存至db//////////////////
+			save(root);
+		} catch (Exception e) {
+			logger.error("save error");
+		}
+	}
+
+	public void init() {
+		jnlNo = FFPIDUtils.getJnlNo();
+		transactionId = FFPIDUtils.getTransactionId();
+		end2endId = FFPIDUtils.getEndToEndId();
+		createTs = FFPDateUtils.getTimestamp(new Date());
+		//seqNo = FFPIDUtils.getSeq();
+		seqNo = "1";
+	}
+
+	public void save(ROOT root) throws Exception {
+		HEAD head = root.getHEAD();
+		FFPCTO01 body = (FFPCTO01) root.getBODY();
+		String servcMode = body.getSrvcMode();
+		
+		String txState = FFPConstantsTxJnl.TX_STAT_APPST;
+		String txType = "";
+		String txCode = "";
+		String txSrc = FFPConstants.TX_SOURCE_FFPAGENT;
+		Timestamp lastUpdateTs = createTs;
+		String msgFromType = FFPConstants.MSG_TYPE_AGENT;
+		String msgFrom = head.getRequestID();
+		String msg2Type = FFPConstants.MSG_TYPE_FFP;
+		String msgTo = FFPConstants.MSG_CODE_FFP;
+		String msgType = head.getMessageType();
+		String msgStatus = FFPConstantsTxJnl.MSG_STAT_PROCE;
+		Timestamp msgCreateData = createTs;
+		Timestamp msgProceDate = createTs;
+		Timestamp msgComplDate = createTs;
+		
+		Connection loc_conn = null;
+		try {
+			loc_conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+			loc_conn.setAutoCommit(false);
+			String sql_jnl = "insert into tb_tx_jnl value(?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_jnl, jnlNo,txState,txType,txCode,txSrc,transactionId,end2endId,createTs,lastUpdateTs);
+
+			String sql_action = "insert into tb_tx_jnlaction value(?,?,?,?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_action, jnlNo,seqNo,head.getRequestRefno(),msgFromType,msgFrom,msg2Type,msgTo,msgType,msgStatus,msgCreateData,msgProceDate,msgComplDate);
+			
+			String sql_p100dat = "insert into tb_tx_p100dat value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_p100dat, jnlNo,
+					body.getSrcRefNm(),
+					body.getPymtCatPrps(),
+					body.getAcctVerf(),
+					body.getSettlCcy(),
+					body.getSettlAmt(),
+					body.getSettlDate(),
+					body.getInstrCcy(),
+					body.getInstrAmt(),
+					body.getChrgrsAgent().getID(),
+					body.getChrgrsAgent().getBICCODE(),
+					body.getChrgrsCcy(),
+					body.getChrgrsAmt(),
+					body.getDbtrNm(),
+					body.getDbtrAcNo(),
+					body.getDbtrAcTp(),
+					"",//DEBTOR_AGT_ID
+					"",//DEBTOR_AGT_BIC
+					body.getCdtrNm(),
+					body.getCdtrAcNo(),
+					body.getCdtrAcTp(),
+					body.getCdtrAgent().getID(),
+					body.getCdtrAgent().getBICCODE(),
+			"", /// purpose_type
+			"",/// purpose_code
+			"",/// purpose_other
+			"",
+			servcMode);
+			loc_conn.commit();
+			loc_conn.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			try {
+				if(loc_conn != null)
+					loc_conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	// 处理FFPCTO01 xml
+	public String executeXmlfFFPCTO01(ROOT reqRoot) throws Exception {
+		String xml = "";
+		HEAD reqHead = reqRoot.getHEAD();
+		FFPCTO01 ffpcto01 = (FFPCTO01) reqRoot.getBODY();
+		String servcMode = ffpcto01.getSrvcMode();
+		com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = new com.forms.ffp.adaptor.jaxb.participant.response.ROOT();
+		com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = new com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD();
+		com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01 body = new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01();
+		switch (servcMode) {
+		case "C1":
+			/// 交易拒纳，通过批处理送回交易状态
+			// set属性
+			head.setRequestID(reqHead.getRequestID());
+			head.setTransactionDate(reqHead.getTransactionDate());
+			head.setTransactionTime(reqHead.getTransactionTime());
+			head.setRequestRefno(reqHead.getRequestRefno());
+			head.setAccountingDate("");
+			head.setResponseID("28");
+			head.setMessageType(reqHead.getMessageType());
+			head.setSystemRefno("");
+			head.setSystemBeginTIme("");
+			head.setSystemEndTIme("");
+			head.setResponseRefno(FFPIDUtils.getRefno());
+			head.setResponseBeginTime("");
+			head.setResponseEndTime("");
+			head.setResponseStatus("N");
+			head.setFinalNode("2");
+			head.setSystemMessageCode("");
+			head.setResponseMessageCode("");
+			head.setResponseMessage("");
+
+			body.setSrcRefNm(ffpcto01.getSrcRefNm());
+			body.setFFPTransactionId(transactionId);
+			body.setRsltCd("R");
+			body.setRejCd("");
+			body.setRejMsg("");
+
+			root.setHEAD(head);
+			root.setBODY(body);
+			xml = FFPParticipantMessageConverter.packageReponseObject2Xml(root);
+			break;
+		case "C2":
+			// 通过批处理文件（只有C2一笔交易）送至ICL FPS处理
+			
+			break;
+		case "C3":
+			// 批处理文件
+
+			break;
+		default:
+			break;
+		}
+		return xml;
+	}
+
+}

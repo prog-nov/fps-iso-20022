@@ -1,0 +1,7 @@
+package com.forms.ffp.core.define;
+
+public class FFPConstantsMsg
+{
+	public static final String RESP_MSG_STS_SUCCESS = "COMPL";
+	public static final String RESP_MSG_STS_TMOUT = "TMOUT";
+}

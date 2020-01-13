@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<fixedfile-output-config>
+	<file-name>#{outputFilePath}/BATCH_DAT_FILE</file-name>
+	<encoding>UTF-8</encoding>
+	<header-handle-class>com.forms.datapipe.headfoot.HeaderHandler</header-handle-class>
+	<footer-handle-class>com.forms.datapipe.headfoot.FooterHandler</footer-handle-class>
+	<flush-rows>100</flush-rows>
+	<line-feed>none</line-feed>   
+	<field-definition>
+		<field    name="IffRecInd"      bytes="1"	data-type="CharTypeLJ" const-value="1"/>     
+		<field    name="deltaFlag"      bytes="1"	data-type="CharTypeLJ" />     
+		<field    name="NOA"           bytes="14"	data-type="CharTypeLJ" />   
+		<field    name="STAT1A"           bytes="10"	data-type="CharTypeLJ" />     
+		<field    name="STAT2A"            bytes="10"	data-type="CharTypeLJ" />   
+		<field    name="filler"		bytes="30"	data-type="CharTypeLJ" />   
+	</field-definition>
+</fixedfile-output-config>

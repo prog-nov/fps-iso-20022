@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>risdb</databaseName>
+	<flush-rows>500</flush-rows>
+	<field-definition>
+		<field name="PADT_APPG_MODE"			data-type="StringTypeRT"	/>
+		<field name="PADT_APPG_DATE"			data-type="StringTypeRT"	/>
+		<field name="PADT_INST"					data-type="StringTypeRT"	/>
+		<field name="PADT_INTL_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="PADT_DATE"					data-type="StringTypeRT"	/>
+		<field name="PADT_TIME"					data-type="StringTypeRT"	/>
+		<field name="PADT_AUDT_POINT"			data-type="StringTypeRT"	/>
+		<field name="PADT_SRC_SYS"				data-type="StringTypeRT"	/>
+		<field name="PADT_EXTN_REF_NO"			data-type="StringTypeRT"	/>
+		<field name="PADT_ACCT"					data-type="StringTypeRT"	/>
+		<field name="PADT_BENF_DETL"			data-type="StringTypeRT"	/>
+		<field name="PADT_CURR"					data-type="StringTypeRT"	/>
+		<field name="PADT_PAY_AMT"				data-type="StringTypeRT"	/>
+		<field name="PADT_STATUS"				data-type="StringTypeRT"	/>
+		<field name="PADT_TELR_BR"				data-type="StringTypeRT"	/>
+		<field name="PADT_TERM"					data-type="StringTypeRT"	/>
+		<field name="PADT_FIELD_NO"				data-type="StringTypeRT"	/>
+		<field name="PADT_OLD_VAL_1"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_1"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_OLD_VAL_2"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_2"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_OLD_VAL_3"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_3"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_OLD_VAL_4"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_4"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_OLD_VAL_5"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_5"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_OLD_VAL_6"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_NEW_VAL_6"			data-type="StringTypeEmpty"	/>
+		<field name="PADT_LAST_MAINT_DATE"		data-type="StringTypeRT"	/>
+		<field name="PADT_LAST_MAINT_STAT"		data-type="StringTypeRT"	/>
+		<field name="docCnt"					data-type="StringTypeRT"	/>
+	</field-definition>
+	<update-sql>
+		INSERT INTO #{schema}.D_OVERSEAS_TX_HISTORY_TEMP
+		(
+			DOC_CNT,
+			PADT_APPG_MODE,	PADT_APPG_DATE,		PADT_INST,		PADT_INTL_REF_NO,		PADT_DATE,
+			PADT_TIME,		PADT_AUDT_POINT,	PADT_SRC_SYS,	PADT_EXTN_REF_NO,		PADT_ACCT,
+			PADT_BENF_DETL,	PADT_CURR,			PADT_PAY_AMT,	PADT_STATUS,			PADT_TELR_BR,
+			PADT_TERM,		PADT_FIELD_NO,		PADT_OLD_VAL_1,	PADT_NEW_VAL_1,			PADT_OLD_VAL_2,
+			PADT_NEW_VAL_2,	PADT_OLD_VAL_3,		PADT_NEW_VAL_3,	PADT_OLD_VAL_4,			PADT_NEW_VAL_4,
+			PADT_OLD_VAL_5,	PADT_NEW_VAL_5,		PADT_OLD_VAL_6,	PADT_NEW_VAL_6,			PADT_LAST_MAINT_DATE,
+			PADT_LAST_MAINT_STAT
+		)VALUES
+		(
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?
+		)
+	</update-sql> 
+	<sql-parameters>
+		<sql-parameter index="1"		field="docCnt"				/>
+		<sql-parameter index="2"		field="PADT_APPG_MODE"		/>     
+		<sql-parameter index="3"		field="PADT_DATE"		/>           
+		<sql-parameter index="4"		field="PADT_INST"				/>
+		<sql-parameter index="5"		field="PADT_INTL_REF_NO"		/>   
+		<sql-parameter index="6"		field="PADT_DATE"				/>       
+		<sql-parameter index="7"		field="PADT_TIME"				/>       
+		<sql-parameter index="8"		field="PADT_AUDT_POINT"		/>     
+		<sql-parameter index="9"		field="PADT_SRC_SYS"			/>     
+		<sql-parameter index="10"		field="PADT_EXTN_REF_NO"		/>   
+		<sql-parameter index="11"		field="PADT_ACCT"				/>       
+		<sql-parameter index="12"		field="PADT_BENF_DETL"		/>     
+		<sql-parameter index="13"		field="PADT_CURR"				/>       
+		<sql-parameter index="14"		field="PADT_PAY_AMT"			/>     
+		<sql-parameter index="15"		field="PADT_STATUS"			/>       
+		<sql-parameter index="16"		field="PADT_TELR_BR"			/>     
+		<sql-parameter index="17"		field="PADT_TERM"				/>       
+		<sql-parameter index="18"		field="PADT_FIELD_NO"			/>     
+		<sql-parameter index="19"		field="PADT_OLD_VAL_1"		/>     
+		<sql-parameter index="20"		field="PADT_NEW_VAL_1"		/>     
+		<sql-parameter index="21"		field="PADT_OLD_VAL_2"		/>     
+		<sql-parameter index="22"		field="PADT_NEW_VAL_2"		/>     
+		<sql-parameter index="23"		field="PADT_OLD_VAL_3"		/>     
+		<sql-parameter index="24"		field="PADT_NEW_VAL_3"		/>     
+		<sql-parameter index="25"		field="PADT_OLD_VAL_4"		/>     
+		<sql-parameter index="26"		field="PADT_NEW_VAL_4"		/>     
+		<sql-parameter index="27"		field="PADT_OLD_VAL_5"		/>     
+		<sql-parameter index="28"		field="PADT_NEW_VAL_5"		/>     
+		<sql-parameter index="29"		field="PADT_OLD_VAL_6"		/>     
+		<sql-parameter index="30"		field="PADT_NEW_VAL_6"		/>     
+		<sql-parameter index="31"		field="PADT_LAST_MAINT_DATE"	/> 
+		<sql-parameter index="32"		field="PADT_LAST_MAINT_STAT"	/> 
+	</sql-parameters>
+</database-output-config>

@@ -1,0 +1,115 @@
+package com.forms.ffp.adaptor.define;
+
+public class FFPJaxbConstants
+{
+	public static String JAXB_CONTEXT_PACKAGE_ICLFPS = "";
+	
+	public static int JAXB_CONTEXT_PARTICIPANT_LENGTHFIELD_LEN = 8;
+	
+	public static String JAXB_CONTEXT_PACKAGE_PARTICIPANT_RESPONSE = "com.forms.ffp.adaptor.jaxb.participant.response";
+
+	public static String JAXB_CONTEXT_PACKAGE_PARTICIPANT_REQUEST = "com.forms.ffp.adaptor.jaxb.participant.request";
+	
+	public static String JAXB_MSG_TYPE_HEAD_001 = "head.001.001.01";
+	public static String JAXB_MSG_TYPE_ADMI_002 = "admi.002.001.01";
+	public static String JAXB_MSG_TYPE_ADMI_004 = "admi.004.001.02";
+	public static String JAXB_MSG_TYPE_CAMT_052 = "camt.052.001.06";
+	public static String JAXB_MSG_TYPE_CAMT_054 = "camt.054.001.06";
+	public static String JAXB_MSG_TYPE_CAMT_056 = "camt.056.001.06";
+	public static String JAXB_MSG_TYPE_CAMT_060 = "camt.060.001.03";
+	public static String JAXB_MSG_TYPE_FPS_ADMI_001 = "fps.admi.001.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADMI_002 = "fps.admi.002.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADMI_003 = "fps.admi.003.001.01";
+	public static String JAXB_MSG_TYPE_FPS_CEL_001 = "fps.cel.001.001.01";
+	public static String JAXB_MSG_TYPE_FPS_CEP_001 = "fps.cep.001.001.01";
+	public static String JAXB_MSG_TYPE_FPS_CEX_001 = "fps.cex.001.001.01";
+	public static String JAXB_MSG_TYPE_FPS_CEX_002 = "fps.cex.002.001.01";
+	public static String JAXB_MSG_TYPE_PACS_002 = "pacs.002.001.08";
+	public static String JAXB_MSG_TYPE_PACS_003 = "pacs.003.001.07";
+	public static String JAXB_MSG_TYPE_PACS_004 = "pacs.004.001.07";
+	public static String JAXB_MSG_TYPE_PACS_008 = "pacs.008.001.06";
+	public static String JAXB_MSG_TYPE_PACS_028 = "pacs.028.001.01";
+	public static String JAXB_MSG_TYPE_PAIN_009 = "pain.009.001.05";
+	public static String JAXB_MSG_TYPE_PAIN_010 = "pain.010.001.05";
+	public static String JAXB_MSG_TYPE_PAIN_011 = "pain.011.001.05";
+	public static String JAXB_MSG_TYPE_PAIN_012 = "pain.012.001.05";
+	public static String JAXB_MSG_TYPE_PAIN_018 = "pain.018.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_001 = "fps.adrs.001.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_002 = "fps.adrs.002.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_003 = "fps.adrs.003.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_004 = "fps.adrs.004.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_005 = "fps.adrs.005.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_006 = "fps.adrs.006.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_007 = "fps.adrs.007.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_008 = "fps.adrs.008.001.01";
+	public static String JAXB_MSG_TYPE_FPS_ADRS_009 = "fps.adrs.009.001.01";
+	public static String JAXB_MSG_TYPE_FPS_EDDA_001 = "fps.edda.001.001.01";
+	
+	public static String JAXB_MSG_TYPE_FFPCTO01 = "FFPCTO01";
+	public static String JAXB_MSG_TYPE_FFPCTI01 = "FFPCTI01";
+	public static String JAXB_MSG_TYPE_FFPCTI02 = "FFPCTI02";
+	
+	public static String JAXB_MSG_TYPE_FFPDDO01 = "FFPDDO01";
+	public static String JAXB_MSG_TYPE_FFPDDI01 = "FFPDDI01";
+	public static String JAXB_MSG_TYPE_FFPDDI02 = "FFPDDI02";
+	
+
+	
+	public static String JAXB_MSG_TYPE_FFPRRI01 = "FFPRRI01";
+	public static String JAXB_MSG_TYPE_FFPRRO01 = "FFPRRO01";
+	
+	public static String JAXB_MSG_TYPE_FFPADR01 = "FFPADR01";
+	public static String JAXB_MSG_TYPE_FFPADR02 = "FFPADR02";
+	public static String JAXB_MSG_TYPE_FFPADR03 = "FFPADR03";
+	public static String JAXB_MSG_TYPE_FFPADR04 = "FFPADR04";
+	
+	public static String JAXB_MSG_TYPE_FFPAUN01 = "FFPAUN01";
+	public static String JAXB_MSG_TYPE_FFPAMR04 = "FFPAMR01";
+
+	
+	
+	
+	
+	static
+	{
+		StringBuffer loc_sb = new StringBuffer();
+		loc_sb.append("com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.admi_004_001_02");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.camt_052_001_06");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.camt_054_001_06");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.camt_056_001_06");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.camt_060_001_03");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_002_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_admi_003_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_cel_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_cep_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_cex_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_cex_002_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pacs_003_001_07");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pacs_028_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pain_009_001_05");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pain_010_001_05");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pain_011_001_05");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pain_012_001_05");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.pain_018_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_002_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_003_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_005_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_006_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_007_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_008_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_009_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.fps_edda_001_001_01");
+		loc_sb.append(":com.forms.ffp.adaptor.jaxb.iclfps.xmldsig");
+
+		JAXB_CONTEXT_PACKAGE_ICLFPS = loc_sb.toString();
+	}
+}

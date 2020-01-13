@@ -1,0 +1,230 @@
+package com.forms.batch.job.unit.transactioncheck;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class BatchTransactionCheckReader extends BatchBaseJob {
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static Connection conn;
+	private static String batchNo = null;
+	private static int sequenceNumber;
+
+	private String fileName;
+
+	public void init() throws BatchJobException {
+		conn = null;
+		batchNo = String.valueOf(new Date().getTime());
+		sequenceNumber = 0;
+		fileName = null;
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		try {
+			String path = this.batchData + this.actionElement.element("parameters").elementText("local-path");
+			this.fileName = getRecordFileName();
+			ArrayList<HashMap<String, String>> resList = readLineFromFile(path + this.fileName);
+
+			if (conn == null) {
+				conn = ConnectionManager.getInstance().getConnection();
+				this.batchLogger.info("Database Is Connected");
+			}
+
+			insertUncheckedDataToTempTable(resList);
+
+			deleteFile(path + this.fileName);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckReader!");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckReader!");
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					this.batchLogger.error(e.getMessage());
+					throw new BatchJobException("Fail To Close Connection To DB In BatchTransactionCheckReader!");
+				}
+				this.batchLogger.info("Database Is Closed");
+			}
+		}
+
+		return true;
+
+	}
+
+	// read Line From File
+	private ArrayList<HashMap<String, String>> readLineFromFile(String filePath) throws IOException {
+		Date readerStartTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format("Start To Read Transaction Check File(%s) At %s", filePath, readerStartTime));
+
+		ArrayList<HashMap<String, String>> resList = new ArrayList<>();
+
+		if (!new File(filePath).exists()) {
+			throw new IOException(String.format("File(%s) Not Found!", filePath));
+		}
+
+		BufferedReader br = new BufferedReader(
+				new InputStreamReader(new FileInputStream(new File(filePath)), CHARACTER_ENCODING));
+		String content = "";
+		String[] titleArr = null;
+		int lineCount = 0;
+
+		while ((content = br.readLine()) != null) {
+			lineCount++;
+			HashMap<String, String> checkDateMap = new HashMap<>();
+			if (lineCount == 1) {
+				byte[] by1 = content.getBytes();
+
+				if ((by1[0] != (byte) 0xEF) || (by1[1] != (byte) 0xBB) || (by1[2] != (byte) 0xBF)) {
+					byte[] by2 = new byte[by1.length + 3];
+					by2[0] = (byte) 0xEF;
+					by2[1] = (byte) 0xBB;
+					by2[2] = (byte) 0xBF;
+					System.arraycopy(by1, 0, by2, 3, by1.length);
+					content = new String(by2, CHARACTER_ENCODING);
+				}
+				titleArr = content.split("\t");
+			} else if (lineCount > 1 && titleArr != null) {
+				String[] dataArr = (content + "\tend").split("\t");
+				for (int i = 0; i < titleArr.length; i++) {
+					checkDateMap.put(titleArr[i], dataArr[i]);
+				}
+
+				resList.add(checkDateMap);
+			}
+		}
+
+		// for (int i = 0; i < resList.size(); i++) {
+		// System.out.println(resList.get(i));
+		// }
+
+		if (br != null) {
+			br.close();
+		}
+
+		Date readerEndTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format("Finish Reading Transaction Check File(%s) At %s", filePath, readerEndTime));
+		this.batchLogger.info(String.format("Read Transaction Check File Use %.3f Seconds", (double)(readerEndTime.getTime() - readerStartTime.getTime()) / 1000));
+		
+		return resList;
+	}
+
+	// Insert File Unchecked Data To tb_tx_temp Table
+	private void insertUncheckedDataToTempTable(ArrayList<HashMap<String, String>> dataList) throws Exception {
+		// insert tb_tx_check_temp
+		String sql = "INSERT INTO tb_tx_check_temp(CID, FILE_NAME, CHECK_STATUS, CREATE_TIME, REQUEST_ID, TRANSACTION_DATE, TRANSACTION_TIME, REQUEST_REF_NO, ACCOUNTING_DATE, RESPONSE_ID, MESSAGE_TYPE, SYSTEM_REF_NO, SYSTEM_BEGIN_TIME, SYSTEM_END_TIME, RESPONSE_REF_NO, RESPONSE_BEGIN_TIME, RESPONSE_END_TIME, RESPONSE_STATUS, FINAL_NODE, SYSTEM_MESSAGE_CODE, RESPONSE_MESSAGE_CODE, RESPONSE_MESSAGE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		Date insertStartTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format("Start to Insert Date Into tb_tx_check_temp, file_name=%s At %s", this.fileName, insertStartTime));
+		int count = 0;
+
+		conn.setAutoCommit(false);
+		for (int i = 0; i < dataList.size(); i++) {
+
+			HashMap<String, String> data = dataList.get(i);
+			ArrayList<Object> insert_list = new ArrayList<>();
+			insert_list.add(String.format("%S%08d", batchNo, ++sequenceNumber));
+			insert_list.add(this.fileName);
+			insert_list.add("I");
+			insert_list.add(new Date());
+			insert_list.add(data.get("﻿RequestID"));
+			insert_list.add(data.get("TransactionDate"));
+			insert_list.add(data.get("TransactionTime"));
+			insert_list.add(data.get("RequestRefno"));
+			insert_list.add(data.get("AccountingDate"));
+			insert_list.add(data.get("ResponseID"));
+			insert_list.add(data.get("MessageType"));
+			insert_list.add(data.get("SystemRefno"));
+			insert_list.add(data.get("SystemBeginTIme"));
+			insert_list.add(data.get("SystemEndTIme"));
+			insert_list.add(data.get("ResponseRefno"));
+			insert_list.add(data.get("ResponseBeginTime"));
+			insert_list.add(data.get("ResponseEndTime"));
+			insert_list.add(data.get("ResponseStatus"));
+			insert_list.add(data.get("FinalNode"));
+			insert_list.add(data.get("SystemMessageCode"));
+			insert_list.add(data.get("ResponseMessageCode"));
+			insert_list.add(data.get("ResponseMessage"));
+
+			EntityManager.update(conn, sql, insert_list.toArray());
+
+			count++;
+		}
+		conn.commit();
+		conn.setAutoCommit(true);
+
+		Date insertEndTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format(
+				"Finish Inserting Date Into tb_tx_check_temp, file_name=%s, countsOfData=%d At %s", this.fileName, count, insertEndTime));
+		this.batchLogger.info(String.format("Inserting Date Into tb_tx_check_temp Use %.3f Seconds", (double)(insertEndTime.getTime() - insertStartTime.getTime()) / 1000));
+	}
+	
+	// delete file
+	private void deleteFile(String filePath) throws IOException{
+		File file = new File(filePath);
+		if(!file.exists()){
+			throw new IOException(String.format("The File(%s) Is Not Exists!", filePath));
+		}
+		
+		file.delete();
+		this.batchLogger.info(String.format("The File(%s) Has Been Deleted!", filePath));
+	}
+	
+	// get record file name
+	private String getRecordFileName() throws IOException {
+		File recordFile = new File(
+				this.batchData + this.actionElement.element("parameters").elementText("recordFile-path")
+						+ this.actionElement.element("parameters").elementText("record-fileName"));
+
+		if (!recordFile.exists()) {
+			throw new IOException(String.format("Recording File(%s) Not Found!", recordFile));
+		}
+
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(recordFile));
+		byte[] resultArr = new byte[] {};
+		byte[] mesBuffer = new byte[1024];
+		int count = 0;
+		while ((count = bis.read(mesBuffer)) != -1) {
+			byte[] tempArr = new byte[resultArr.length];
+			System.arraycopy(resultArr, 0, tempArr, 0, resultArr.length);
+			resultArr = new byte[tempArr.length + count];
+			System.arraycopy(tempArr, 0, resultArr, 0, tempArr.length);
+			System.arraycopy(mesBuffer, 0, resultArr, tempArr.length, count);
+		}
+
+		if (bis != null) {
+			bis.close();
+		}
+		
+		String fileName = new String(resultArr, CHARACTER_ENCODING);
+
+		String[] fileNameSplitArr = fileName.split("/");
+		
+		System.out.println(fileNameSplitArr[fileNameSplitArr.length-1]);
+
+		return fileNameSplitArr[fileNameSplitArr.length-1];
+
+	}
+}

@@ -1,0 +1,68 @@
+package com.forms.batch.util;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import com.forms.batch.job.outward.CreditTransferOutwardBatchFileProcessor;
+import com.forms.framework.log.BatchLogger;
+
+public class FileUtils {
+	private static BatchLogger _logger = BatchLogger.getLogger("ffp_batch", "FileUtil",
+			CreditTransferOutwardBatchFileProcessor.class);
+
+	public static ArrayList<String> getDirectoryFile(String dirPath) {
+		ArrayList<String> retFiles = new ArrayList<>();
+		File dir = new File(dirPath);
+
+		if (dir.exists()) {
+			File[] cFiles = dir.listFiles();
+			for (File f : cFiles) {
+				if (f.isDirectory()) {
+					retFiles.addAll(getDirectoryFile(f.getAbsolutePath()));
+				} else {
+					retFiles.add(f.getAbsolutePath());
+					_logger.info(String.format("The File %s Is Found", f.getAbsolutePath()));
+				}
+			}
+		}
+		
+		return retFiles;
+	}
+
+	public static String readLineFromFile(String file) {
+		_logger.info(String.format("Start To Read File: %s", file));
+		BufferedReader br = null;
+		StringBuffer strBuf = new StringBuffer();
+
+		try {
+			br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(file)), "UTF-8"));
+			String content = "";
+			while ((content = br.readLine()) != null) {
+				strBuf.append(content);
+			}
+			_logger.info(String.format("Finish Reading File: %s", file));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			_logger.error(e.getMessage());
+		} finally {
+			try {
+				if (br != null) {
+					br.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				_logger.error(e.getMessage());
+			}
+		}
+
+		return strBuf.toString();
+	}
+	
+	public static void main(String[] args) {
+
+	}
+}

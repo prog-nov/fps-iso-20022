@@ -1,0 +1,4 @@
+
+SET BAT_PATH="D:\FFP_Batch\UploadBase.BAT"
+
+CMD /C  %BAT_PATH% FPSPCRO*

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			<![CDATA[
+			MERGE INTO #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			USING
+			(
+			SELECT 	B.OREF_NO,
+						DECIMAL(SUM(CASE WHEN B.SITISTCD IS NOT NULL AND LTRIM(RTRIM(B.SITISTCD)) <> ''
+								THEN 1
+							 ELSE 0
+						END),18,2) AS 
+					CNT23E,
+						RIGHT('0000'||LTRIM(RTRIM(CHAR(SUM(CASE WHEN B.SITSCCUR IS NOT NULL AND LTRIM(RTRIM(B.SITSCCUR)) <> ''
+													THEN 1
+												 ELSE 0
+												END))))
+							,4) AS 
+					CNT71F
+			FROM #{schema}.D_OVERSEAS_PAY_SUB_TEMP B
+			GROUP BY B.OREF_NO
+			) C
+			ON A.OREF_NO = C.OREF_NO
+			WHEN MATCHED THEN UPDATE SET A.CNT23 = C.CNT23E, A.CNT71 = C.CNT71F
+			]]>
+		</sql>
+	</transaction>
+</job-sql-configs>

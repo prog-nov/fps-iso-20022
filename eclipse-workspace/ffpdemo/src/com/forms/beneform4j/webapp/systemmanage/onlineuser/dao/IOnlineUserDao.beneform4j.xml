@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.onlineuser.dao.IOnlineUserDao" >
+	<!-- 在线用户查询 欧林海 20160520 -->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.onlineuser.bean.OnlineUserBean">
+		SELECT R.SESSION_ID, R.USER_ID, S.USER_NAME, S.ORG_ID, R.CLIENT_IP, R.SERVER_IP, R.BROWSER, R.OS, R.LOGIN_DATE, R.LOGIN_TIME 
+		FROM {{BF}}_ONLINE_USER R
+		  JOIN {{BF}}_USER S ON R.USER_ID = S.USER_ID
+		<where>
+			<if test="null != userId and '' != userId">
+	     		AND S.USER_ID = #{userId, jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != userName and '' != userName">
+	     		AND S.USER_NAME = #{userName, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != orgId and '' != orgId">
+	     		AND S.ORG_ID = #{orgId, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+	</select>
+	
+</mapper>

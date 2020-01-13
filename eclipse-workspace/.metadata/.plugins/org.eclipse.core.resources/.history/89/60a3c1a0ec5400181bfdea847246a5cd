@@ -1,0 +1,59 @@
+package com.forms.batch.util;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.xml.bind.annotation.XmlElement;
+
+public class FFPMandatoryFieldsCheckUtils 
+{
+	public void checkManFields(Class<?> cl)
+	{
+		
+	}
+	
+	public static void validateRequestBody(com.forms.ffp.adaptor.jaxb.participant.request.BODY body) throws Exception
+	{
+		Field[] fields = body.getClass().getDeclaredFields();
+		
+		for(Field f : fields)
+		{
+			f.setAccessible(true);
+			
+			//String fieldName = f.getName();
+			//Class<?> type = f.getType();
+			//Annotation annotation = f.getDeclaredAnnotation(XmlElement.class);
+			Annotation[] allAnnotations = f.getDeclaredAnnotations();
+			for(Annotation an : allAnnotations)
+			{
+				Class<? extends Annotation> anType = an.annotationType();
+				
+				Annotation annotationDes = f.getDeclaredAnnotation(anType);
+				if(annotationDes instanceof XmlElement)
+				{
+					XmlElement xmlElement = (XmlElement)annotationDes;
+					
+					String anName = xmlElement.name();
+					boolean anRequired = xmlElement.required();
+					
+					//Mandatory field
+					if(anRequired)
+					{
+						//Method method = cl.getMethod("get" + anName, type);
+						
+						Object obj = f.get(body);
+						if(obj == null)
+						{
+							throw new Exception(String.format("Request xml message is missing the mandatory field : %s", anName));
+						}
+					}
+				}
+				else
+				{
+					//Add other validation when more than one annotation used
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,2 @@
+beneform4j.web=Exception of Web control layer
+beneform4j.web.upload_io_exception=Exception of upload file IO:{0}

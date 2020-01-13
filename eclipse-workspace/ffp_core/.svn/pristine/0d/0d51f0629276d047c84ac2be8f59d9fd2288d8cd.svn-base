@@ -1,0 +1,390 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.participant.FFPParticipantVoContainer;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02.FFPCTI02;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpdbi01.FFPDBI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpdbo01.FFPDBO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.ObjectFactory;
+import com.forms.ffp.core.utils.FFPStringUtils;
+/**
+ * 
+ * @author yrd
+ *
+ */
+public class FFPTcpParticipantMessageConverter {
+
+	private static Logger _logger = LoggerFactory.getLogger(FFPTcpParticipantMessageConverter.class);
+	
+	public static ROOT parseObject(String message) throws Exception
+	{
+		Unmarshaller unmarshaller = null;
+		try
+		{
+			int len = Integer.valueOf(message.substring(0,8));
+			String str = message.substring(8, len+8);
+			
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			InputSource is = new InputSource();
+			is.setCharacterStream(new StringReader(str));
+			Document doc = db.parse(is);
+			
+			Node headDoc = doc.getElementsByTagName("HEAD").item(0);
+			JAXBContext con = JAXBContext.newInstance(HEAD.class);
+			unmarshaller = con.createUnmarshaller();
+			JAXBElement<HEAD> headElement = unmarshaller.unmarshal(headDoc, HEAD.class);
+			HEAD head = headElement.getValue();
+			
+			Node bodyDoc = doc.getElementsByTagName("BODY").item(0);
+			String packageName = FFPJaxbConstants.JAXB_CONTEXT_PACKAGE_PARTICIPANT_RESPONSE + "." + head.getMessageType().toLowerCase();
+			
+			con = JAXBContext.newInstance(packageName);
+			unmarshaller = con.createUnmarshaller();
+			JAXBElement<?> bodyElement = (JAXBElement<?>)unmarshaller.unmarshal(bodyDoc);
+			Object object = bodyElement.getValue();
+
+			ROOT root = new ROOT();
+			root.setHEAD(head);
+			root.setBODY(object);
+			return root;
+		}catch (JAXBException e)
+		{
+			Object displayExpt = e;
+			if (e.getLinkedException() != null)
+			{
+				displayExpt = e.getLinkedException();
+			}
+
+			_logger.error(String.format("unmarshal %s: %s", new Object[] { displayExpt.getClass().getSimpleName(), ((Throwable) displayExpt).getMessage() }));
+			e.printStackTrace();
+			throw new RuntimeException(String.format("%s: %s", new Object[] { displayExpt.getClass().getSimpleName(), ((Throwable) displayExpt).getMessage() }));
+		} catch (Exception arg25)
+		{
+			_logger.error("unmarshal Exception: " + arg25.getMessage());
+			arg25.printStackTrace();
+			throw new RuntimeException(String.format("Exception: %s", new Object[] { arg25.getMessage() }));
+		}
+	}
+	
+	
+	public static String parseContainerXml2FFPAgent(FFPParticipantVoContainer container) throws Exception{
+		
+		String message = null;
+		StringBuilder sb = new StringBuilder();
+		if((container.getReqRoot() != null)&&(container.getResRoot() == null)){
+			message = packageXml(container.getReqRoot());
+		}
+		if((container.getReqRoot() == null)&&(container.getResRoot() != null)){
+			message = packageXml(container.getResRoot());
+		}
+		sb.append(message);
+		message = sb.toString().replaceAll("[\\s&&[^\r\n]]*(?:[\r\n][\\s&&[^\r\n]]*)+", "");
+		//补0
+		String padZero = FFPStringUtils.padZero(message.length(), 8);
+		return padZero+message;
+	}
+	
+	public static String parseXml2FFPAgent(Object obj) throws Exception{
+		
+		String message = null;
+		StringBuilder sb = new StringBuilder();
+		if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ROOT){
+			//request
+			com.forms.ffp.adaptor.jaxb.participant.request.ROOT root = (com.forms.ffp.adaptor.jaxb.participant.request.ROOT)obj;
+			message = packageXml(root);
+		}else if(obj instanceof ROOT){
+			//response
+			ROOT root = (ROOT)obj;
+			message = packageXml(root);
+		}else{
+			
+		}
+		sb.append(message);
+		message = sb.toString().replaceAll("[\\s&&[^\r\n]]*(?:[\r\n][\\s&&[^\r\n]]*)+", "");
+		//补0
+		String padZero = FFPStringUtils.padZero(message.length(), 8);
+		return padZero+message;
+	}
+	
+	public static String packageXml(Object obj) throws Exception{
+		
+		return packageXml(obj, new ValidationEventHandler()
+		{
+			public boolean handleEvent(ValidationEvent event)
+			{
+				if (event.getMessage().contains("http://www.w3.org/2000/09/xmldsig#"))
+				{
+					return true;
+				}
+				throw new RuntimeException(String.format("Marshal XML Error: %s (Object: %s)",
+						new Object[] { event.getMessage(), (event.getLocator() != null) && (event.getLocator().getObject() != null) ? event.getLocator().getObject().getClass() : "null" }));
+			}
+		});
+	}
+	
+
+	public static String packageXml(Object obj, ValidationEventHandler handler) throws Exception {
+		
+		String xml = null;
+		StringBuilder sb = null;
+		try {
+			sb = new StringBuilder();
+			//response
+			if(obj instanceof ROOT){
+				ROOT root = (ROOT)obj;
+				HEAD head = root.getHEAD();
+				//head
+				xml = packageDivideXml(head,handler);
+				sb.append(xml);
+				Object o = root.getBODY();
+				if(o instanceof FFPCTI01){
+					FFPCTI01 cti01 = (FFPCTI01)root.getBODY();
+					//body
+					xml = packageDivideXml(cti01,handler);
+					sb.append(xml);
+				}else if(o instanceof FFPCTO01){
+					FFPCTO01 cto01 = (FFPCTO01)root.getBODY();
+					//body
+					xml = packageDivideXml(cto01,handler);
+					sb.append(xml);
+				}else if(o instanceof FFPCTI02){
+					FFPCTI02 cti02 = (FFPCTI02)root.getBODY();
+					//body
+					xml = packageDivideXml(cti02,handler);
+					sb.append(xml);
+				}else if(o instanceof FFPDBO01){
+					FFPDBO01 dbo01 = (FFPDBO01)root.getBODY();
+					//body
+					xml = packageDivideXml(dbo01,handler);
+					sb.append(xml);
+				}else if(o instanceof FFPDBI01){
+					FFPDBI01 dbi01 = (FFPDBI01)root.getBODY();
+					//body
+					xml = packageDivideXml(dbi01,handler);
+					sb.append(xml);
+				}
+			}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ROOT){
+				com.forms.ffp.adaptor.jaxb.participant.request.ROOT root = (com.forms.ffp.adaptor.jaxb.participant.request.ROOT)obj;
+				com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD head = root.getHEAD();
+				//head
+				xml = packageDivideXml(head,handler);
+				sb.append(xml);
+				Object o = root.getBODY();
+				if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01)root.getBODY();
+					//body
+					xml = packageDivideXml(cti01,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01 cto01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01)root.getBODY();
+					//body
+					xml = packageDivideXml(cto01,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02 cti02 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02)root.getBODY();
+					//body
+					xml = packageDivideXml(cti02,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001 ms001= (com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001)root.getBODY();
+					//body cwh
+					xml = packageDivideXml(ms001,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01 dbo01= (com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01)root.getBODY();
+					//body cwh
+					xml = packageDivideXml(dbo01,handler);
+					sb.append(xml);
+				}else if(o instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01){
+					com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01 dbi01= (com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01)root.getBODY();
+					//body cwh
+					xml = packageDivideXml(dbi01,handler);
+					sb.append(xml);
+				}
+				
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
+	
+	public static String packageDivideXml(Object obj, ValidationEventHandler handler) throws Exception{
+		Marshaller marshaller = null;
+		StringWriter sw = new StringWriter();
+		JAXBContext context = null;
+		StringBuilder sb = new StringBuilder();
+		boolean isHead = false;
+		
+		//response
+		if(obj instanceof HEAD){
+			context = JAXBContext.newInstance(HEAD.class);
+			marshaller = context.createMarshaller();
+			HEAD head = (HEAD)obj;
+			JAXBElement<HEAD> headEle = (new ObjectFactory()).createHEAD(head);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(headEle, sw);
+			
+			isHead = true;
+		}else if(obj instanceof FFPCTI01){
+			context = JAXBContext.newInstance(FFPCTI01.class);
+			marshaller = context.createMarshaller();
+			FFPCTI01 cti01 = (FFPCTI01)obj;
+			JAXBElement<FFPCTI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof FFPCTO01){
+			context = JAXBContext.newInstance(FFPCTO01.class);
+			marshaller = context.createMarshaller();
+			FFPCTO01 cto01 = (FFPCTO01)obj;
+			JAXBElement<FFPCTO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.ObjectFactory()).createBODY(cto01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof FFPCTI02){
+			context = JAXBContext.newInstance(FFPCTI02.class);
+			marshaller = context.createMarshaller();
+			FFPCTI02 cti02 = (FFPCTI02)obj;
+			JAXBElement<FFPCTI02> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02.ObjectFactory()).createBODY(cti02);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof FFPDBO01){
+			context = JAXBContext.newInstance(FFPDBO01.class);
+			marshaller = context.createMarshaller();
+			FFPDBO01 dbo01 = (FFPDBO01)obj;
+			JAXBElement<FFPDBO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpdbo01.ObjectFactory()).createBODY(dbo01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof FFPDBI01){
+			context = JAXBContext.newInstance(FFPDBI01.class);
+			marshaller = context.createMarshaller();
+			FFPDBI01 dbi01 = (FFPDBI01)obj;
+			JAXBElement<FFPDBI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpdbi01.ObjectFactory()).createBODY(dbi01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}
+		
+		//request
+		else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD head = (com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD> headEle = (new com.forms.ffp.adaptor.jaxb.participant.request.head.ObjectFactory()).createHEAD(head);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(headEle, sw);
+			
+			isHead = true;
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.FFPCTI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01 cti01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02 cti02 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.FFPCTI02> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02.ObjectFactory()).createBODY(cti02);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001){//cwh
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001 ms001 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.FFPMS001> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpms001.ObjectFactory()).createBODY(ms001);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01 dbo01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.FFPDBO01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01.ObjectFactory()).createBODY(dbo01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}else if(obj instanceof com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01){
+			context = JAXBContext.newInstance(com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01.class);
+			marshaller = context.createMarshaller();
+			com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01 dbi01 = (com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01)obj;
+			JAXBElement<com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.FFPDBI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01.ObjectFactory()).createBODY(dbi01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+		}
+		
+		//对报文进行进一步修正
+		sb = xmlConsist(sw, sb, isHead);
+		return sb.toString();
+	}
+	
+	public static StringBuilder xmlConsist(StringWriter sw, StringBuilder sb, boolean isHead){
+		
+		String msg = null;
+		if(isHead){
+			msg = sw.toString();
+			String msgHead = msg.substring(0, msg.indexOf("?>")+2);
+			msg = msg.substring(msg.indexOf("?>")+2, msg.indexOf("</HEAD>")+7);
+			sb.append(msgHead);
+			sb.append('\n');
+			sb.append("<ROOT>");
+			sb.append(msg);
+		}else{
+			msg = sw.toString();
+			msg = msg.substring(msg.indexOf("?>")+2);
+			sb.append(msg);
+			sb.append("</ROOT>");
+		}
+		return sb;
+	}
+	
+	
+	public static void setMarshallerProperty(Marshaller marshaller, ValidationEventHandler handler) throws Exception{
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);// 格式化输出
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");// 设置输出编码,默认为UTF-8
+		marshaller.setEventHandler(handler); 
+	}
+	
+}

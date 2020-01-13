@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_PAY_MSGDATA_SUB_TEMP A
+				WHERE A.APPG_DATE <= REPLACE(CHAR(DATE('#{acDate}') - 1 DAYS),'-','')
+		  	]]>
+	  	</sql>
+	  	<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_PAY_MSGDATA_TEMP A
+				WHERE A.APPG_DATE <= REPLACE(CHAR(DATE('#{acDate}') - 1 DAYS),'-','')
+		  	]]>
+	  	</sql>
+	  	<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_FILE_P21_TEMP A
+				WHERE A.CP03_APPG_DATE <= REPLACE(CHAR(DATE('#{acDate}') - 1 DAYS),'-','')
+		  	]]>
+	  	</sql>
+	</transaction>
+	<transaction>
+		<sql>
+	  		<![CDATA[
+				DELETE FROM #{schema}.D_OVERSEAS_TX_HISTORY_TEMP A
+				WHERE A.PADT_APPG_DATE <= REPLACE(CHAR(DATE('#{acDate}') - 1 DAYS),'-','')
+		  	]]>
+	  	</sql>
+	</transaction>
+</job-sql-configs>

@@ -1,0 +1,14 @@
+package com.forms.ffp.core.exception;
+
+public class FFPSystemException extends FFPException
+{
+	private static final long serialVersionUID = 1L;
+
+	public FFPSystemException(String ip_logLevel, String ip_message) throws Exception
+	{
+		super();
+		this.setErrorLevel(ip_logLevel);
+		this.setException(ip_message);
+	}
+	
+}

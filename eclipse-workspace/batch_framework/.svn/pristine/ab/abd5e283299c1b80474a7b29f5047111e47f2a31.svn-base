@@ -1,0 +1,90 @@
+package com.forms.framework.util;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * commonAPI
+ * 
+ * @author lyz createDate:2011-04-10 updateDate:2011-04-28
+ */
+public class CommonAPI
+{
+	public static final String DATA_PIPE_DATA_TYPE_PATH = "DataTypeConfig"; // datatype
+
+	public static Map<String, String> breakPointMap = new HashMap<String, String>();
+
+	public static final String BREAKPOINT_COMMIT = "BREAKPOINT_COMMIT";
+
+	public static String schema = null;
+
+	public static final String DATAPIPE_SUCCESS = "success";
+
+	public static final String DATAPIPE_FAILUE = "failure";
+
+	public static final String ENV_BATCH_ROOT = "BATCH_ROOT";
+
+	public static final String ENV_BATCH_DATA = "BATCH_DATA";
+
+	public static final String ENV_BATCH_ISB = "BATCH_ISB";
+
+	public static final String ENV_BATCH_BACKUP = "BATCH_BACKUP";
+
+	public static final String ENV_BATCH_FTP = "BATCH_FTP";
+
+	public static final String ENV_BATCH_CONFINFO = "BATCH_CONFINFO";
+	
+	public static final String ENV_BATCH_BIN = "BATCH_BIN";
+	
+	public static final String ENV_CLEARINGCODE = "CLEARINGCODE";
+
+	public static final String ENV_BATCH_NOTSEND = "BATCH_NOTSEND";
+
+	public static final String ENV_BATCH_SPCIALPATH = "BATCH_SPCIALPATH";
+	
+	public static final String ENV_BATCH_DBBACKUP_PATH = "BATCH_DBBACKUP_PATH";
+	
+	public static final String ENV_BATCH_BIN_PATH = "BATCH_BIN";
+
+	public static final String ENV_DBTYPE = "DBTYPE";
+	
+	public static final String ENV_DBTYPE_MYSQL = "MYSQL";
+	
+	public static final String PARAMETER_HOLIDAY_TABLE = "HOLIDAY_TABLE";
+	
+	public static final String PARAMETER_BATCH_JOB_JNL_TABLE = "BATCH_JOB_JNL_TABLE";
+	
+//	 common
+	public static final String ENCODING_UTF_8 = "UTF-8";
+	
+	public static final String ENCODING_GBK = "GBK";
+	
+	public static final String ENCODING_ISO_8859_1 = "ISO-8859-1";
+	
+	public static final String ENCODING_BIG5_HKSCS = "BIG5-HKSCS";
+	
+	public static final String ENCODING_BIG5 = "BIG5";
+
+	public static final String SIGNAL_POINT = ".";
+
+	public static final String SPLIT_IND_POINT = "\\.";
+
+	public static final String STRING_TRUE = "true";
+
+	public static final String STRING_FALSE = "false";
+	
+	// default date string
+	public static final String BATCH_AC_DATE = "acDate";
+	
+	public static final String ONLINE_AC_DATE = "curAcDate";
+	
+	public static final String SERVER_DATE = "serverDate";
+
+	// DB Back Up Sql PROPERTY Path
+	public static final String PROPERTY_PATH = "PROPERTY";
+	
+	
+	//
+	public static final String METHOD_FIX_SET = "set";
+	public static final String METHOD_FIX_GET = "get";
+}

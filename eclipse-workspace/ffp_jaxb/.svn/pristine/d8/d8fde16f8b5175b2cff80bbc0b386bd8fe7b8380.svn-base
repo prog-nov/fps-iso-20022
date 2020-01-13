@@ -1,0 +1,32 @@
+package com.forms.ffp.adaptor.jaxb.participant.response;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01.FFPADRI1;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02.FFPCTI02;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpdbi01.FFPDBI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpdbo01.FFPDBO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffphc001.FFPHC001;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpms001.FFPMS001;
+
+@XmlSeeAlso({
+	FFPADRI1.class,
+    FFPCTI01.class,
+    FFPCTI02.class,
+    FFPCTO01.class,
+    FFPDBI01.class,
+    FFPDBO01.class,
+    FFPHC001.class,
+    FFPMS001.class,
+    })
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlType(name = "BODY")
+public abstract class BODY {
+
+
+}

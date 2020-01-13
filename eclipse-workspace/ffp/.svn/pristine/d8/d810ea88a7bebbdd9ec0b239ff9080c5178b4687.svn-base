@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cache="http://www.springframework.org/schema/cache" 
+	xmlns:redis="http://www.springframework.org/schema/redis"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/redis http://www.springframework.org/schema/redis/spring-redis.xsd">
+
+	<!--=============================== 缓存公共配置 开始  ======================================== -->
+	<!-- 启用缓存注解驱动 -->
+	<cache:annotation-driven error-handler="Beneform4jCacheErrorHandler"/>
+	<!-- 缓存异常处理器，开发人员如需实现自己的异常处理，比如发通知短信，只需要继承该类，并修改这里的配置即可 -->
+	<bean id="Beneform4jCacheErrorHandler" class="com.forms.beneform4j.core.util.cache.errorhandler.Beneform4jCacheErrorHandler">
+		<!-- 不忽略缓存操作出现的异常 -->
+		<property name="ignoreCacheError" value="false"/>
+	</bean>
+	<!-- 内部交互角色的bean定义 -->
+	<bean class="com.forms.beneform4j.core.util.cache.RoleBeanDefinitionConfigurer">
+		<property name="beanNames" value="CacheControlAdvisor"/>
+	</bean>
+	<!-- 缓存拦截器切面，可以在内部配置缓存拦截器 -->
+	<bean id="CacheControlAdvisor" class="com.forms.beneform4j.core.util.cache.interceptor.CacheControlAdvisor">
+<!-- 		<property name="interceptor"> -->
+		
+<!-- 		</property> -->
+	</bean>
+	<!-- 缓存统计服务实现类 -->
+	<bean id="CacheStatService" class="com.forms.beneform4j.core.util.cache.stat.base.CacheStatService"/>
+	<!-- 缓存管理器（复合管理器，可以同时使用其中的一个或多个缓存管理器） -->
+	<bean id="cacheManager" class="org.springframework.cache.support.CompositeCacheManager">
+		<property name="cacheManagers">
+			<list>
+			<!-- Redis缓存管理器 -->
+<!-- 				<ref bean="redisCacheManager"/> -->
+			<!-- EhCache缓存管理器 -->
+<!-- 				<ref bean="ehcacheCacheManager"/> -->
+            <!-- ConcurrentMap缓存管理器 -->
+				<bean class="org.springframework.cache.concurrent.ConcurrentMapCacheManager"/>
+			</list>
+		</property>
+		<property name="fallbackToNoOpCache" value="true" />
+	</bean>
+	<!--=============================== 缓存公共配置  结束  ======================================== -->
+	
+	<!--=============================== EhCache配置 开始  ======================================== -->
+<!-- 	<bean id="ehcacheCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager" -->
+<!-- 		p:cache-manager-ref="ehcache" /> -->
+<!-- 	<bean id="ehcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean" -->
+<!-- 		p:config-location="classpath:cache/ehcache/ehcache.xml" /> -->
+	<!--=============================== EhCache配置 结束  ======================================== -->
+	
+	<!--=============================== Redis配置 开始  ======================================== -->
+	<!--==== Redis公共部分开始 ====-->
+<!-- 	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">   -->
+<!--         <property name="maxTotal" value="${redis.maxTotal}" />   -->
+<!--         <property name="maxIdle" value="${redis.maxIdle}" />  -->
+<!--         <property name="minIdle" value="${redis.minIdle}" />   -->
+<!--         <property name="maxWaitMillis" value="${redis.maxWaitTime}" />   -->
+<!--         <property name="testOnBorrow" value="${redis.testOnBorrow}" />   -->
+<!--         <property name="testOnReturn" value="true" />   -->
+<!--         <property name="testWhileIdle" value="true" />   -->
+<!--     </bean>  -->
+    
+<!--     <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate"> -->
+<!-- 		<property name="connectionFactory" ref="connectionFactory" /> -->
+		<!-- value的序列化实现 -->
+<!-- 		<property name="valueSerializer"> -->
+<!-- 			<bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer"></bean> -->
+<!-- 			<bean class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"></bean> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+    
+<!--     <bean id="redisCacheManager" class="org.springframework.data.redis.cache.RedisCacheManager"> -->
+<!-- 		<constructor-arg index="0" ref="redisTemplate"/> -->
+		<!-- 事务包装，如果事务失败，缓存也会回滚 -->
+<!-- 		<property name="transactionAware" value="true"/> -->
+		<!-- 启动时是否加载已经持久化的缓存，如不加载，则统计的时候会不准确，建议不需要统计的情况下，使用懒加载 -->
+<!-- 		<property name="loadRemoteCachesOnStartup" value="true"/> -->
+		<!-- 若明确指定缓存名称，则不再动态创建新的缓存容器，若不明确指定，就根据情况自动创建 -->
+<!-- 		<property name="cacheNames"> -->
+<!-- 			<list> -->
+<!-- 				<value>beneform4j</value> -->
+<!-- 				<value>app</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+		<!-- 设置默认过期时间 -->
+<!-- 		<property name="defaultExpiration" value="1000*60*60*24"/> -->
+		<!-- 设置每个缓存容器的过期时间 -->
+<!-- 		<property name="expires"> -->
+<!-- 			<map> -->
+<!-- 				<entry key="beneform4j" value="1000*60*60*24"/> -->
+<!-- 				<entry key="app" value="1000*60*60*24"/> -->
+<!-- 			</map> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+	<!--==== Redis公共部分结束 ====-->
+
+	<!--==== 单机和简单主从模式的Redis配置开始 ====-->
+<!-- 	<bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"> -->
+<!-- 		<property name="hostName" value="${redis.host}"/> -->
+<!-- 		<property name="port" value="${redis.port}"/> -->
+<!-- 		<property name="password" value="${redis.pass}"/> -->
+<!-- 		<property name="poolConfig" ref="jedisPoolConfig"/> -->
+<!-- 	</bean> -->
+	<!--==== 单机和简单主从模式的Redis配置结束 ====-->
+	
+	<!--==== 哨兵模式的Redis配置开始 ====-->
+<!-- 	<bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"> -->
+<!-- 		<constructor-arg name="sentinelConfig" ref="sentinelConfiguration"/> -->
+<!-- 		<property name="hostName" value="${redis.host}"/> -->
+<!-- 		<property name="port" value="${redis.port}"/> -->
+<!-- 		<property name="password" value="${redis.pass}"/> -->
+<!-- 		<property name="poolConfig" ref="jedisPoolConfig"/> -->
+<!-- 	</bean> -->
+<!-- 	<bean id="sentinelConfiguration" class="org.springframework.data.redis.connection.RedisSentinelConfiguration">   -->
+<!--         <property name="master">   -->
+<!--             <bean class="org.springframework.data.redis.connection.RedisNode">   -->
+<!--                 <property name="name" value="${redis.sentinel.masterName}"/>   -->
+<!--             </bean>   -->
+<!--         </property>   -->
+<!--         <property name="sentinels">   -->
+<!--             <set>   -->
+<!--                 <bean class="org.springframework.data.redis.connection.RedisNode">   -->
+<!--                     <constructor-arg name="host" value="${redis.sentinel1.host}"/>   -->
+<!--                     <constructor-arg name="port" value="${redis.sentinel1.port}"/>   -->
+<!--                 </bean>   -->
+<!--                 <bean class="org.springframework.data.redis.connection.RedisNode">   -->
+<!--                     <constructor-arg name="host" value="${redis.sentinel2.host}"/>   -->
+<!--                     <constructor-arg name="port" value="${redis.sentinel2.port}"/>   -->
+<!--                 </bean>   -->
+<!--             </set>   -->
+<!--         </property>   -->
+<!--     </bean>   -->
+    <!--==== 哨兵模式的Redis配置结束 ====-->
+
+	<!--==== 集群模式的Redis配置开始 ====-->
+<!-- 	<bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"> -->
+<!-- 		<constructor-arg name="clusterConfig" ref="clusterConfiguration"/> -->
+<!-- 		<property name="poolConfig" ref="jedisPoolConfig"/> -->
+<!-- 	</bean> -->
+<!-- 	<bean id="clusterConfiguration" class="org.springframework.data.redis.connection.RedisClusterConfiguration"> -->
+<!-- 		<constructor-arg name="propertySource"> -->
+<!-- 			<bean class="org.springframework.core.io.support.ResourcePropertySource"> -->
+<!-- 				<constructor-arg name="location" value="classpath:cache/redis/redis-cluster.properties"/> -->
+<!-- 			</bean> -->
+<!-- 		</constructor-arg> -->
+<!-- 	</bean> -->
+	<!--==== 集群模式的Redis配置结束 ====-->
+	<!--=============================== Redis配置 结束  ======================================== -->
+</beans>

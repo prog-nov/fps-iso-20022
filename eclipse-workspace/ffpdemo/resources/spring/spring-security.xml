@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 登录认证器 -->
+	<bean class="com.forms.beneform4j.security.core.login.authc.impl.BaseAuthenticator">
+		<property name="handlers">
+			<list>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.PasswordDecodeHandler"/>			
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.FindUserHandler"/>	
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.UserLockHandler"/>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.UserIpLimitHandler"/>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.UserMaxSessionHandler"/>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.handler.DumpLoginHandler"/>
+			</list>
+		</property>
+		<property name="listeners">
+			<list>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.listener.UserParamServiceListener"/>
+				<bean class="com.forms.beneform4j.security.core.login.listener.impl.PermissionProviderListener">
+					<property name="providers">
+						<list>
+							<!-- 公共权限提供器 -->
+							<bean class="com.forms.beneform4j.webapp.authority.login.service.provider.CommonPermissionProvider"/>
+							<!-- 正常角色权限提供器 -->
+							<bean class="com.forms.beneform4j.webapp.authority.login.service.provider.NormalPermissionProvider"/>
+							<!-- 临时授权权限提供器 -->
+						</list>
+					</property>
+				</bean>
+				<bean class="com.forms.beneform4j.webapp.authority.login.service.listener.AfterLoginSuccessListener"/>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 请求过滤器，用于设置上下文环境中请求信息 -->
+	<bean id="RequestFilter" class="com.forms.beneform4j.web.servlet.filter.RequestFilter">
+		<property name="excludePattern" value="resources/**"/>
+	</bean>
+	<!-- 权限过滤器，用于权限校验 -->
+	<bean id="SecurityFilter" class="com.forms.beneform4j.webapp.authority.access.filter.SecurityFilter">
+		<property name="excludePatterns">
+			<list>
+				<value>index</value>
+				<value>getKey</value>
+				<value>login</value>
+				<value>logout</value>
+				<value>logoutAjax</value>
+				<value>ajax.AjaxServlet</value>
+				<value>attached/**</value>
+				<value>resources/**</value>
+				<value>**/*.js</value>
+				<value>commons/*</value>
+			</list>
+		</property>
+		<property name="authorizer" ref="authorizer"/>
+	</bean>
+	<!-- 授权器 -->
+	<bean id="authorizer" class="com.forms.beneform4j.security.core.access.authz.impl.BaseAuthorizer">
+		<property name="handlers">
+			<list>
+				<!-- 设置请求的权限 -->
+				<bean class="com.forms.beneform4j.webapp.authority.access.service.handler.FindPermissionAccessControlHandler">
+					<property name="requestInfoPermissionMapping">
+						<bean class="com.forms.beneform4j.webapp.authority.access.service.request.UrlRequestPermissionMapping"/>
+					</property>
+				</bean>
+				<!-- 校验请求的权限 -->
+				<bean class="com.forms.beneform4j.webapp.authority.access.service.handler.CheckPermissionAccessControlHandler"/>
+			</list>
+		</property>
+		<property name="listeners">
+			<list>
+				<!-- 访问日志 -->
+				<bean class="com.forms.beneform4j.webapp.authority.access.service.listener.VisitLogListener"/>
+			</list>
+		</property>
+		<property name="matcherWhenUrlPatternsIsEmpty" value="true"/>
+	</bean>
+</beans>

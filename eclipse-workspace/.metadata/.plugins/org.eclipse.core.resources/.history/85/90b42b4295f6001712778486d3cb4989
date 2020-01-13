@@ -1,0 +1,6 @@
+package com.forms.fps.proxy;
+
+public interface BankToIcl 
+{
+
+}

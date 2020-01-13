@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			DELETE FROM #{schema}.M_OVERSEAS_RECV_TEMP
+		</sql>
+		<sql>
+			INSERT INTO #{schema}.M_OVERSEAS_RECV_TEMP
+					(OREF_NO,		SND_BANK_ID,		RLT_OREF_NO,	SND_BKNO,		REV_BKNO,
+					MSG_TYPE,		SESSION,			ISN,			MSG_108T,		MSG_DATE,
+					MSG_TIME,		REV_MSG_DATE,		REV_MSG_TIME,	CONTENT,		DETAIL,
+					MSG_DETAIL,		SUB_COPY,			NETTLER,		NET_CHK_TXTLER,	CURR_NETNO,
+					TRAN_NETNO,		MEMO)
+			SELECT 	CP03_BUSINESS_NO,
+					B.SIT_20,
+					B.SIT_21,
+					SUBSTR(B.SEND_BANK,1,8)||SUBSTR(B.SEND_BANK,10,3) AS SEND_BANK,
+					SUBSTR(B.S_R_ORG_BANK,1,8)||SUBSTR(B.S_R_ORG_BANK,10,3) AS REV_BKNO,
+					A.CP03_MSG_TYPE,
+					B.SESSION_NUMBER,
+					B.IO_SEQ_NUMBER,
+					B.MSG_USER_REF_108,
+					B.INPUT_DATE,
+					B.INPUT_TIME,
+					B.OUTPUT_DATE,
+					TIME(SUBSTR(B.OUTPUT_TIME,1,2)||':'||SUBSTR(B.OUTPUT_TIME,3,2)||':'||'00'),
+					B.SIT_75,
+					B.SIT_77,
+					B.SIT_79,
+					B.SIT_79,
+					A.CP03_TELLER_NO,
+					A.CP03_SPRVSR_NO,
+					A.CP03_REGION,
+					A.CP03_BRANCH,
+					B.SIT_72
+			FROM #{schema}.D_OVERSEAS_FILE_P21_TEMP A
+			JOIN #{schema}.D_OVERSEAS_PAY_MSGDATA_TEMP B
+			ON A.CP03_INST = B.INST_NO
+			AND A.CP03_PAY_NO = B.PAY_NO
+			AND A.CP03_MSG_SEQ_NO = B.REC_SEQ_NO
+			AND A.CP03_APPG_DATE = B.APPG_DATE
+			WHERE A.CP03_MSG_TYPE NOT IN ('MT103', 'MT110', 'MT202')
+			AND B.IO_SIGN = 'O'
+			AND A.CP03_APPG_DATE=REPLACE('#{acDate}','-','')
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+		<![CDATA[
+			UPDATE #{schema}.M_OVERSEAS_RECV_TEMP A
+			SET A.SND_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+				     				WHERE BANK_NO = CAST(LEFT(RTRIM(SND_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+				       				FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+				       			,SND_BKNM)
+			WHERE SND_BKNO IS NOT NULL	AND RTRIM(SND_BKNO) <> ''
+		]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+		<![CDATA[
+			UPDATE #{schema}.M_OVERSEAS_RECV_TEMP A
+			SET A.REV_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+				     				WHERE BANK_NO = CAST(LEFT(RTRIM(REV_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+				       				FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+				       			,REV_BKNM)
+			WHERE REV_BKNO IS NOT NULL	AND RTRIM(REV_BKNO) <> ''
+		]]>
+		</sql>
+	</transaction>
+	
+	
+	<transaction>
+		<sql>
+			DELETE FROM #{schema}.M_OVERSEAS_RECV A
+			WHERE EXISTS
+			(
+				SELECT 1
+				FROM #{schema}.M_OVERSEAS_RECV_TEMP B
+				WHERE A.OREF_NO = B.OREF_NO
+			)
+		</sql>
+		<sql>
+			INSERT INTO #{schema}.M_OVERSEAS_RECV
+			SELECT * FROM #{schema}.M_OVERSEAS_RECV_TEMP
+		</sql>
+	</transaction>
+</job-sql-configs>

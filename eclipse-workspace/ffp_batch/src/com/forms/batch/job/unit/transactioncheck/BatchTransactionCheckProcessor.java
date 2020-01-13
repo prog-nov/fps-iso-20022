@@ -1,0 +1,388 @@
+package com.forms.batch.job.unit.transactioncheck;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.mail.internet.InternetAddress;
+
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.batch.util.SMTPEmailProp;
+import com.forms.batch.util.Email;
+
+public class BatchTransactionCheckProcessor extends BatchBaseJob {
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static Connection conn;
+	
+	public void init() throws BatchJobException {
+		conn = null;
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		try {
+			
+			if (conn == null) {
+				conn = ConnectionManager.getInstance().getConnection();
+				this.batchLogger.info("Database Is Connected");
+			}
+
+			List<Map<String, Object>> errorMapList = checkDataBetweenDataTableAndTempTable();
+			if (errorMapList == null || errorMapList.size() > 0) {
+				// send email to notify managers
+				if(this.actionElement.element("parameters").elementText("email-warning").equals("Y")){
+					sendWarningEmail(errorMapList);
+				}else{
+					this.batchLogger.info("The Warning-email Mode Has Been Shut Down!Please Check The Warn Log!");
+				}
+				
+				for (int i = 0; i < errorMapList.size(); i++) {
+					this.batchLogger.warn(String.format("Error occurred CID=%s, REQUEST_REF_NO=%s, RESPONSE_REF_NO=%s",
+							errorMapList.get(i).get("CID"), errorMapList.get(i).get("REQUEST_REF_NO"),
+							errorMapList.get(i).get("RESPONSE_REF_NO")));
+				}
+			} else {
+
+				createEndFile();
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e1);
+				throw new BatchJobException("Fail To Rollback In BatchTransactionCheckResponseFiller!");
+			}
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckProcessor!");
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e1);
+				throw new BatchJobException("Fail To Rollback In BatchTransactionCheckResponseFiller!");
+			}
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckProcessor!");
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					this.batchLogger.error(e.getMessage());
+					throw new BatchJobException("Fail To Close Connection To DB In BatchTransactionCheckProcessor!");
+
+				}
+				this.batchLogger.info("Database Is Closed");
+			}
+		}
+		return true;
+	}
+
+	// Check Data Between DataTable And TempTable
+	private List<Map<String, Object>> checkDataBetweenDataTableAndTempTable() throws Exception {
+		Date checkStartTime = Calendar.getInstance().getTime();
+		this.batchLogger
+				.info(String.format("Start to Check Data Between DataTable And TempTable At %s", checkStartTime));
+		conn.setAutoCommit(false);
+		// query error-check data(CID, CID, REQUEST_REF_NO, RESPONSE_REF_NO)
+				// from tb_tx_check_temp
+		String query_check_error_sql = "SELECT CID, REQUEST_REF_NO, RESPONSE_REF_NO FROM tb_tx_check_temp "
+				+ "WHERE CID NOT IN( SELECT A.CID FROM tb_tx_check_temp A INNER JOIN tb_tx_jnlaction B "
+				+ "ON A.REQUEST_REF_NO = B.MSG_ID AND A.MESSAGE_TYPE = B.MSG_TYPE "
+				+ "AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? INNER JOIN tb_tx_jnlaction C "
+				+ "ON A.RESPONSE_REF_NO = C.MSG_ID AND A.MESSAGE_TYPE = C.MSG_TYPE "
+				+ "AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE AND A.RESPONSE_MESSAGE = C.MSG_RESULT "
+				+ "AND A.RESPONSE_STATUS = ? AND C.MSG_STATUS = ? WHERE A.CHECK_STATUS = ? "
+				+ "AND B.MSG_ID = C.REF_MSG_ID) AND CID NOT IN( SELECT A.CID FROM tb_tx_check_temp A "
+				+ "INNER JOIN tb_tx_jnlaction B ON A.REQUEST_REF_NO = B.MSG_ID "
+				+ "AND A.MESSAGE_TYPE = B.MSG_TYPE AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? "
+				+ "INNER JOIN tb_tx_jnlaction C ON A.RESPONSE_REF_NO = C.MSG_ID "
+				+ "AND A.MESSAGE_TYPE = C.MSG_TYPE AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE "
+				+ "AND A.RESPONSE_MESSAGE = C.MSG_RESULT AND A.RESPONSE_STATUS = ? "
+				+ "AND C.MSG_STATUS = ? WHERE A.CHECK_STATUS = ? AND B.MSG_ID = C.REF_MSG_ID) "
+				+ "AND CHECK_STATUS = ?; ";
+		ArrayList<Object> query_check_error_list = new ArrayList<>();
+		
+		query_check_error_list.add("N");
+		query_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		query_check_error_list.add("N");
+		query_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		query_check_error_list.add("I");
+		query_check_error_list.add("E");
+		query_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		query_check_error_list.add("E");
+		query_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus());
+		query_check_error_list.add("I");
+		query_check_error_list.add("I");
+		
+		List<Map<String, Object>> queryCheckErrorMapList = EntityManager.queryMapList(conn, query_check_error_sql,
+				query_check_error_list.toArray());
+
+		// update error-check data(CID, CID, REQUEST_REF_NO, RESPONSE_REF_NO) in
+		// tb_tx_check_temp
+		String update_check_error_sql = "UPDATE tb_tx_check_temp SET CHECK_STATUS = ? WHERE CID NOT IN( "
+				+ "SELECT CID FROM( SELECT A.CID FROM tb_tx_check_temp A INNER JOIN tb_tx_jnlaction B "
+				+ "ON A.REQUEST_REF_NO = B.MSG_ID AND A.MESSAGE_TYPE = B.MSG_TYPE "
+				+ "AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? INNER JOIN tb_tx_jnlaction C "
+				+ "ON A.RESPONSE_REF_NO = C.MSG_ID AND A.MESSAGE_TYPE = C.MSG_TYPE "
+				+ "AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE AND A.RESPONSE_MESSAGE = C.MSG_RESULT "
+				+ "AND A.RESPONSE_STATUS = ? AND C.MSG_STATUS = ? WHERE A.CHECK_STATUS = ? "
+				+ "AND B.MSG_ID = C.REF_MSG_ID) AS E) AND CID NOT IN( SELECT CID FROM( SELECT A.CID "
+				+ "FROM tb_tx_check_temp A INNER JOIN tb_tx_jnlaction B ON A.REQUEST_REF_NO = B.MSG_ID "
+				+ "AND A.MESSAGE_TYPE = B.MSG_TYPE AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? "
+				+ "INNER JOIN tb_tx_jnlaction C ON A.RESPONSE_REF_NO = C.MSG_ID "
+				+ "AND A.MESSAGE_TYPE = C.MSG_TYPE AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE "
+				+ "AND A.RESPONSE_MESSAGE = C.MSG_RESULT AND A.RESPONSE_STATUS = ? "
+				+ "AND C.MSG_STATUS = ? WHERE A.CHECK_STATUS = ? AND B.MSG_ID = C.REF_MSG_ID) AS F) "
+				+ "AND CHECK_STATUS = ?; ";
+		ArrayList<Object> update_check_error_list = new ArrayList<>();
+
+		update_check_error_list.add("E");
+		update_check_error_list.add("N");
+		update_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_error_list.add("N");
+		update_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_error_list.add("I");
+		update_check_error_list.add("E");
+		update_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_error_list.add("E");
+		update_check_error_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus());
+		update_check_error_list.add("I");
+		update_check_error_list.add("I");
+		
+		EntityManager.update(conn, update_check_error_sql, update_check_error_list.toArray());
+		
+		// update successful-check data in tb_tx_check_temp inner join
+		// tb_tx_jnlaction
+		String update_check_tx_success_sql = "UPDATE (tb_tx_check_temp A INNER JOIN tb_tx_jnlaction B "
+				+ "ON A.REQUEST_REF_NO = B.MSG_ID AND A.MESSAGE_TYPE = B.MSG_TYPE "
+				+ "AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? INNER JOIN tb_tx_jnlaction C "
+				+ "ON A.RESPONSE_REF_NO = C.MSG_ID AND A.MESSAGE_TYPE = C.MSG_TYPE "
+				+ "AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE AND A.RESPONSE_MESSAGE = C.MSG_RESULT "
+				+ "AND A.RESPONSE_STATUS = ? AND C.MSG_STATUS = ?) "
+				+ "SET A.CHECK_STATUS = ?, B.IS_AUTOCHECK = ?, C.IS_AUTOCHECK = ? "
+				+ "WHERE A.CHECK_STATUS = ? AND B.MSG_ID = C.REF_MSG_ID; ";
+		ArrayList<Object> update_check_te_success_list = new ArrayList<>();
+		
+		update_check_te_success_list.add("N");
+		update_check_te_success_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_te_success_list.add("N");
+		update_check_te_success_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_te_success_list.add("S");
+		update_check_te_success_list.add("Y");
+		update_check_te_success_list.add("Y");
+		update_check_te_success_list.add("I");
+		
+		EntityManager.update(conn, update_check_tx_success_sql, update_check_te_success_list.toArray());
+		
+		// update successful-check data in tb_tx_check_temp inner join
+		// tb_tx_jnlaction
+		String update_check_tx_reject_sql = "UPDATE (tb_tx_check_temp A INNER JOIN tb_tx_jnlaction B "
+				+ "ON A.REQUEST_REF_NO = B.MSG_ID AND A.MESSAGE_TYPE = B.MSG_TYPE "
+				+ "AND A.RESPONSE_STATUS = ? AND B.MSG_STATUS = ? INNER JOIN tb_tx_jnlaction C "
+				+ "ON A.RESPONSE_REF_NO = C.MSG_ID AND A.MESSAGE_TYPE = C.MSG_TYPE "
+				+ "AND A.RESPONSE_MESSAGE_CODE = C.MSG_CODE AND A.RESPONSE_MESSAGE = C.MSG_RESULT "
+				+ "AND A.RESPONSE_STATUS = ? AND C.MSG_STATUS = ?) "
+				+ "SET A.CHECK_STATUS = ?, B.IS_AUTOCHECK = ?, C.IS_AUTOCHECK = ? "
+				+ "WHERE A.CHECK_STATUS = ? AND B.MSG_ID = C.REF_MSG_ID; ";
+		ArrayList<Object> update_check_tx_reject_list = new ArrayList<>();
+		
+		update_check_tx_reject_list.add("E");
+		update_check_tx_reject_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+		update_check_tx_reject_list.add("E");
+		update_check_tx_reject_list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus());
+		update_check_tx_reject_list.add("S");
+		update_check_tx_reject_list.add("Y");
+		update_check_tx_reject_list.add("Y");
+		update_check_tx_reject_list.add("I");
+		
+		EntityManager.update(conn, update_check_tx_reject_sql, update_check_tx_reject_list.toArray());
+		
+		conn.commit();
+		conn.setAutoCommit(true);
+
+		Date checkEndTime = Calendar.getInstance().getTime();
+		this.batchLogger.info(String.format("Finish Check Data Between DataTable And TempTable At %s", checkEndTime));
+		this.batchLogger.info(String.format("Check Data Between DataTable And TempTable Use %.3f Seconds",
+				(double) (checkEndTime.getTime() - checkStartTime.getTime()) / 1000));
+		
+		return queryCheckErrorMapList;
+	}
+
+	// create end file
+	private void createEndFile() throws IOException {
+		File recordFile = new File(
+				this.batchData + this.actionElement.element("parameters").elementText("recordFile-path")
+						+ this.actionElement.element("parameters").elementText("record-fileName"));
+
+		if (!recordFile.exists()) {
+			throw new IOException(String.format("Recording File(%s) Not Found!", recordFile));
+		}
+
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(recordFile));
+		byte[] resultArr = new byte[] {};
+		byte[] mesBuffer = new byte[1024];
+		int count = 0;
+		while ((count = bis.read(mesBuffer)) != -1) {
+			byte[] tempArr = new byte[resultArr.length];
+			System.arraycopy(resultArr, 0, tempArr, 0, resultArr.length);
+			resultArr = new byte[tempArr.length + count];
+			System.arraycopy(tempArr, 0, resultArr, 0, tempArr.length);
+			System.arraycopy(mesBuffer, 0, resultArr, tempArr.length, count);
+		}
+
+		if (bis != null) {
+			bis.close();
+		}
+
+		String fileName = new String(resultArr, CHARACTER_ENCODING);
+
+		String[] fileNameSplitArr = fileName.split("\\.");
+		StringBuilder fileNameBuilder = new StringBuilder();
+		
+		for (int i = 0; i < fileNameSplitArr.length; i++) {
+			if (i == fileNameSplitArr.length - 1) {
+				String prefixStr = fileNameBuilder.toString().substring(0, fileNameBuilder.toString().length()-9);
+				fileNameBuilder.delete(0, fileNameBuilder.length());
+				fileNameBuilder.append(prefixStr);
+				fileNameBuilder.append("_END.");
+				fileNameBuilder.append(fileNameSplitArr[i]);
+			} else {
+				fileNameBuilder.append(fileNameSplitArr[i]);
+			}
+		}
+		
+		/*for (int i = 0; i < fileNameSplitArr.length; i++) {
+			if (i == fileNameSplitArr.length - 1) {
+				fileNameBuilder.append("_end." + fileNameSplitArr[i]);
+			} else {
+				fileNameBuilder.append(fileNameSplitArr[i]);
+			}
+		}*/
+		new File(fileNameBuilder.toString()).createNewFile();
+		this.batchLogger.info(String.format("Creat A Success File %s", fileNameBuilder.toString()));
+
+	}
+	
+	private void sendWarningEmail(List<Map<String, Object>> errorMapList) throws Exception{
+		this.batchLogger.info("Start To Send Warning Emails!");
+		String template = this.actionElement.element("parameters").elementText("email-template");
+		StringBuffer emailMsgBuf = new StringBuffer();
+		
+		for(Map<String, Object> errorMap : errorMapList){
+			Iterator<Map.Entry<String, Object>> it = errorMap.entrySet().iterator();
+			String itemMsg = template;
+			while(it.hasNext()){
+				Map.Entry<String, Object> entry = it.next();
+				String key = (String)entry.getKey();
+				String value = (String)entry.getValue();
+				itemMsg = itemMsg.replaceAll("\\{"+(key+"")+"\\}", value+"");
+			}
+			emailMsgBuf.append(itemMsg);
+			emailMsgBuf.append("<br />");
+		}
+
+		SMTPEmailProp emailProps = new SMTPEmailProp();
+
+		String account = this.actionElement.element("parameters").elementText("email-server-account");
+		String password = this.actionElement.element("parameters").elementText("email-server-password");
+		
+		emailProps.setAccount(account);
+		emailProps.setPassword(password);
+		
+		if(this.actionElement.element("parameters").elementText("from") == null){
+			throw new Exception("From Should Have Been configured!");
+		}
+		
+		emailProps.setFrom(new InternetAddress(this.actionElement.element("parameters").elementText("from"), Email.DEFAULT_NICK_NAME, Email.DEFAULT_CHARACTER_ENCODING));
+
+		if(this.actionElement.element("parameters").elementText("recipients") == null){
+			throw new Exception("Recipients Should Have Been configured!");
+		}
+		String[] recipients = this.actionElement.element("parameters").elementText("recipients").split(";");
+		InternetAddress[] recipientsArr = new InternetAddress[recipients.length];
+		for(int i=0;i<recipients.length;i++){
+			recipientsArr[i] = new InternetAddress(recipients[i], Email.DEFAULT_NICK_NAME, Email.DEFAULT_CHARACTER_ENCODING);
+		}
+		emailProps.setRecipients(recipientsArr);
+		
+		if(this.actionElement.element("parameters").elementText("copies") != null && (!this.actionElement.element("parameters").elementText("copies").equals(""))){
+			String[] copies = this.actionElement.element("parameters").elementText("copies").split(";");
+			InternetAddress[] copiesArr = new InternetAddress[copies.length];
+			for(int i=0;i<copies.length;i++){
+				copiesArr[i] = new InternetAddress(copies[i], Email.DEFAULT_NICK_NAME, Email.DEFAULT_CHARACTER_ENCODING);
+			}
+			emailProps.setCopies(copiesArr);
+		}
+		
+		if(this.actionElement.element("parameters").elementText("blindCarbonCopies") != null && (!this.actionElement.element("parameters").elementText("blindCarbonCopies").equals(""))){
+			String[] blindCarbonCopies = this.actionElement.element("parameters").elementText("blindCarbonCopies").split(";");
+			InternetAddress[] blindCarbonCopiesArr = new InternetAddress[blindCarbonCopies.length];
+			for(int i=0;i<blindCarbonCopies.length;i++){
+				blindCarbonCopiesArr[i] = new InternetAddress(blindCarbonCopies[i], Email.DEFAULT_NICK_NAME, Email.DEFAULT_CHARACTER_ENCODING);
+			}
+			emailProps.setBlindCarbonCopies(blindCarbonCopiesArr);
+		}
+
+		if(this.actionElement.element("parameters").elementText("smtp-host") == null){
+			throw new Exception("Smtp-host Should Have Been configured!");
+		}
+		
+		emailProps.setHost(this.actionElement.element("parameters").elementText("smtp-host"));
+		
+		if(this.actionElement.element("parameters").elementText("smtp-port") == null){
+			throw new Exception("Smtp-port Should Have Been configured!");
+		}
+		
+		emailProps.setPort(this.actionElement.element("parameters").elementText("smtp-port"));
+		
+		if(this.actionElement.element("parameters").elementText("is-auth") != null && (!this.actionElement.element("parameters").elementText("is-auth").equals(""))){
+			emailProps.setAuthEnable(this.actionElement.element("parameters").elementText("is-auth"));
+		}
+
+		emailProps.setSubject(this.actionElement.element("parameters").elementText("email-subject"));
+
+		emailProps.setContent(emailMsgBuf.toString());
+		
+		if(this.actionElement.element("parameters").elementText("ssl-enable") == null){
+			throw new Exception("Ssl-enable Should Have Been configured!");
+		}
+		
+		boolean sslEnable = Boolean.parseBoolean(this.actionElement.element("parameters").elementText("ssl-enable"));
+		emailProps.setSslEnable(sslEnable);
+		if (sslEnable) {
+			emailProps.setSocketFactoryPort(this.actionElement.element("parameters").elementText("smtp-port"));
+			emailProps.setSocketFactoryClass(this.actionElement.element("parameters").elementText("socket-factory-class"));
+			emailProps.setSocketFactoryFallback(this.actionElement.element("parameters").elementText("socket-factory-fallback"));
+		}
+
+		this.batchLogger.info(String.format("Email Properties Is %s !", emailProps));
+		
+		Email.send(emailProps);
+		
+		this.batchLogger.info("Finish Sending Warning Emails!");
+	}
+
+}

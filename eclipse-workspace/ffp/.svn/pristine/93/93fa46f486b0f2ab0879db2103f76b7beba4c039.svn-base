@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.dt.FFPIDao_ECert">
+	
+	<select id="dFindValidECert" resultType="com.forms.ffp.persistents.bean.dt.FFPDtECert">
+		<![CDATA[SELECT *
+		FROM TB_DT_ECERT A
+		WHERE EFFECTIVE_DATE <= now()
+			AND EXPIRY_DATE > now()
+			AND (A.REVOKED_TS IS NULL OR A.REVOKED_TS > now())
+			AND A.SYSTEM_ID = #{systemId, jdbcType=VARCHAR}
+			AND A.ECERT_KEY = #{eCertKey, jdbcType=VARCHAR}
+		ORDER BY ID
+		]]>
+	</select>
+	
+	<update id="dUpdateRevokedTs">
+		UPDATE TB_DT_ECERT A
+		SET A.REVOKED_TS=#{RevokedTs, jdbcType=TIMESTAMP}
+		WHERE A.ID=#{id, jdbcType=INTEGER}
+			AND A.SYSTEM_ID = #{systemId, jdbcType=VARCHAR}
+			AND A.ECERT_KEY = #{eCertKey, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dUpdateByEcertKey">
+		UPDATE TB_DT_ECERT A
+		SET A.REVOKED_TS=#{RevokedTs, jdbcType=TIMESTAMP}
+		WHERE A.SYSTEM_ID = #{systemId, jdbcType=VARCHAR}
+			AND A.ECERT_KEY = #{eCertKey, jdbcType=VARCHAR}
+	</update>
+	
+	<insert id="dInsert">
+		INSERT INTO TB_DT_ECERT
+		(
+			SYSTEM_ID,		ECERT_KEY,		EFFECTIVE_DATE,
+			EXPIRY_DATE,	REVOKED_TS
+		)
+		VALUES
+		(
+			#{systemId, jdbcType=VARCHAR},		#{eCertKey, jdbcType=VARCHAR},		#{effectiveDate, jdbcType=TIMESTAMP},
+			#{expiryDate, jdbcType=TIMESTAMP},	#{RevokedTs, jdbcType=TIMESTAMP}
+		)
+	</insert>
+</mapper>

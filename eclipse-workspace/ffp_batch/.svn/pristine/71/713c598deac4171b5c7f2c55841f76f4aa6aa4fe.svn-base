@@ -1,0 +1,301 @@
+package com.forms.batch.job.unit.participant.credittransfer;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpcto01.FFPBatchMsg_CTO01;
+import com.forms.batch.util.CuttoffUtils;
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.bussiness.iclfps.pacs002.FFPVO_Pacs002_TxInfAndSts;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPStatus;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchResponseFileProcessor extends BatchBaseJob
+{
+	//private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName, CreditTransferOutwardBatchResponseFileProcessor.class);
+
+	//private static Connection loc_conn = null;
+
+	public void init()
+	{
+		//TBC
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			this.processor();
+			return true;
+		} 
+		catch (Exception ip_e)
+		{
+			throw new BatchJobException(ip_e);
+		}
+	}
+
+	private void processor() throws Exception
+	{
+		Connection con = null;
+
+		try
+		{
+			con = ConnectionManager.getInstance().getConnection();
+			
+			boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+			if(agentCutOff)
+			{
+				batchLogger.info("FFP Agent CUT OFF right now!");
+				return;
+			}
+			
+			List<FFPVO_Pacs002_TxInfAndSts> tepDataList = getTempData();
+			
+			processResponseTxData(con, tepDataList);
+		} 
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Process outward batch credit transfer file error", ex);
+			throw new BatchJobException(ex);
+		} 
+		finally
+		{
+			if(con != null)
+				con.close();
+		}
+	}
+
+	// get data from temp
+	private List<FFPVO_Pacs002_TxInfAndSts> getTempData() throws BatchJobException
+	{
+		List<FFPVO_Pacs002_TxInfAndSts> txInfList = new ArrayList<FFPVO_Pacs002_TxInfAndSts>();
+		
+		try
+		{
+			String sql_search = "SELECT * FROM TB_TX_JNL_RES_TEMP WHERE PRO_STAT = ?";
+			//String getSrcRefNmSql = "SELECT SRC_REF_NM FROM TB_TX_P100DAT A LEFT JOIN TB_TX_JNL B ON A.JNL_NO = B.JNL_NO WHERE B.TRANSACTION_ID = ? AND B.END_TO_END_ID = ? ";
+			
+			List<Object> search_param_list = new ArrayList<Object>();
+			search_param_list.add(FFPStatus.TEMP_CREDIT_STATUS.INWARD_INITATE.getCode());
+			
+			List<Map<String, Object>> queryMapList = EntityManager.queryMapList(sql_search, search_param_list.toArray());
+			if (queryMapList != null && queryMapList.size() > 0)
+			{
+				for (Map<String, Object> map : queryMapList)
+				{
+					FFPVO_Pacs002_TxInfAndSts toAgent = new FFPVO_Pacs002_TxInfAndSts();
+					toAgent.setOrgnlTxId(map.get("TRANSACTION_ID") != null ? (String) (map.get("TRANSACTION_ID")) : null);
+					toAgent.setOrgnlEndToEndId(map.get("END_TO_END_ID") != null ? (String) (map.get("END_TO_END_ID")) : null);
+					toAgent.setTxSts(map.get("TX_STAT") != null ? (String) (map.get("TX_STAT")) : null);
+					toAgent.setTxStsRsnCode(map.get("REJ_CODE") != null ? (String) (map.get("REJ_CODE")) : null);
+					List<String> reason = new ArrayList<String>();
+					reason.add(map.get("REJ_RSN") != null ? (String)(map.get("REJ_RSN")) : null);
+					toAgent.setTxStsAddtlInfList(reason.size() > 0 ? reason : null);
+					//toAgent.setClrSysRef(map.get("FPS_REF_NO") != null ? (String)(map.get("")) : null);
+					txInfList.add(toAgent);
+				}
+			} 
+			else
+			{
+				batchLogger.info("TEMP TABLE  EMPTY ! ");
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error(String.format("Failed to get file data from temporary table with batchDate[%s]", this.batchAcDate), ex);
+			throw new BatchJobException(ex);
+		}
+		return txInfList;
+	}
+
+	private void processResponseTxData(Connection conn, List<FFPVO_Pacs002_TxInfAndSts> tepDataList)
+	{
+		Date loc_startTime = Calendar.getInstance().getTime();
+		batchLogger.info("Process outward batch credit transfer response datas started at" + loc_startTime);
+		
+		for (FFPVO_Pacs002_TxInfAndSts tx_pacs002 : tepDataList)
+		{
+			try
+			{
+				String sql_query = "SELECT A.JNL_NO, A.SEQ_NO, A.SRC_REF_NM, B.MSG_ID FROM "
+						+ "(SELECT ACTION.JNL_NO, MAX(ACTION.SEQ_NO) SEQ_NO, P100.SRC_REF_NM FROM TB_TX_JNLACTION ACTION JOIN TB_TX_JNL JNL "
+						+ "ON ACTION.JNL_NO = JNL.JNL_NO JOIN TB_TX_P100DAT P100 ON P100.JNL_NO = JNL.JNL_NO "
+						+ "WHERE JNL.TRANSACTION_ID = ? AND JNL.END_TO_END_ID = ? GROUP BY ACTION.JNL_NO, P100.SRC_REF_NM) A JOIN "
+						+ "(SELECT JNL_NO, MSG_ID FROM TB_TX_JNLACTION GROUP BY JNL_NO, MSG_ID HAVING MIN(SEQ_NO) =1 ) B "
+						+ "ON A.JNL_NO = B.JNL_NO ";
+				
+				List<Object> listData = new ArrayList<Object>();
+				listData.add(tx_pacs002.getOrgnlTxId());
+				listData.add(tx_pacs002.getOrgnlEndToEndId());
+				
+				//a.Query transaction original data from FFP database
+				List<Map<String, Object>> result = EntityManager.queryMapList(conn, sql_query, listData.toArray());
+				if(result == null || result.size() < 1)
+				{
+					batchLogger.info(String.format("FFP can not find the transaction info with TX_ID[%s] and END_TO_END_ID[%s]", tx_pacs002.getOrgnlTxId(), tx_pacs002.getOrgnlEndToEndId()));
+					continue;
+				}
+				
+				Map<String, Object> map = result.get(0);//just one result
+				String jnlNo = (String)map.get("JNL_NO");
+				//int seqNo = (int)map.get("SEQ_NO");
+				String srcRefNo = (String)map.get("SRC_REF_NM");
+				String relateReqRefNo = (String)map.get("MSG_ID");
+				String resRefNo = FFPIDUtils.getRefno();//for subsequently persistent of action
+				tx_pacs002.getP100Jb().setSrcRefNm(srcRefNo);
+				String rejCd = tx_pacs002.getTxStsRsnCode();
+				String rejRsn = tx_pacs002.getTxStsAddtlInfList() != null ? tx_pacs002.getTxStsAddtlInfList().get(0) : null;
+				
+				//b.Update tb_tx_jnl.status = pacs002.status, fpsRefNo = 'fps_ref_no', tb_tx_jnlaction.msg_status = 'MSNY', tb_tx_jnl_res_temp.status = 'F'
+				updateTxStatus(jnlNo, tx_pacs002.getOrgnlTxId(), tx_pacs002.getTxSts());
+				
+				//c.Check Agent cut-off or not
+				boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+				if(agentCutOff)
+				{
+					batchLogger.info(String.format("FFP Agent CUT OFF right now in processing transaction data[TX_ID:%s]!", tx_pacs002.getOrgnlTxId()));
+					continue;
+				}
+				
+				//d.Add action flow for response message to FFP Agent
+				insertAcitonFlow(conn, jnlNo, resRefNo, FFPConstants.MSG_TYPE_FFP, FFPConstants.MSG_CODE_FFP, FFPConstants.MSG_TYPE_AGENT, FFPConstants.MSG_CODE_AGENT, 
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), rejCd, rejRsn);
+				
+				//e.Send response to FFP Agent
+				FFPBatchMsg_CTO01 cto01 = new FFPBatchMsg_CTO01(tx_pacs002, relateReqRefNo, resRefNo);
+				FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(cto01);
+				if(response != null)
+				{
+					FFPSendTcpMessageResp resp = (FFPSendTcpMessageResp)response;
+					//f.Timeout
+					if(resp.isTimeOut())
+					{
+						updateResultSts(conn, FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), jnlNo);
+					}
+					else
+					{
+						//g.Successful
+						String ack = resp.getRespMessage();
+						if(ack != null && ack.trim().toUpperCase().equals("ACK"))
+						{
+							updateResultSts(conn, FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), jnlNo);
+						}
+						else
+						{
+							//TODO
+						}
+					}
+				}
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+				batchLogger.info(String.format("Error on processing outward credit transfer transaction data[TX_ID:%s]!", tx_pacs002.getOrgnlTxId()));
+			}
+		}	
+		
+		Date loc_endTime = Calendar.getInstance().getTime();
+		batchLogger.info("Process outward batch credit transfer response datas started at end at" + loc_endTime);
+		batchLogger.info("Process outward batch credit transfer response datas use " + (loc_endTime.getTime() - loc_startTime.getTime()) / 1000);
+
+	}
+	
+	private void updateResultSts(Connection conn, String tx_status, String action_status, String jnlNo) throws BatchJobException
+	{
+		String sql = "UPDATE TB_TX_JNL JNL JOIN TB_TX_JNLACTION ACTION ON JNL.JNL_NO = ACTION.JNL_NO " + 
+				 	 "SET JNL.TX_STAT = ?, JNL.LAST_UPDATE_TS = ?, ACTION.MSG_STATUS = ?, ACTION.MSG_COMPL_DATE = ? " + 
+				 	 "WHERE JNL.JNL_NO = ?";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(tx_status);
+			list.add(new java.sql.Timestamp(new Date().getTime()));
+			list.add(action_status);
+			list.add(new java.sql.Timestamp(new Date().getTime()));
+			list.add(jnlNo);
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error(String.format("Update TX_STATUS[%s] and ACTION_STATUS[%s] with JNL_NO[%s] failed", tx_status, action_status, jnlNo), ex);
+			ex.printStackTrace();
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void insertAcitonFlow(Connection conn, String jnlNo, String msgId, String msgFromType, String msgFrom, String msgToType, String msgTo, String msgStatus, 
+			String rejCode, String rejReason) throws BatchJobException
+	{
+		String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, "
+				+ "REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(jnlNo);
+			list.add(msgId);
+			list.add(msgFromType);//MSG_FROM_TYPE
+			list.add(msgFrom);//MSG_FROM
+			list.add(msgToType);//MSG_TO_TYPE
+			list.add(msgTo);//MSG_TO
+			list.add(FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTO01);//MSG_TYPE
+			list.add(msgStatus);//MSG_STATUS
+			list.add(rejCode);//REJ_CODE
+			list.add(rejReason);//REJ_REASON
+			list.add(new java.sql.Timestamp(new Date().getTime()));//CREATE_TIME
+			list.add(new java.sql.Timestamp(new Date().getTime()));//PROCESS_TIME
+			list.add(new java.sql.Timestamp(new Date().getTime()));//COMPELE_TIME
+			
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Error on adding action flow", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void updateTxStatus(String jnlNo, String txId, String txSts) throws BatchJobException
+	{
+		String sql = "UPDATE TB_TX_JNL_RES_TEMP TEMP JOIN TB_TX_JNL JNL ON TEMP.TRANSACTION_ID = JNL.TRANSACTION_ID" + 
+					 "JOIN TB_TX_JNLACTION ACTION ON JNL.JNL_NO = ACTION.JNL_NO " + 
+					 "SET TEMP.PRO_STAT = ?, JNL.TX_STAT = ?, JNL.LAST_UPDATE_TS = ?, ACTION.MSG_STATUS = ?, ACTION.MSG_COMPL_DATE = ? " + 
+					 "WHERE JNL.JNL_NO = ? AND TEMP.TRANSACTION_ID = ? AND TEMP.PRO_STAT = ?";
+		try
+		{
+			List<Object> params = new ArrayList<Object>();
+			params.add(FFPStatus.TEMP_CREDIT_STATUS.INWARD_FINISH.getCode());
+			params.add(txSts);
+			params.add(new java.sql.Timestamp(new Date().getTime()));
+			params.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+			params.add(new java.sql.Timestamp(new Date().getTime()));
+			params.add(jnlNo);
+			params.add(txId);
+			params.add(FFPStatus.TEMP_CREDIT_STATUS.INWARD_INITATE.getCode());
+			
+			EntityManager.update(sql, params.toArray());
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Update transaction status error", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+}

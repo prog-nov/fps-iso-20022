@@ -1,0 +1,113 @@
+package com.forms.ffp.bussiness.participant.addressing.ffpadr02;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr02.ADDRESSINGSCHEMETYPE;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpadr02.FFPADR02;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.TX_STATUS;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageWrapper;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.bean.addressing.FFPJbAddressing;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.FFPIDaoService_TxjnlAction;
+import com.forms.ffp.persistents.service.addressing.FFPIDaoService_Addressing;
+
+@Component("com.forms.ffp.bussiness.participant.addressing.ffpadr02.FFPTxFfpadr02")
+@Scope("prototype")
+public class FFPTxFfpadr02 extends FFPTxBase {
+
+	@Resource(name = "FFPDaoService_Addressing")
+	private FFPIDaoService_Addressing adrsService;
+
+	@Resource(name="FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+	
+	@Resource(name="FFPDaoService_TxjnlAction")
+	private FFPIDaoService_TxjnlAction actionService;
+
+	@Override
+	public void perform() throws Exception {
+		FFPVoFfpadr02 locVo = (FFPVoFfpadr02) txVo;
+		FFPJbA100 jbA100 = locVo.getJbA100();
+		FFPMsgFfpadr02_Fpsadrs003 msgVo = new FFPMsgFfpadr02_Fpsadrs003(locVo);
+		FFPBaseResp resp = FFPAdaptorMgr.getInstance().execute(msgVo);
+
+		List<FFPTxJnlAction> actionList = actionService.inquiryByJnlNo(jbA100.getTxJnl().getJnlNo());
+		
+		long startTm = System.currentTimeMillis();
+		long currTm = startTm;
+		while (currTm <= (startTm + 60000)) {
+			currTm = System.currentTimeMillis();
+			// every 5 sec read database
+			if ((currTm - startTm) % 5000 == 0) {
+				FFPTxJnl txJnl = (FFPTxJnl) txJnlService.inquiryByJnlNo(jbA100.getTxJnl().getJnlNo());
+				// tb_tx_txJnl tx_stat change
+				if (!TX_STATUS.TX_STAT_CREAT.getStatus().equals(txJnl.getTxStat())) {
+					break;
+				}
+			}
+		}
+		msgVo.getDataFromDB(actionList);
+//		FFPBaseResp replyResp = FFPAdaptorMgr.getInstance().execute(locVo.getReply());
+	}
+
+	@Override
+	public void validate() throws Exception {
+
+	}
+
+	public void parseParticipantData(FFPParticipantMessageWrapper wrapper) throws Exception {
+		ROOT root = wrapper.getRequestRoot();
+		if ("FFPAGENT.FFPADR02".equals(this.serviceName)) {
+			txVo = new FFPVoFfpadr02();
+			FFPVoFfpadr02 locVo = (FFPVoFfpadr02) txVo;
+
+			ADDRESSINGSCHEMETYPE as = ((FFPADR02) root.getBODY()).getAdrSchme();
+
+			FFPJbA100 jbA100 = new FFPJbA100();
+			jbA100.setAdrReqId(FFPIDUtils.getAdrReqId());
+			jbA100.setSrcRefNm(as.getSrcRefNm());
+			jbA100.setProxyId(as.getProxyId());
+			jbA100.setProxyIdTp(as.getProxyIdTp());
+			jbA100.setClrCd(as.getClrCd());
+
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setJnlNo(FFPIDUtils.getJnlNo());
+			txJnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+			txJnl.setTxSrc(FFPConstants.TX_SOURCE_FFPAGENT);
+			txJnl.setTransactionId(FFPIDUtils.getTransactionId());
+			txJnl.setEndToEndId(FFPIDUtils.getEndToEndId());
+			txJnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_A100.getCode());
+			Date loc_date = new Date();
+			txJnl.setCreateTs(loc_date);
+			txJnl.setLastUpdateTs(loc_date);
+			jbA100.setTxJnl(txJnl);
+
+			// action
+			locVo.setJbA100(jbA100);
+
+			// delete on piece data from tb_dt_addressing
+			FFPJbAddressing jbAdrs = new FFPJbAddressing();
+			jbAdrs.setProxyId(as.getProxyId());
+			jbAdrs.setProxyIdTp(as.getProxyIdTp());
+			jbAdrs.setClrCd(as.getClrCd());
+
+			adrsService.sInsertAndDelete(jbA100);
+		}
+	}
+}

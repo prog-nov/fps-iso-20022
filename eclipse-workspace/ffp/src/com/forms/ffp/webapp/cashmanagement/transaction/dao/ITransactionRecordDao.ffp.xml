@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.webapp.cashmanagement.transaction.dao.ITransactionRecordDao">
+	
+	<select id="dList" resultType="com.forms.ffp.webapp.cashmanagement.transaction.bean.TransactionBean">
+		SELECT	U.JNL_NO,
+				U.TX_STAT,
+				U.TX_CODE,
+				U.TX_SRC,
+				U.TX_MODE,
+				U.TRANSACTION_ID,
+				U.END_TO_END_ID
+		FROM tb_tx_jnl U
+	     <where>
+	     	<if test="null != jnlNo and '' != jnlNo">
+	     		AND U.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != transactionId and '' != transactionId">
+	     		AND U.TRANSACTION_ID = #{transactionId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != endToEndId and '' != endToEndId">
+	     		AND U.END_TO_END_ID = #{endToEndId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != txCode and '' != txCode">
+	     		AND U.TX_CODE = #{txCode, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != txStat and '' != txStat">
+	     		AND U.TX_STAT = #{txStat, jdbcType=VARCHAR}
+	     	</if>
+	     		<if test="null != beginDate and '' != beginDate">
+	     		AND U.CREATE_TS >= #{beginDate, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != endDate and '' != endDate">
+	     		AND #{endDate, jdbcType=VARCHAR} >= U.CREATE_TS 
+	     	</if>
+	     </where>
+	     ORDER BY JNL_NO, CREATE_TS
+	</select>
+</mapper>

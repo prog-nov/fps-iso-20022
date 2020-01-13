@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>Certificates_Revoking_Processor</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>DATA_PROCESSOR</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.iclfps.payment.certificate.FPSRevokeCertificateProcessor</processor>
+		</action>
+	 </action-flow>
+</job-config>

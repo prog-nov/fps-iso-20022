@@ -1,0 +1,343 @@
+package com.forms.batch.job.commom;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.Element;
+
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.util.ResourceUtil;
+import com.forms.framework.util.XmlUtil;
+
+public class SwiftConfigUtil
+{
+	private static SwiftConfigUtil swiftConfigUtil = null;
+
+	private static Element root = null;
+
+	public static String header = "msg-head";
+
+	public static String content = "msg-content";
+
+	public static String footer = "msg-foot";
+
+	private static String configFile = null;
+
+	public static synchronized SwiftConfigUtil getInstance(String ip_configFile)
+			throws BatchFrameworkException
+	{
+		if (null == swiftConfigUtil)
+		{
+			swiftConfigUtil = new SwiftConfigUtil();
+		}
+		configFile = ip_configFile;
+		swiftConfigUtil.init();
+		return swiftConfigUtil;
+	}
+
+	private SwiftConfigUtil() throws BatchFrameworkException
+	{
+	}
+
+	private void init() throws BatchFrameworkException
+	{
+		try
+		{
+			root = XmlUtil.loadRootElement((String)ResourceUtil.getInstance().getResource(configFile, ResourceUtil.RESOURCE_PATH_TYPE));
+		} catch (Exception e)
+		{
+			throw new BatchFrameworkException("Swift config file init failed: "
+					+ e);
+		}
+	}
+
+	public static Element getRootElement()
+	{
+		return root;
+	}
+
+	public static Element getHeaders()
+	{
+		return root.element(header);
+	}
+
+//	@SuppressWarnings("unchecked")
+//	Map<String, Element>
+	public static Map getContents()
+	{
+//		Map<String, Element> msgContentList = new HashMap<String, Element>();
+		Map msgContentList = new HashMap();
+//		List <Element> elements = root.elements(content);
+		List elements = root.elements(content);
+		if(null != elements)
+		{
+			String[] msg_types = null;
+			for(int i=0;i<elements.size();i++)
+			{
+				Element e = (Element) elements.get(i);
+				msg_types = e.attributeValue("msg_type").split(",");
+				if(msg_types != null)
+				{
+					for(int j=0;j<msg_types.length;j++)
+					{
+						String tmp = msg_types[j];
+						tmp = tmp.trim();
+						if("MTn90".equals(tmp) || "MTn91".equals(tmp) || "MTn92".equals(tmp) || 
+								"MTn95".equals(tmp) || "MTn96".equals(tmp) || "MTn98".equals(tmp) || 
+								"MTn99".equals(tmp))
+						{
+							msgContentList.put(tmp.substring(0, 2) + "1" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "2" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "3" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "4" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "5" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "6" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "7" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "8" + tmp.substring(3), e);
+							msgContentList.put(tmp.substring(0, 2) + "9" + tmp.substring(3), e);
+						}else
+						{
+							msgContentList.put(tmp.trim(), e);
+						}
+					}
+				}
+			}
+			elements.clear();
+		}
+		return msgContentList;
+	}
+	
+//	@SuppressWarnings("unchecked")
+//	List<Element>
+	public static List getContentsList()
+	{
+		return root.elements(content);
+	}
+
+	public static Element getFooters()
+	{
+		return root.element(footer);
+	}
+
+//	@SuppressWarnings("unchecked")
+//	List<Element>
+	public static List getHeaderByIndex(String ip_index)
+	{
+//		List<Element> loc_elements = new ArrayList<Element>();
+		List loc_elements = new ArrayList();
+//		Iterator<Element> loc_it = getHeaders().elements().iterator();
+		Iterator loc_it = getHeaders().elements().iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if (ip_index.equals(loc_e.attributeValue("index")))
+			{
+				loc_elements.add(loc_e);
+			}
+		}
+		return loc_elements;
+	}
+
+//	@SuppressWarnings("unchecked")
+//	List<Element>
+	public static List getHeaderByIndex(String ip_index,
+			Element ip_header)
+	{
+//		List<Element> loc_elements = new ArrayList<Element>();
+		List loc_elements = new ArrayList();
+//		Iterator<Element> loc_it = ip_header.elements().iterator();
+		Iterator loc_it = ip_header.elements().iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if (ip_index.equals(loc_e.attributeValue("index")))
+			{
+				loc_elements.add(loc_e);
+			}
+		}
+		return loc_elements;
+	}
+
+//	@SuppressWarnings("unchecked")
+	public static Element getFooterBySign(String ip_sign)
+	{
+//		List<Element> loc_elements = getHeaders().elements();
+		List loc_elements = getHeaders().elements();
+//		Iterator<Element> loc_it = loc_elements.iterator();
+		Iterator loc_it = loc_elements.iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if (ip_sign.equals(loc_e.attributeValue("sign")))
+			{
+				return loc_e;
+			}
+		}
+		return null;
+	}
+
+//	@SuppressWarnings("unchecked")
+	public static Element getContentBySign(String ip_sign, Element ip_content)
+	{
+//		List<Element> loc_elements = ip_content.elements();
+		List loc_elements = ip_content.elements();
+//		Iterator<Element> loc_it = loc_elements.iterator();
+		Iterator loc_it = loc_elements.iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if("match".equals(loc_e.attributeValue("match_modle")))
+			{
+				if (ip_sign.equals(loc_e.attributeValue("sign")))
+				{
+					return loc_e;
+				}
+			}else
+			{
+				if (-1 != ip_sign.indexOf((loc_e.attributeValue("sign"))))
+				{
+					return loc_e;
+				}
+			}
+			
+		}
+		return null;
+	}
+
+//	@SuppressWarnings("unchecked")
+	public static Element getHeaderByIndexAndSign(String ip_index,
+			String ip_sign)
+	{
+//		List<Element> loc_elements = getHeaders().elements();
+		List loc_elements = getHeaders().elements();
+//		Iterator<Element> loc_it = loc_elements.iterator();
+		Iterator loc_it = loc_elements.iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if (ip_index.equals(loc_e.attributeValue("index"))
+					&& ip_sign.equals(loc_e.attributeValue("sign")))
+			{
+				return loc_e;
+			}
+		}
+		return null;
+	}
+
+//	@SuppressWarnings("unchecked")
+	public static Element getHeaderByIndexAndSign(String ip_index,
+			String ip_sign, Element ip_header)
+	{
+//		List<Element> loc_elements = ip_header.elements();
+		List loc_elements = ip_header.elements();
+//		Iterator<Element> loc_it = loc_elements.iterator();
+		Iterator loc_it = loc_elements.iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			if (ip_index.equals(loc_e.attributeValue("index"))
+					&& ip_sign.equals(loc_e.attributeValue("sign")))
+			{
+				return loc_e;
+			}
+		}
+		return null;
+	}
+
+//	@SuppressWarnings("unchecked")
+//	List<Element>
+	public static List getHeaderContents(Element ip_element)
+	{
+		return ip_element.elements();
+	}
+
+	public static SwiftField getField(Element ip_element)
+	{
+		SwiftField loc_sf = new SwiftField();
+		loc_sf.setName(ip_element.attributeValue("name"));
+		loc_sf.setBytes(Integer
+				.parseInt(ip_element.attributeValue("bytes") == null ? "0"
+						: ip_element.attributeValue("bytes")));
+		loc_sf.setDataType(ip_element.attributeValue("data-type"));
+		loc_sf.setSign(ip_element.attributeValue("sign"));
+		loc_sf.setIndex(Integer
+				.parseInt(ip_element.attributeValue("index") == null ? "0"
+						: ip_element.attributeValue("index")));
+		loc_sf.setSubSpilt(ip_element.attributeValue("sub-spilt"));
+		return loc_sf;
+	}
+//	List<SwiftField>
+	public static List getAllFields()
+	{
+//		List<SwiftField> loc_fields = new ArrayList<SwiftField>();
+		List loc_fields = new ArrayList();
+		setAllFields(getHeaders(), loc_fields);
+		setAllFields(getFooters(), loc_fields);
+		setAllFields(getContentsList(), loc_fields);
+		return loc_fields;
+	}
+
+//	@SuppressWarnings("unchecked")
+//	List<SwiftField> ip_fields
+	public static void setAllFields(Element ip_element,
+			List ip_fields)
+	{
+//		Iterator<Element> loc_it = ip_element.elements().iterator();
+		Iterator loc_it = ip_element.elements().iterator();
+		SwiftField sf = null;
+		Element loc_element = null;
+		while (loc_it.hasNext())
+		{
+//			Iterator<Element> loc_it = ip_element.elements().iterator();
+			List loc_second_elements = ((Element) loc_it.next()).elements();
+//			Iterator<Element> loc_second_it = loc_second_elements.iterator();
+			Iterator loc_second_it = loc_second_elements.iterator();
+			while (loc_second_it.hasNext())
+			{
+				loc_element = (Element) loc_second_it.next();
+				sf = getField(loc_element);
+				ip_fields.add(sf);
+			}
+		}
+	}
+	
+//	@SuppressWarnings("unchecked")
+//	List<Element> ip_element,	List<SwiftField> ip_fields
+	public static void setAllFields(List ip_element, List ip_fields)
+	{
+//		Iterator<Element> loc_it = ip_element.iterator();
+		Iterator loc_it = ip_element.iterator();
+		while (loc_it.hasNext())
+		{
+			Element loc_elements = (Element) loc_it.next();
+			setAllFields(loc_elements, ip_fields);
+		}
+	}
+
+	public static String getHeader()
+	{
+		return header;
+	}
+
+	public static void setHeader(String ip_header)
+	{
+		SwiftConfigUtil.header = ip_header;
+	}
+
+	public static String getFooter()
+	{
+		return footer;
+	}
+
+	public static void setFooter(String footer)
+	{
+		SwiftConfigUtil.footer = footer;
+	}
+
+	public static void main(String[] args) throws BatchFrameworkException
+	{
+	}
+}

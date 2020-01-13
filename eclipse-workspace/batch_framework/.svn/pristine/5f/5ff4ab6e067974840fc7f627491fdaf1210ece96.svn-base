@@ -1,0 +1,72 @@
+package com.forms.framework.util;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Properties;
+
+import com.forms.framework.log.BatchLogger;
+
+public class HolidayUtil
+{
+	private static BatchLogger logger = BatchLogger.getLogger("HolidayUtil", "HolidayUtil", HolidayUtil.class);
+	
+	private static String HOLIDAY_CONFIG = "HolidayConfig";
+	
+	private static String KEY_HOLIDAY = "H";
+	
+	private static String KEY_NOTDAY = "X";
+	
+	private static Properties pro = null;
+	
+	static
+	{
+		try
+		{
+			pro = (Properties) ResourceUtil.getInstance().getResource(HOLIDAY_CONFIG, ResourceUtil.RESOURCE_PROPERTIES_TYPE);
+		}
+		catch(Exception ip_e)
+		{
+			logger.error(ip_e.getMessage());
+		}
+	}
+	
+	public static boolean isSaturday(Date ip_date) throws Exception
+	{
+		if(ip_date == null)
+		{
+			throw new Exception("input date=null");
+		}
+		Calendar loc_cal = Calendar.getInstance();
+		loc_cal.setTime(ip_date);
+		return Calendar.SATURDAY == loc_cal.get(Calendar.DAY_OF_WEEK);
+	}
+	
+	public static boolean isHoliday(Date ip_date) throws Exception
+	{
+		if(ip_date == null)
+		{
+			throw new Exception("input date=null");
+		}
+		Calendar loc_cal = Calendar.getInstance();
+		loc_cal.setTime(ip_date);
+		SimpleDateFormat loc_sdf = new SimpleDateFormat("yyyyMM");
+		String key = loc_sdf.format(ip_date);
+		int day = loc_cal.get(Calendar.DAY_OF_MONTH);
+		String loc_value = pro.getProperty(key);
+		if(loc_value == null)
+		{
+			throw new Exception("input date=" + ip_date + " not found in HOLIDAY");
+		}
+		else
+		{
+			String loc_str = loc_value.substring(day - 1, day);
+			if(KEY_HOLIDAY.equals(loc_str))
+				return true;
+			else if(KEY_NOTDAY.equals(loc_str))
+				throw new Exception("input date=" + ip_date + " not a value date");
+			else
+				return false;
+		}
+	}
+}

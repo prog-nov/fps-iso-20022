@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch System Configuration Files-->
+<system-config>
+	<globle>
+		<default-database>risdb</default-database>
+	</globle>
+	<database-list>
+		<database>
+			<database-name>risdb</database-name>
+			<property-resource>dbProperty</property-resource>
+		</database>
+		<!--<database>
+			<database-name>risdev</database-name>
+			<url>jdbc:db2://22.136.66.88:50000/RTCXDB</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>rtcxdbm</username>
+			<password encrypted="true">E8F78BEBB9D3B9DE</password>
+			<default-schema>RTCXU01</default-schema>
+		</database>-->
+	</database-list>
+	<transfer-list>
+		<transfer>
+			<transfer-name comment="">130ftp</transfer-name>
+			<property-resource>ftpProperty</property-resource>
+		</transfer>
+		<transfer>
+			<transfer-name comment="">isb</transfer-name>
+			<property-resource>isbProperty</property-resource>
+		</transfer>
+	</transfer-list>
+</system-config>

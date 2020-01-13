@@ -1,0 +1,2 @@
+notblank.usernamepasswordtoken.userid=用戶id不能爲空
+size.usernamepasswordtoken.userpwd=密碼長度必須在[{min},{max}]之間

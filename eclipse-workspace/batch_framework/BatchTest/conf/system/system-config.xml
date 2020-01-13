@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CIB Batch System Configuration　Files-->
+<system-config>
+	<globle>
+		<default-database>dbtest</default-database>
+	</globle>
+	<database-list>
+		<database>
+			<database-name>db2</database-name>
+			<property-resource>dbProperty</property-resource>
+		</database>	
+		<database>
+			<database-name>dev</database-name>
+			<url>jdbc:db2://10.102.247.130:50001/cibdb</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>cibusr</username>
+			<password encrypted="true">1CF2F0883C0EAF05ACEA4AC3D42D1BE4</password>
+			<default-schema>CIB4</default-schema>
+		</database>
+		<database>
+			<database-name>cibdev3</database-name>
+			<url>jdbc:db2://10.102.247.130:50001/cibdb</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>cibusr</username>
+			<password encrypted="true">1CF2F0883C0EAF05ACEA4AC3D42D1BE4</password>
+			<default-schema>CIB3</default-schema>
+		</database>
+		<database>
+			<database-name>dbtest</database-name>
+			<url>jdbc:db2://10.102.247.130:50001/cibdb</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>cibtest</username>
+			<password encrypted="true">E5874769FD18537F</password>
+			<default-schema>CIB_SM_TEST</default-schema>
+		</database>
+		<database>
+			<database-name>cibdbsit2</database-name>
+			<url>jdbc:db2://10.102.247.130:50002/cibdb2</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>cibusr2</username>
+			<password encrypted="true">74F68BC0B28C1BCE</password>
+			<default-schema>CIB</default-schema>
+		</database>
+		<database>
+			<database-name>cibdbsit3</database-name>
+			<url>jdbc:db2://10.102.247.21:50003/CIBDB3</url>
+			<driver>com.ibm.db2.jcc.DB2Driver</driver>
+			<username>cibusr3</username>
+			<password encrypted="true">94EFC2677354CA69CB82D3E1F75FD56D</password>
+			<default-schema>CIB</default-schema>
+		</database>
+	</database-list>
+	<transfer-list>
+		<transfer>
+			<transfer-name comment="">130ftp</transfer-name>
+			<property-resource>Property</property-resource>
+		</transfer>
+		<transfer>
+			<transfer-name comment="">cibisb</transfer-name>
+			<property-resource>isbProperty</property-resource>
+		</transfer>
+	</transfer-list>
+</system-config>

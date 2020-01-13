@@ -1,0 +1,65 @@
+00002177<?xml version="1.0" encoding="utf-8"?>
+<ROOT>
+	<HEAD>
+		<RequestID>30</RequestID>
+		<TransactionDate>20180206</TransactionDate>
+		<TransactionTime>140203</TransactionTime>
+		<RequestRefno>AGENTMSG000001</RequestRefno>
+		<AccountingDate>20180206</AccountingDate>
+		<SystemRefno></SystemRefno>
+		<ResponseID>29</ResponseID>
+		<MessageType>FFPDDO01</MessageType>
+	</HEAD>
+	<BODY>
+		<SrcRefNm>DDO000001</SrcRefNm>
+		<SrvcMode>D1</SrvcMode>
+		<PymtCatPrps>DDBILL</PymtCatPrps>
+		<SettlDate>20180511</SettlDate>
+		<SettlAmt>10000.00</SettlAmt>
+		<SettlCcy>HKD</SettlCcy>
+		<InstrAmt>99999.00</InstrAmt>
+		<InstrCcy>HKD</InstrCcy>
+		<ChrgrsAgent>
+			<BICCODE></BICCODE>
+			<ID>012</ID>
+		</ChrgrsAgent>
+		<ChrgrsAmt>1.00</ChrgrsAmt>
+		<ChrgrsCcy>HKD</ChrgrsCcy>
+		<DrctDbtTxMndtId>1111111222222333333</DrctDbtTxMndtId>
+		<CdtrAgent>
+			<BICCODE></BICCODE>
+			<ID>345</ID>
+		</CdtrAgent>
+		<CdtrNm>025 CREDIT NAME</CdtrNm>
+		<CdtrAcTp>CUST</CdtrAcTp>
+		<CdtrAcNo>+86-15989403978</CdtrAcNo>
+		<CdtrOrgIdAnyBIC>XXXXXXXXXX</CdtrOrgIdAnyBIC>
+		<CdtrOrgIdOthrId>123456789</CdtrOrgIdOthrId>
+		<CdtrOrgIdOthrIdSchmeNm>CUST</CdtrOrgIdOthrIdSchmeNm>
+		<CdtrOrgIdOthrIssr>TEST</CdtrOrgIdOthrIssr>
+		<CdtrPrvtIdOthrId></CdtrPrvtIdOthrId>
+		<CdtrPrvtIdOthrIdSchmeNm></CdtrPrvtIdOthrIdSchmeNm>
+		<CdtrPrvtIdOthrIssr></CdtrPrvtIdOthrIssr>
+		<CdtrContPhone>85265555276</CdtrContPhone>
+		<CdtrContEmailAddr></CdtrContEmailAddr>
+		<DbtrAgent>
+			<BICCODE></BICCODE>
+			<ID>012</ID>
+		</DbtrAgent>
+		<DbtrNm>012 DEBIT NAME</DbtrNm>
+		<DbtrAcTp>CUST</DbtrAcTp>
+		<DbtrAcNo>85265555276</DbtrAcNo>
+		<DbtrOrgIdAnyBIC></DbtrOrgIdAnyBIC>
+		<DbtrOrgIdOthrId></DbtrOrgIdOthrId>
+		<DbtrOrgIdOthrIdSchmeNm></DbtrOrgIdOthrIdSchmeNm>
+		<DbtrOrgIdOthrIssr></DbtrOrgIdOthrIssr>
+		<DbtrPrvtIdOthrId>1234567890</DbtrPrvtIdOthrId>
+		<DbtrPrvtIdOthrIdSchmeNm>CUST</DbtrPrvtIdOthrIdSchmeNm>
+		<DbtrPrvtIdOthrIssr>TEST</DbtrPrvtIdOthrIssr>
+		<DbtrContPhone>85265555275</DbtrContPhone>
+		<DbtrContEmailAddr>DEBIT@TEST.COM</DbtrContEmailAddr>
+		<PytPurpType>OTHER</PytPurpType>
+		<PytPurp>SPECIFIED TEST</PytPurp>
+		<RemInfo>TEST MSG</RemInfo>
+	</BODY>
+</ROOT>

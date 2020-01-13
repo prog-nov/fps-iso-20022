@@ -1,0 +1,5 @@
+url = $__DB_RESOURCE
+driverClassName = $__DB_DRIVER
+username = $__DB_USERNAME
+password = $__DB_PASSWORD
+defaultSchema = $__DB_SCHEMA

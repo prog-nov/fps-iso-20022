@@ -1,0 +1,154 @@
+package com.forms.ffp.core.connecor.sender.tcp;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.core.config.tcp.FFPTcpConfig;
+import com.forms.ffp.core.connecor.sender.FFPSenderAgentInterface;
+import com.forms.ffp.core.exception.FFPErrorLevel;
+import com.forms.ffp.core.exception.FFPSystemException;
+import com.forms.ffp.core.exception.FFPTeErrorMsg;
+import com.forms.ffp.core.msg.iclfps.FFPSendMessageResp;
+
+public class FFPTcpSenderAgent implements FFPSenderAgentInterface
+{
+	public static final Class<FFPTcpSenderAgent> CLASS_NAME = FFPTcpSenderAgent.class;
+	public static final String ERROR_CODE = FFPTeErrorMsg.getErrorCode(CLASS_NAME, 0);
+	private static Logger logger = LoggerFactory.getLogger(CLASS_NAME);
+
+	protected FFPTcpConfig config;
+
+	public FFPTcpSenderAgent(FFPTcpConfig config){
+		this.config = config;
+		init();
+	}
+
+	public void init()
+	{
+		
+	}
+
+//	public FFPSendMessageResp sendAcknowledge(String message, Map<String, Object> propertyMap, String priority)
+//	{
+//		String destinationName = this.jmsTemplate.getDefaultDestinationName();
+//		return send(message, propertyMap, destinationName);
+//	}
+//
+//	public FFPSendMessageResp sendRequest(String message, Map<String, Object> propertyMap, String priority)
+//	{
+//		String destinationName = this.jmsTemplate.getDefaultDestinationName();
+//		return send(message, propertyMap, destinationName);
+//	}
+	
+	//FFP send to FFP agent of Synchronous method- wh
+	public String sendSynchronous(String message, Map<String, Object> propertyMap, String destinationName) throws FFPSystemException
+	{
+		final String METHOD_NAME = "sendSynchronous()";
+		Socket socket = null;
+		String resultMessage = null;
+		try 
+		{
+			String sendHost = config.getSendhost();
+			int sendPort = config.getSendport();
+			socket = new Socket(sendHost, sendPort);
+			BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			bufOut.write(message);
+			bufOut.flush();
+			socket.shutdownOutput();
+			InputStream in = socket.getInputStream();
+			//Scanner scanner = new Scanner(in, "UTF-8");
+			//resultMessage = scanner.useDelimiter("\\A").next();
+			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			StringBuilder sb = new StringBuilder();
+			if((resultMessage = br.readLine()) != null)
+			{
+				sb.append(resultMessage);
+			}
+			
+			resultMessage = sb.toString();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			logger.error("Send Message To FFP Agent had error", ex);
+			throw new FFPSystemException(
+					ERROR_CODE,
+					CLASS_NAME.getName() + "->" + METHOD_NAME, 
+					ex.getMessage(), 
+					FFPErrorLevel.ERR_LEVEL_ERRO, 
+					ex);
+		}
+		finally {
+			if(socket != null){
+				try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return resultMessage;
+	}
+
+	//send to FFPAGENT
+	public String send(String message, Map<String, Object> propertyMap, String destinationName)
+	{
+		String messageReturn = null;
+		FFPSendMessageResp resp = new FFPSendMessageResp();
+		Socket socket = null;
+		StringBuffer sb = new StringBuffer();
+		try {
+			String sendHost = config.getSendhost();
+			int sendPort = config.getSendport();
+			socket = new Socket(sendHost, sendPort);
+			BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+			bufOut.write(message);
+			bufOut.flush();
+			
+			socket.shutdownOutput();
+			BufferedReader bufIn = new BufferedReader(new InputStreamReader(socket.getInputStream(), "utf-8"));
+			String line = null;
+			while((line = bufIn.readLine())!=null){
+				sb.append(line);
+			}
+
+			messageReturn = sb.toString();
+			
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}finally {
+			if(socket != null){
+				try {
+					socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return messageReturn;
+	}
+	
+	
+
+	public FFPTcpConfig getConfig() {
+		return config;
+	}
+
+	public void setConfig(FFPTcpConfig config) {
+		this.config = config;
+	}
+
+}

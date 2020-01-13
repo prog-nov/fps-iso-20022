@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.holiday.dao.IHolidayDao" >
+	<select id="dList" resultType="com.forms.beneform4j.webapp.systemmanage.holiday.bean.HolidayBean">
+		SELECT
+		  T.SOLAR_DATE,
+		  T.IS_HOLIDAY_DAY,
+		  T.HOLIDAY_DESC
+		FROM {{BF}}_HOLIDAY T
+		WHERE T.IS_HOLIDAY_DAY='1'
+	</select>
+	
+	<select id="inquiry" resultType="com.forms.beneform4j.webapp.systemmanage.holiday.bean.HolidayBean">
+		SELECT
+		  T.SOLAR_DATE,
+		  T.IS_HOLIDAY_DAY,
+		  T.HOLIDAY_DESC
+		FROM {{BF}}_HOLIDAY T
+		WHERE T.SOLAR_DATE = #{solarDate,jdbcType=VARCHAR}
+			AND T.IS_HOLIDAY_DAY='1'
+	</select>
+	
+	<update id="dUpdate">
+	   INSERT INTO {{BF}}_HOLIDAY(SOLAR_DATE,IS_HOLIDAY_DAY,HOLIDAY_DESC)
+	   VALUES(
+	   		#{holidayBean.solarDate, jdbcType=VARCHAR},
+	   		#{holidayBean.isHolidayDay,jdbcType=VARCHAR},
+	   		HOLIDAY_DESC = #{holidayBean.holidayDesc,jdbcType=VARCHAR}
+	   	)
+	   ON DUPLICATE KEY UPDATE IS_HOLIDAY_DAY = #{holidayBean.isHolidayDay,jdbcType=VARCHAR},
+	          					HOLIDAY_DESC = #{holidayBean.holidayDesc,jdbcType=VARCHAR}
+	</update>
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<head-foot-list>
+	<head-foot name="0100006D.ec1">
+		<field name="TabName"      bytes="44"  data-type="CharTypeLJ"        value="0175040D.p22"></field>
+		<field name="Version"      bytes="10"  data-type="CharTypeLJ"        value="2.0.0" ></field>
+		<field name="SysID"        bytes="5"   data-type="CharTypeLJ"        value="BANCS"></field>
+		<field name="InfCenterID"  bytes="5"   data-type="CharTypeLJ"        value="NULL"></field>
+		<field name="ProvinceOrgID" bytes="5"  data-type="CharTypeLJ"        value="47504"></field>
+		<field name="IncID"        bytes="1"   data-type="CharTypeLJ"        value="1"></field>
+		<field name="CycFlag"      bytes="1"   data-type="CharTypeLJ"        value="D"></field>
+	</head-foot>   
+</head-foot-list>

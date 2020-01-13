@@ -1,0 +1,21 @@
+package com.forms.ffp.core.define;
+
+public class FFPConstantsTxJnl
+{
+//	config name
+	public final static String TX_STAT_CREAT = "CREAT";
+	
+	public final static String TX_STAT_APPST = "APPST";
+	
+	public final static String TX_STAT_TMOUT = "TMOUT";
+	
+	public final static String TX_STAT_COMPL = "COMPL";
+	
+	public final static String MSG_STAT_PROCE = "PROCE";
+	
+	public final static String MSG_STAT_TMOUT = "TMOUT";
+	
+	public final static String MSG_STAT_COMPL = "COMPL";
+	
+	public final static String TX_CODE_P100 = "P100";
+}

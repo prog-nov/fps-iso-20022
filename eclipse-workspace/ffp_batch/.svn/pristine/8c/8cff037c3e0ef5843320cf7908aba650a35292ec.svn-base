@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			MERGE INTO #{schema}.D_OVERSEAS_PAY A
+			USING #{schema}.D_OVERSEAS_PAY_OUTGO B
+			ON A.SUB_OREF_NO = SUBSTR(B.SEND_MSGNO,2)
+			AND A.BACK_OUR_NO IS NULL
+			WHEN MATCHED
+				THEN UPDATE SET A.BACK_OUR_NO = B.OREF_NO
+		</sql>
+	</transaction>
+</job-sql-configs>

@@ -1,0 +1,61 @@
+package com.forms.batch.util;
+
+/**
+ * data formatter
+ * 
+ * @author zt
+ * 
+ */
+public class RisDataTypeConverter
+{
+    public static boolean isString(String value, int length)
+    {
+        return true;
+    }
+    
+    public static String printDateString10(String value, int length)
+    {
+    	if(value == null || "".equals(value))
+    	{
+    		return "";
+    	}else
+    	{
+    		if(6 == value.length())
+    		{
+    			if("99".equals(value.substring(0, 2)))
+    			{
+    				return "99" + value.substring(0, 2) +
+							"-" + value.substring(2, 4) +
+							"-" + value.substring(4, 6);
+    			}
+    			return "20" + value.substring(0, 2) +
+    						"-" + value.substring(2, 4) +
+    						"-" + value.substring(4, 6);
+    		}else if(8 == value.length())
+    		{
+    			return value.substring(0, 4) +
+    						"-" + value.substring(4, 6) +
+    						"-" + value.substring(6, 8);
+    		}else if(10 == value.length())
+    		{
+    			return value.substring(0, 4) +
+    						"-" + value.substring(5, 7) +
+    						"-" + value.substring(8, 10);
+    		}else
+    		{
+    			return value;
+    		}
+    	}
+    }
+    
+    public static String printAmtString18(String value, int length)
+    {
+    	if(null == value || "".equals(value.trim()))
+    	{
+    		return null;
+    	}else
+    	{
+    		return value.replaceAll(",", ".");
+    	}
+    }
+}

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FORMS FFP" default="all">
+	<description>FORMS FFP BUILD HKCIL XSD FILE</description>
+	
+	<property name="appname" value="ffp"></property>
+	<property name="appdir" location="C:/zhangying/myprogram/java/workspace/"></property>
+	<property name="dir.src.appname" location="${appdir}"></property>
+	
+	<target name="all" depends="jaxb_request"/>
+	
+	<target name="jaxb_request" description="Process Request Message Schema">
+		<echo message="Process Request Message Schema"></echo>
+		<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+			<classpath>
+				<fileset dir="../lib/" includes="*.jar"></fileset>
+			</classpath>
+		</taskdef>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/HEAD.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.head" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPCTO01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPCTI01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpcti01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPCTI02.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpcti02" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPDBO01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpdbo01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPDBI01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpdbi01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPMS001.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpms001" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPHC001.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffphc001" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPHC002.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffphc002" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+	</target>
+</project>

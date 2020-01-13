@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>DISPATCHER</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>DISPATCHER</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.dispatcher.DispatcherProcessor</processor>
+			<private-settings>
+				<thread-pool>10</thread-pool>
+				<check-token-period>60000</check-token-period>
+			</private-settings>
+			<timer-group>
+				<timer>
+					<name>INWARD_FPSPYCI</name>
+					<command>INWARD_FPSPYCI.BAT</command>
+					<delay>1</delay>
+					<next-method>END</next-method>
+					<period>1</period>
+					<timeunit>SECONDS</timeunit>
+				</timer>
+			</timer-group>
+		</action>
+	 </action-flow>
+</job-config>

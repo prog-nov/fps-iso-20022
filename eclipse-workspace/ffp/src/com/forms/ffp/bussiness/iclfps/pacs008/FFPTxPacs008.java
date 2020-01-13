@@ -1,0 +1,441 @@
+package com.forms.ffp.bussiness.iclfps.pacs008;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.BranchAndFinancialInstitutionIdentification51;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CashAccount241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.CreditTransferTransaction251;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.GenericOrganisationIdentification11;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsPurposeCode;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.MSG_STATUS;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.TX_STATUS;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.iclfps.FFPSendMessageResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.core.utils.FFPStringUtils;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP110;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.FFPIDaoService_TxjnlAction;
+import com.forms.ffp.persistents.service.payment.credittransfer.FFPIDaoService_P110;
+
+@Component("ICL.pacs.008.001.06")
+@Scope("prototype")
+public class FFPTxPacs008 extends FFPTxBase {
+	
+	private Logger logger = LoggerFactory.getLogger(FFPTxPacs008.class);
+	
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+
+	@Resource(name = "FFPDaoService_P110")
+	private FFPIDaoService_P110 daoService;
+
+	@Resource(name = "FFPDaoService_TxjnlAction")
+	private FFPIDaoService_TxjnlAction actionService;
+
+	@Override
+	public void perform() throws Exception {
+		if ("ICL.pacs.008.001.06".equals(this.serviceName)) {
+			FFPVO_Pacs008 locVo = (FFPVO_Pacs008) txVo;
+			if (locVo.getCdtTrfTxInfList() != null) {
+				for (int loc_i = 0; loc_i < locVo.getCdtTrfTxInfList().size(); loc_i++) {
+					FFPVO_Pacs008_CdtTrfTxInf loc_cdtTrfTx = locVo.getCdtTrfTxInfList().get(loc_i);
+
+					this.insertDate2DB(loc_cdtTrfTx);
+					
+					FFPJbP110 loc_p110 = loc_cdtTrfTx.getP110Jb();
+					List<FFPTxJnlAction> actionList = loc_p110.getJnlActionList();
+					if ("SKIP_PYE_VRF".equals(loc_cdtTrfTx.getLclInstrm())) {
+						
+						loc_p110.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus());
+						loc_p110.getTxJnl().setLastUpdateTs(new Date());
+						FFPMsgPacs008_CTI01 locMsg = new FFPMsgPacs008_CTI01(locVo, loc_i);
+						// REQ ACTION
+						FFPTxJnlAction sendToAgentAction = FFPJnlUtils.getInstance().newJnlAction(
+								loc_p110.getTxJnl().getJnlNo(), locMsg.getReqRefNo(), FFPConstants.MSG_DIRECTION_OUTWARD,
+								locMsg.getResponseID(), locMsg.getMsgType(), MSG_STATUS.MSG_STAT_MSYNC.getStatus(), 
+								locMsg.getCreateTs(), new Date(), null, null);
+						actionList.add(sendToAgentAction);
+						
+						try
+						{
+							FFPSendTcpMessageResp msgResp = FFPAdaptorMgr.getInstance().execute(locMsg);
+							sendToAgentAction.setMsgComplTs(new Date());
+							if (msgResp.isTimeOut())
+							{
+								sendToAgentAction.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+							}
+							else
+							{
+								locMsg.unmarshalResponseMsg(msgResp.getRespMessage());
+								FFPTxJnlAction receivefromAgentAction = FFPJnlUtils.getInstance().newJnlAction(
+										loc_p110.getTxJnl().getJnlNo(), locMsg.getResRefNo(), FFPConstants.MSG_DIRECTION_INWARD,
+										locMsg.getResponseID(), locMsg.getMsgType(), MSG_STATUS.MSG_STAT_MSYNC.getStatus(), 
+										locMsg.getResponseMsgCode(),locMsg.getResponseMsg(),
+										locMsg.getRespMsgCreateTs(), new Date(), new Date(), locMsg.getReqRefNo(), null);
+								actionList.add(receivefromAgentAction);
+								
+								FFPVO_Pacs008_CTI01REPLY reply = loc_cdtTrfTx.getCti01Reply();
+								if ("R".equals(reply.getRsltCd()))
+								{
+									loc_p110.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_AGENTREJCT.getStatus());
+									loc_p110.getTxJnl().setTxRejCode(reply.getRejCd());
+									loc_p110.getTxJnl().setTxRejReason(reply.getRejMsg());
+								}
+							}
+						} catch (Exception ip_e) {
+							logger.warn("FFPTxPacs008", ip_e);
+							throw ip_e;
+						} finally {
+							daoService.updateJnlStat(loc_p110);
+						}
+					} else if ("PERFORM_PYE_VRF".equals(loc_cdtTrfTx.getLclInstrm())) {
+						FFPMsgPacs008_CTI02 locMsg = new FFPMsgPacs008_CTI02(locVo, loc_i);
+
+						FFPTxJnlAction sendToAgentAction = FFPJnlUtils.getInstance().newJnlAction(
+								loc_p110.getTxJnl().getJnlNo(), locMsg.getReqRefNo(), FFPConstants.MSG_DIRECTION_OUTWARD,
+								locMsg.getResponseID(), locMsg.getMsgType(), MSG_STATUS.MSG_STAT_CREAT.getStatus(), 
+								locMsg.getCreateTs(), new Date(), null, null);
+						actionList.add(sendToAgentAction);
+
+						FFPSendTcpMessageResp msgRespFromAgent = null;
+						try {
+							msgRespFromAgent = FFPAdaptorMgr.getInstance().execute(locMsg);
+							sendToAgentAction.setMsgComplTs(new Date());
+							if (msgRespFromAgent.isTimeOut()) {
+								sendToAgentAction.setMsgStatus(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+								sendToAgentAction.setMsgProceTs(new Date());
+								sendToAgentAction.setMsgComplTs(new Date());
+							}else{
+								locMsg.unmarshalResponseMsg(msgRespFromAgent.getRespMessage());
+								
+								// after unmarshal response msg
+								FFPTxJnlAction receivefromAgentAction = FFPJnlUtils.getInstance().newJnlAction(
+										loc_p110.getTxJnl().getJnlNo(), locMsg.getResRefNo(), FFPConstants.MSG_DIRECTION_INWARD,
+										locMsg.getResponseID(), locMsg.getMsgType(), MSG_STATUS.MSG_STAT_MSYNC.getStatus(), 
+										locMsg.getResponseMsgCode(),locMsg.getResponseMsg(),
+										locMsg.getRespMsgCreateTs(), new Date(), new Date(), locMsg.getReqRefNo(),"N");
+								actionList.add(receivefromAgentAction);
+								
+								//update txJnl
+								FFPTxJnl txJnlUpdate = loc_p110.getTxJnl();
+								txJnlUpdate.setTxStat(TX_STATUS.TX_STAT_PDNG.getStatus());
+								txJnlUpdate.setLastUpdateTs(new Date());
+								if ("R".equals(locMsg.getRsltCd())) {
+									txJnlUpdate.setTxRejCode(locMsg.getRejCd());
+									txJnlUpdate.setTxRejReason(locMsg.getRejMsg());
+								}
+								
+								FFPMsgPacs008_Pacs002 msgPacs002 = new FFPMsgPacs008_Pacs002(locVo, loc_i);
+								FFPTxJnlAction sendToICLAction = FFPJnlUtils.getInstance().newJnlAction(
+										loc_p110.getTxJnl().getJnlNo(), msgPacs002.getMsgID(), FFPConstants.MSG_DIRECTION_OUTWARD, 
+										FFPConstants.RELATION_SYSTEM_HKICL, msgPacs002.getMsgTypeName(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), 
+										msgPacs002.getCreDt(), new Date(), null, locVo.getMsgId());
+								actionList.add(sendToICLAction);
+								
+								FFPSendMessageResp msgRespFromICL = FFPAdaptorMgr.getInstance().execute(msgPacs002);
+								sendToICLAction.setMsgStatus(msgRespFromICL.getMessageStatus());
+								sendToICLAction.setMsgComplTs(new Date());
+								if(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus().equals(msgRespFromICL.getMessageStatus()))
+								{
+									loc_p110.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+								}
+							}
+						} catch (Exception ip_e) {
+							logger.warn("FFPTxPacs008", ip_e);
+							throw ip_e;
+						} finally {
+							daoService.updateJnlStat(loc_p110);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public boolean validate() {
+		return true;
+	}
+
+	@Override
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+
+		if ("ICL.pacs.008.001.06".equals(this.serviceName)) {
+			txVo = new FFPVO_Pacs008();
+			FFPVO_Pacs008 loc_vo = (FFPVO_Pacs008) txVo;
+
+			parseISO20022BizDataHead(bizData);
+
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			loc_vo.setMsgId(doc.getFIToFICstmrCdtTrf().getGrpHdr().getMsgId());
+			loc_vo.setCreDtTm(doc.getFIToFICstmrCdtTrf().getGrpHdr().getCreDtTm().toGregorianCalendar().getTime());
+			String numberOfTx = doc.getFIToFICstmrCdtTrf().getGrpHdr().getNbOfTxs();
+			loc_vo.setNbOfTxs(numberOfTx);
+			loc_vo.setSttlmMtd(doc.getFIToFICstmrCdtTrf().getGrpHdr().getSttlmInf().getSttlmMtd().value());
+			loc_vo.setClrSys(doc.getFIToFICstmrCdtTrf().getGrpHdr().getSttlmInf().getClrSys().getPrtry().value());
+			List<CreditTransferTransaction251> list = doc.getFIToFICstmrCdtTrf().getCdtTrfTxInf();
+			List<FFPVO_Pacs008_CdtTrfTxInf> pacs008TxInf = new ArrayList<FFPVO_Pacs008_CdtTrfTxInf>();
+			loc_vo.setCdtTrfTxInfList(pacs008TxInf);
+
+			for (CreditTransferTransaction251 ct251 : list) {
+				FFPVO_Pacs008_CdtTrfTxInf cdtTxInfo = new FFPVO_Pacs008_CdtTrfTxInf();
+				pacs008TxInf.add(cdtTxInfo);
+				cdtTxInfo.setInstrId(ct251.getPmtId().getInstrId());
+				cdtTxInfo.setEndToEndId(ct251.getPmtId().getEndToEndId());
+				cdtTxInfo.setTxId(ct251.getPmtId().getTxId());
+				cdtTxInfo.setClrSysRef(ct251.getPmtId().getClrSysRef());
+
+				// payment type information
+				if (ct251.getPmtTpInf() != null && ct251.getPmtTpInf().getLclInstrm() != null) {
+					cdtTxInfo.setLclInstrm(ct251.getPmtTpInf().getLclInstrm().getPrtry().value()); 
+					if (ct251.getPmtTpInf().getCtgyPurp() != null) {
+						cdtTxInfo.setCtgyPurp(ct251.getPmtTpInf().getCtgyPurp().getPrtry().value());
+					}
+				}
+
+				cdtTxInfo.setIntrBkSttlmAmt(String.valueOf(ct251.getIntrBkSttlmAmt().getValue()));
+				cdtTxInfo.setIntrBkSttlmAmtCcy(ct251.getIntrBkSttlmAmt().getCcy().value());
+
+				if (ct251.getIntrBkSttlmDt() != null) {
+					cdtTxInfo.setIntrBkSttlmDt(ct251.getIntrBkSttlmDt().toGregorianCalendar().getTime());
+				}
+				if (ct251.getSttlmTmIndctn() != null && ct251.getSttlmTmIndctn().getCdtDtTm() != null) {
+					cdtTxInfo.setSttlmTmIndctn(ct251.getSttlmTmIndctn().getCdtDtTm().toGregorianCalendar().getTime());
+				}
+				if (ct251.getInstdAmt() != null) {
+					cdtTxInfo.setInstdAmt(String.valueOf(ct251.getInstdAmt().getValue()));
+					cdtTxInfo.setInstdAmtCcy(ct251.getInstdAmt().getCcy().value());
+				}
+
+				// charge info.
+				cdtTxInfo.setChrgBr(ct251.getChrgBr().value());
+				if(ct251.getChrgsInf() != null)
+				{
+					cdtTxInfo.setChrgAmount(ct251.getChrgsInf().getAmt().getValue());
+					cdtTxInfo.setChrgCcy(ct251.getChrgsInf().getAmt().getCcy().value());
+					cdtTxInfo.setChrgAgentBic(ct251.getChrgsInf().getAgt().getFinInstnId().getBICFI());
+					cdtTxInfo.setChrgAgentBic(ct251.getChrgsInf().getAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+				}
+
+				// Debtor
+				cdtTxInfo.setDbtrNm(ct251.getDbtr().getNm());
+				if (ct251.getDbtr().getId() != null) {
+					if (ct251.getDbtr().getId().getOrgId() != null) {
+						cdtTxInfo.setDbtrOrgIdAnyBIC(ct251.getDbtr().getId().getOrgId().getAnyBIC());
+						GenericOrganisationIdentification11 other = ct251.getDbtr().getId().getOrgId().getOthr();
+						if (other != null) // 0..*,maybe a collection
+						{
+							cdtTxInfo.setDbtrOrgIdOthrId(other.getId());
+							cdtTxInfo.setDbtrOrgIdOthrIdSchmeNm(other.getSchmeNm().getCd().value());
+							cdtTxInfo.setDbtrOrgIdOthrIssr(other.getIssr());
+						}
+					}
+					else if(ct251.getDbtr().getId().getPrvtId() != null)
+					{
+						
+						cdtTxInfo.setDbtrPrvtIdOthrId(ct251.getDbtr().getId().getPrvtId().getOthr().getId());
+						cdtTxInfo.setDbtrPrvtIdOthrIdSchmeNm(ct251.getDbtr().getId().getPrvtId().getOthr().getSchmeNm().getCd().value());
+						cdtTxInfo.setDbtrPrvtIdOthrIssr(ct251.getDbtr().getId().getPrvtId().getOthr().getIssr());
+					}
+				}
+
+				cdtTxInfo.setDbtrMobNb(
+						ct251.getDbtr().getCtctDtls() != null ? ct251.getDbtr().getCtctDtls().getMobNb() : null);
+				cdtTxInfo.setDbtrEmailAdr(
+						ct251.getDbtr().getCtctDtls() != null ? ct251.getDbtr().getCtctDtls().getEmailAdr() : null);
+
+				// Debtor Account and Debtor Agent
+				CashAccount241 dbtAcc = ct251.getDbtrAcct();
+				BranchAndFinancialInstitutionIdentification51 dbtAgt = ct251.getDbtrAgt();
+				if (dbtAcc != null) {
+					cdtTxInfo.setDbtrAcctId(dbtAcc.getId().getOthr().getId());
+					cdtTxInfo.setDbtrAccSchmeNm(dbtAcc.getId().getOthr().getSchmeNm() != null
+							? dbtAcc.getId().getOthr().getSchmeNm().getPrtry().value() : null);
+				}
+
+				if (dbtAgt != null) {
+					cdtTxInfo.setDbtrAgBICFI(dbtAgt.getFinInstnId().getBICFI());
+					cdtTxInfo.setDbtrAgClrSysMmbId(dbtAgt.getFinInstnId().getClrSysMmbId() != null
+							? dbtAgt.getFinInstnId().getClrSysMmbId().getMmbId() : null);
+				}
+
+				// Creditor Agent
+				BranchAndFinancialInstitutionIdentification51 cdtrAgt = ct251.getCdtrAgt();
+				if (cdtrAgt != null) {
+					cdtTxInfo.setCdtrAgtBICFI(cdtrAgt.getFinInstnId().getBICFI());
+					cdtTxInfo.setCdtrAgtClrSysMmbId(cdtrAgt.getFinInstnId().getClrSysMmbId() != null
+							? cdtrAgt.getFinInstnId().getClrSysMmbId().getMmbId() : null);
+				}
+				// Creditor
+				cdtTxInfo.setCdtrNm(ct251.getCdtr().getNm());
+				if (ct251.getCdtr().getId() != null) {
+					if (ct251.getCdtr().getId().getOrgId() != null) {
+						cdtTxInfo.setCdtrOrgIdAnyBIC(ct251.getCdtr().getId().getOrgId().getAnyBIC());
+						GenericOrganisationIdentification11 other = ct251.getCdtr().getId().getOrgId().getOthr();
+						if (other != null) // 0..*,maybe a collection
+						{
+							cdtTxInfo.setCdtrOrgIdOthrId(other.getId());
+							cdtTxInfo.setCdtrOrgIdOthrIdSchmeNm(other.getSchmeNm().getCd().value());
+							cdtTxInfo.setCdtrOrgIdOthrIssr(other.getIssr());
+						}
+					}
+					else if(ct251.getCdtr().getId().getPrvtId() != null)
+					{
+						
+						cdtTxInfo.setCdtrPrvtIdOthrId(ct251.getCdtr().getId().getPrvtId().getOthr().getId());
+						cdtTxInfo.setCdtrPrvtIdOthrIdSchmeNm(ct251.getCdtr().getId().getPrvtId().getOthr().getSchmeNm().getCd().value());
+						cdtTxInfo.setCdtrPrvtIdOthrIssr(ct251.getCdtr().getId().getPrvtId().getOthr().getIssr());
+					}
+				}
+
+				cdtTxInfo.setCdtrMobNb(
+						ct251.getCdtr().getCtctDtls() != null ? ct251.getCdtr().getCtctDtls().getMobNb() : null);
+				cdtTxInfo.setCdtrEmailAdr(
+						ct251.getCdtr().getCtctDtls() != null ? ct251.getCdtr().getCtctDtls().getEmailAdr() : null);
+
+				// Creditor Account
+				CashAccount241 cbtrAcc = ct251.getCdtrAcct();
+				if (cbtrAcc != null) {
+					cdtTxInfo.setCdtrAcctId(cbtrAcc.getId().getOthr().getId());
+					cdtTxInfo.setCdtrAcctSchmeNm(cbtrAcc.getId().getOthr().getSchmeNm() != null
+							? cbtrAcc.getId().getOthr().getSchmeNm().getPrtry().value() : null);
+				}
+
+				// purpose
+				if (ct251.getPurp() != null) {
+					cdtTxInfo.setPurpCd(ct251.getPurp().getCd());
+					cdtTxInfo.setPurpPrtry(ct251.getPurp().getPrtry());
+				}
+
+				// Remittance information
+				if (ct251.getRmtInf() != null) {
+					cdtTxInfo.setRmtInf(ct251.getRmtInf().getUstrd());
+				}
+			}
+		}
+	}
+
+	// 将pacs008封装的数据传递给FFPJbP100对象
+	private void insertDate2DB(FFPVO_Pacs008_CdtTrfTxInf cdtTxInfo) throws Exception {
+		FFPVO_Pacs008 loc_vo = (FFPVO_Pacs008) txVo;
+
+		FFPJbP110 loc_jb = new FFPJbP110();
+//		String srcRefNm = FFPIDUtils.getSrcRefNm();
+		Date loc_date = new Date();
+
+		FFPVO_Pacs008_CdtTrfTxInf loc_txInf = cdtTxInfo;
+
+//		loc_jb.setSrcRefNm(srcRefNm);
+		loc_jb.setJnlNo(FFPIDUtils.getJnlNo());
+		loc_jb.setSrvcMode(loc_vo.getBizSvc());
+		
+		//// 账户是否校验
+		loc_jb.setAccountVerification(loc_txInf.getLclInstrm());
+		// category properties
+		loc_jb.setPymtCatPrps(loc_txInf.getCtgyPurp());
+
+		loc_jb.setSettlementDate(loc_txInf.getIntrBkSttlmDt());
+		loc_jb.setSettlementCurrency(loc_txInf.getIntrBkSttlmAmtCcy());
+		loc_jb.setSettlementAmount(new BigDecimal(loc_txInf.getIntrBkSttlmAmt()));
+
+		loc_jb.setInstructedAmount(loc_txInf.getInstdAmt() != null ? new BigDecimal(loc_txInf.getInstdAmt()) : null);
+		loc_jb.setInstructedCurrency(loc_txInf.getInstdAmtCcy());
+
+		loc_jb.setChargersAgentId(loc_txInf.getChrgAgentId());
+		loc_jb.setChargersAgentBic(loc_txInf.getChrgAgentBic());
+		loc_jb.setChargersCurrency(loc_txInf.getChrgCcy());
+		loc_jb.setChargersAmount(loc_txInf.getChrgAmount());
+
+		//<DBTR>
+		loc_jb.setDebtorName(loc_txInf.getDbtrNm());
+		loc_jb.setDebtorOrgIdAnyBIC(loc_txInf.getDbtrOrgIdAnyBIC());
+		loc_jb.setDebtorOrgIdOthrId(loc_txInf.getDbtrOrgIdOthrId());
+		loc_jb.setDebtorOrgIdOthrIdSchmeNm(loc_txInf.getDbtrOrgIdOthrIdSchmeNm());
+		loc_jb.setDebtorOrgIdOthrIssr(loc_txInf.getDbtrOrgIdOthrIssr());
+		loc_jb.setDebtorPrvtIdOthrId(loc_txInf.getDbtrPrvtIdOthrId());
+		loc_jb.setDebtorPrvtIdOthrIdSchmeNm(loc_txInf.getDbtrPrvtIdOthrIdSchmeNm());
+		loc_jb.setDebtorPrvtIdOthrIssr(loc_txInf.getDbtrPrvtIdOthrIssr());
+		loc_jb.setDebtorContPhone(loc_txInf.getDbtrMobNb());
+		loc_jb.setDebtorContEmailAddr(loc_txInf.getDbtrEmailAdr());
+		
+		loc_jb.setDebtorAccountNumber(loc_txInf.getDbtrAcctId());
+		loc_jb.setDebtorAccountNumberType(loc_txInf.getDbtrAccSchmeNm());
+
+		loc_jb.setDebtorAgentId(loc_txInf.getDbtrAgClrSysMmbId());
+		loc_jb.setDebtorAgentBic(loc_txInf.getDbtrAgBICFI());
+		
+		
+		loc_jb.setCreditorName(loc_txInf.getCdtrNm());
+		loc_jb.setCreditorOrgIdAnyBIC(loc_txInf.getCdtrOrgIdAnyBIC());
+		loc_jb.setCreditorOrgIdOthrId(loc_txInf.getCdtrOrgIdOthrId());
+		loc_jb.setCreditorOrgIdOthrIdSchmeNm(loc_txInf.getCdtrOrgIdOthrIdSchmeNm());
+		loc_jb.setCreditorOrgIdOthrIssr(loc_txInf.getCdtrOrgIdOthrIssr());
+		loc_jb.setCreditorPrvtIdOthrId(loc_txInf.getCdtrPrvtIdOthrId());
+		loc_jb.setCreditorPrvtIdOthrIdSchmeNm(loc_txInf.getCdtrPrvtIdOthrIdSchmeNm());
+		loc_jb.setCreditorPrvtIdOthrIssr(loc_txInf.getCdtrPrvtIdOthrIssr());
+		loc_jb.setCreditorContPhone(loc_txInf.getCdtrMobNb());
+		loc_jb.setCreditorContEmailAddr(loc_txInf.getCdtrEmailAdr());
+		
+		loc_jb.setCreditorAccountNumber(loc_txInf.getCdtrAcctId());
+		loc_jb.setCreditorAccountNumberType(loc_txInf.getCdtrAcctSchmeNm());
+		loc_jb.setCreditorAgentId(loc_txInf.getCdtrAgtClrSysMmbId());
+		loc_jb.setCreditorAgentBic(loc_txInf.getCdtrAgtBICFI());
+
+		if (!(FFPStringUtils.isEmptyOrNull(loc_txInf.getPurpCd()))) {
+			loc_jb.setPaymentPurposeType(FFPConstantsPurposeCode.PURPOSE_TYPE_CODE);
+			loc_jb.setPaymentPurposeCd(loc_txInf.getPurpCd());
+		} else if (!(FFPStringUtils.isEmptyOrNull(loc_txInf.getPurpPrtry()))) {
+			loc_jb.setPaymentPurposeType(FFPConstantsPurposeCode.PURPOSE_TYPE_OTHER);
+			loc_jb.setPaymentPurposeProprietary(loc_txInf.getPurpPrtry());
+		}
+
+		loc_jb.setRemittanceInformation(loc_txInf.getRmtInf());
+		
+		FFPTxJnl txJnl = new FFPTxJnl();
+		txJnl.setJnlNo(loc_jb.getJnlNo());
+		txJnl.setSrcRefNm(FFPIDUtils.getSrcRefNm());
+		txJnl.setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+		txJnl.setTxCode(FFPConstantsTxJnl.TX_CODE.TX_CODE_P110.getCode());
+		txJnl.setTxSrc(FFPConstants.TX_SOURCE_HKICL);
+		txJnl.setTxMode(FFPConstants.RUNNING_MODE_REALTIME);
+		txJnl.setTransactionId(loc_txInf.getTxId());
+		txJnl.setEndToEndId(loc_txInf.getEndToEndId());
+		txJnl.setFpsRefNm(loc_txInf.getClrSysRef());
+		txJnl.setCreateTs(loc_date);
+		txJnl.setLastUpdateTs(loc_date);
+		loc_jb.setTxJnl(txJnl);
+
+		List<FFPTxJnlAction> txJnlActionList = loc_jb.getJnlActionList();
+		//message contains CdtDtTm
+		txJnlActionList.add(FFPJnlUtils.getInstance().newJnlAction(
+				loc_jb.getTxJnl().getJnlNo(), loc_vo.getMsgId(), FFPConstants.MSG_DIRECTION_INWARD,
+				FFPConstants.RELATION_SYSTEM_HKICL, loc_vo.getMsgDefIdr(),MSG_STATUS.MSG_STAT_CREAT.getStatus(),
+				loc_vo.getCreateDate(), new Date(), new Date(), null));
+
+		loc_jb.setJnlActionList(txJnlActionList);
+		loc_txInf.setP110Jb(loc_jb);
+		
+		// Save
+		this.daoService.sInsert(loc_jb);
+	}
+}

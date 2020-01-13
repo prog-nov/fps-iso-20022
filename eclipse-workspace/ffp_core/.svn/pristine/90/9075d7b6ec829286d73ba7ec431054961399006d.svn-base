@@ -1,0 +1,175 @@
+package com.forms.ffp.core.msg;
+
+import java.io.ByteArrayInputStream;
+import java.util.Date;
+
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.core.config.runtime.FFPRuntimeConstants;
+import com.forms.ffp.core.connecor.sender.FFPSenderAgentSvc;
+import com.forms.ffp.core.connecor.sender.mq.FFPMqSenderAgent;
+import com.forms.ffp.core.connecor.sender.tcp.FFPTcpSenderAgent;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsMsg;
+import com.forms.ffp.core.exception.FFPErrorLevel;
+import com.forms.ffp.core.exception.FFPSystemException;
+import com.forms.ffp.core.exception.FFPTeErrorMsg;
+import com.forms.ffp.core.msg.iclfps.FFPMsgBaseHkiclMessage;
+import com.forms.ffp.core.msg.iclfps.FFPSendMessageResp;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseParticipantMessage;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.msg.participant.busi.FFP_CTI01_OVO;
+import com.forms.ffp.core.utils.FFPDateUtils;
+
+public class FFPAdaptorMgr
+{
+	public static final Class<FFPAdaptorMgr> CLASS_NAME = FFPAdaptorMgr.class;
+	public static final String ERROR_CODE = FFPTeErrorMsg.getErrorCode(CLASS_NAME, 0);
+	private static Logger _logger = LoggerFactory.getLogger(FFPAdaptorMgr.class);
+	private static FFPAdaptorMgr instance = null;
+	
+	private FFPAdaptorMgr(){
+	}
+	
+	public static FFPAdaptorMgr getInstance()
+	{
+		if(instance == null)
+			instance = new FFPAdaptorMgr();
+		return instance;
+	}
+	
+	public FFP_CTI01_OVO sendTcpMsg(String msg) throws FFPSystemException
+	{
+		final String METHOD_NAME = "sendTcpMsg()";
+		try
+		{
+			FFPTcpSenderAgent sender = (FFPTcpSenderAgent) FFPSenderAgentSvc.getSenderAgent(FFPRuntimeConstants.PARTICIPANT_TCP_CONFIG_SELECT);
+			
+			String str = sender.sendSynchronous(msg, null, null);
+			_logger.info(String.format("Agent to FFP response message:%s", str));
+			//System.out.println(str);
+			String type = parseMessageType(str);//str.substring(str.indexOf("<MessageType>"), str.lastIndexOf("</MessageType>"));
+			//type = type.substring(type.indexOf(">") + 1);
+			FFP_CTI01_OVO reply = null;
+			
+			if("FFPCTI01".equals(type))
+			{
+				com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = FFPParticipantMessageConverter.parseXml2ReponseObject(str);
+				if(root != null)
+				{
+					com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01 ffpCti01 = 
+							(com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01)root.getBODY();
+					
+					reply = new FFP_CTI01_OVO();
+					//ffpCti01.get
+					reply.setSrcRefNm(ffpCti01.getSrcRefNm());
+					reply.setTransactionId(ffpCti01.getTransactionId());
+					reply.setRsltCd(ffpCti01.getRsltCd());
+					reply.setRejCd(ffpCti01.getRejCd());
+					reply.setRejMsg(ffpCti01.getRejMsg());
+				}
+			}
+			else
+			{
+				_logger.info(String.format("Error message type[%s] form FFP Agent", type));
+				throw new RuntimeException(String.format("Error message type[%s] form FFP Agent", type));
+			}
+			return reply;
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			throw new FFPSystemException(
+					ERROR_CODE,
+					CLASS_NAME.getName() + "->" + METHOD_NAME, 
+					ex.getMessage(), 
+					FFPErrorLevel.ERR_LEVEL_ERRO, 
+					ex);
+		}
+		
+	}
+	
+	public String parseMessageType(String str) throws Exception 
+	{
+		
+		int length = str.length();
+		int leng = Integer.valueOf(str.substring(0, 8));
+		int start = str.indexOf('<');
+		str = str.substring(start, leng);
+
+		SAXReader reader = new SAXReader();
+		Document document = reader.read(new ByteArrayInputStream(str.getBytes("utf-8")));
+		Element root = document.getRootElement();
+		String xpath = "//MessageType[1]";
+		Node msgTypeNode = document.selectSingleNode(xpath);
+		//System.out.println(msgTypeNode.getText());
+		
+		return msgTypeNode.getText();
+	}
+	
+	//鍙戦�佸埌tcp鏈嶅姟鍣�
+	public String executeTcpMsg(String msg) throws Exception{
+//		FFPSendMessageResp resp = new FFPSendMessageResp();
+		FFPTcpSenderAgent sender = (FFPTcpSenderAgent) FFPSenderAgentSvc.getSenderAgent(FFPRuntimeConstants.PARTICIPANT_TCP_CONFIG_SELECT);
+		msg = sender.send(msg, null, null);
+		return msg;
+	}
+	
+	public FFPSendMessageResp execute(Object object) throws Exception
+	{
+		if (object instanceof FFPMsgBaseHkiclMessage)
+		{
+			FFPMsgBaseHkiclMessage messageObj = (FFPMsgBaseHkiclMessage) object;
+
+			String message = "";
+			try
+			{
+				 message = messageObj.parseHkiclMessage();
+			} catch (Exception e)
+			{
+				throw e;
+			}
+
+			FFPSendMessageResp resp = new FFPSendMessageResp();
+			try
+			{
+				FFPMqSenderAgent sender = (FFPMqSenderAgent) FFPSenderAgentSvc.getSenderAgent(FFPRuntimeConstants.ICL_MQ_CONFIG_SELECT);
+				if (FFPConstants.SEND_TYPE_REQ.equals(messageObj.getSendType()))
+				{
+					resp = sender.sendRequest(message, null, messageObj.getPriority());
+				}
+				else if (FFPConstants.SEND_TYPE_ACK.equals(messageObj.getSendType()))
+				{
+					resp = sender.sendAcknowledge(message, null, messageObj.getPriority());
+				}
+				resp.setMessageStatus(FFPConstantsMsg.RESP_MSG_STS_SUCCESS);
+				resp.setMessage(String.format("The message is sent to target MQ. (%s)", new Object[] { FFPDateUtils.getDateStr(new Date(resp.getSentSysTime().longValue()), "yyyy-MM-dd HH:mm:ss") }));
+				
+				
+			} catch (Exception e)
+			{
+				resp = new FFPSendMessageResp();
+				resp.setMessageStatus(FFPConstantsMsg.RESP_MSG_STS_TMOUT);
+				resp.setMessage(String.format("Error (%s) : Fail to send message to MQ due to %s - %s",
+						new Object[] { FFPDateUtils.getDateStr(new Date(), "yyyy-MM-dd HH:mm:ss"), e.getClass().getSimpleName(), e.getMessage() }));
+				_logger.error(resp.getMessage(), e);
+			}
+
+			return resp;
+
+		} else if (object instanceof FFPMsgBaseParticipantMessage)
+		{
+			FFPSendMessageResp resp = null;
+			return resp;
+		} else
+		{
+			// TODO
+			throw new Exception("TODO");
+		}
+	}
+}

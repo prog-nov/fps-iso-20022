@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.FFPIDao_TxJnl">
+
+	<sql id="INSERT_TXJNL"> 
+		INSERT INTO TB_TX_JNL
+		(
+			JNL_NO, SRC_REF_NM, TX_STAT,
+			TX_CODE, TX_SRC, TX_MODE,
+			TRANSACTION_ID, END_TO_END_ID, TX_FILE_NAME,
+			FPS_REF_NUM, RESEND_COUNT, TX_REJ_CODE,
+			TX_REJ_REASON,JNL_REF, CREATE_TS,
+			 LAST_UPDATE_TS
+		)
+		VALUES ( 
+			#{jnlNo, jdbcType=VARCHAR}, #{srcRefNm, jdbcType=VARCHAR}, #{txStat, jdbcType=VARCHAR},
+			#{txCode, jdbcType=VARCHAR}, #{txSrc, jdbcType=VARCHAR}, #{txMode, jdbcType=VARCHAR},
+			#{transactionId, jdbcType=VARCHAR}, #{endToEndId, jdbcType=VARCHAR}, #{txFileName, jdbcType=VARCHAR},
+			#{fpsRefNm, jdbcType=VARCHAR}, #{resendCount, jdbcType=INTEGER}, #{txRejCode, jdbcType=VARCHAR},
+			#{txRejReason, jdbcType=VARCHAR}, #{jnlRef, jdbcType=VARCHAR},
+			#{createTs, jdbcType=TIMESTAMP}, #{lastUpdateTs, jdbcType=TIMESTAMP}
+		)
+		ON DUPLICATE KEY UPDATE
+			TX_STAT=#{txStat, jdbcType=VARCHAR},
+			TX_REJ_CODE=#{txRejCode, jdbcType=VARCHAR},
+			TX_REJ_REASON=#{txRejReason, jdbcType=VARCHAR},
+			LAST_UPDATE_TS=#{lastUpdateTs, jdbcType=TIMESTAMP}
+	  </sql>
+	
+	
+	<update id="UPDATE_TXJNL">
+		UPDATE TB_TX_JNL T
+		SET
+			SRC_REF_NM=#{srcRefNm, jdbcType=VARCHAR},
+			TX_STAT=#{txStat, jdbcType=VARCHAR},
+			TX_CODE=#{txCode, jdbcType=VARCHAR},
+			TX_SRC=#{txSrc, jdbcType=VARCHAR},
+			TX_MODE=#{txMode, jdbcType=VARCHAR},
+			TRANSACTION_ID=#{transactionId, jdbcType=VARCHAR},
+			END_TO_END_ID=#{endToEndId, jdbcType=VARCHAR},
+			TX_FILE_NAME=#{txFileName, jdbcType=VARCHAR},
+			FPS_REF_NUM=#{fpsRefNm, jdbcType=VARCHAR},
+			RESEND_COUNT=#{resendCount, jdbcType=INTEGER},
+			TX_REJ_CODE=#{txRejCode, jdbcType=VARCHAR},
+			TX_REJ_REASON=#{txRejReason, jdbcType=VARCHAR},
+			JNL_REF=#{jnlRef, jdbcType=VARCHAR},
+			CREATE_TS=#{createTs, jdbcType=TIMESTAMP},
+			LAST_UPDATE_TS=#{lastUpdateTs, jdbcType=TIMESTAMP}
+		WHERE T.JNL_NO = #{jnlNo}
+	</update>
+	
+	<!-- 更新交易状态开始 -->
+	<update  id="UPDATE_TXJNL_STAT">
+		UPDATE TB_TX_JNL T
+		SET
+			TX_STAT=#{txStat, jdbcType=VARCHAR},
+			TX_REJ_CODE=#{txRejCode, jdbcType=VARCHAR},
+			TX_REJ_REASON=#{txRejReason, jdbcType=VARCHAR},
+			JNL_REF=#{jnlRef, jdbcType=VARCHAR},
+			LAST_UPDATE_TS=#{lastUpdateTs, jdbcType=TIMESTAMP}
+		WHERE T.JNL_NO = #{jnlNo}
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	<!-- 更新交易状态结束 -->
+	
+	<select id="inquiryByJnlNo" resultType="com.forms.ffp.persistents.bean.FFPTxJnl">
+		SELECT * FROM TB_TX_JNL T WHERE  T.JNL_NO = #{jnlNo}
+	</select>
+	
+	<select id="inquiryById" resultType="com.forms.ffp.persistents.bean.FFPTxJnl">
+		SELECT * FROM TB_TX_JNL T WHERE T.TRANSACTION_ID = #{transactionId} AND T.END_TO_END_ID = #{endToEndId}
+	</select>
+	
+	<select id="inquiryBySrcRefNm" resultType="com.forms.ffp.persistents.bean.FFPTxJnl">
+		SELECT * FROM TB_TX_JNL T WHERE T.SRC_REF_NM = #{srcRefNm}
+	</select>
+</mapper>

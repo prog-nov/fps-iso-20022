@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.param.enums.dao.IEnumParamManagerDao">
+	
+	<resultMap id="EnumParamDef" type="com.forms.beneform4j.webapp.systemmanage.param.enumparam.bean.EnumParamDefBean">
+	</resultMap>
+	<resultMap id="EnumParamData" type="com.forms.beneform4j.webapp.systemmanage.param.enumparam.bean.EnumParamDataBean">
+	</resultMap>
+	<resultMap id="EnumParamTree" type="com.forms.beneform4j.webapp.systemmanage.param.enumparam.bean.EnumParamTreeBean">
+	</resultMap>
+	
+	<!-- 查询参数定义 欧林海 20160707 -->
+	<select id="dListParamDef" resultMap="EnumParamDef">
+		SELECT T.PARAM_CODE,
+		       T.PARAM_NAME,
+		       T.PARAM_GROUP,
+		       T.PARAM_ATTR,
+		       T.EDITABLE,
+		       T.SEQNO,
+		       T.DES
+		FROM {{BF}}_PARAM_ENUM_DEF T
+		<where>
+			<if test="null != paramCode and '' != paramCode">
+				AND T.PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+			</if>
+			<if test="null != paramName and '' != paramName">
+	     		AND T.PARAM_NAME LIKE #{concat('%' paramName '%'), jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != paramGroup and '' != paramGroup">
+	     		AND T.PARAM_GROUP = #{paramGroup, jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != paramAttr and '' != paramAttr">
+	     		AND T.PARAM_ATTR = #{paramAttr, jdbcType=VARCHAR}
+	     	</if>
+			<if test="null != editable and '' != editable">
+	     		AND T.EDITABLE = #{editable, jdbcType=VARCHAR}
+	     	</if>
+	     </where>
+	     ORDER BY T.SEQNO
+	</select>
+	
+	<!-- 查询列表型参数值 欧林海 20160707 -->
+	<select id="dListParamData" resultMap="EnumParamData">
+		SELECT T.PARAM_CODE, T.DATA_CODE, T.DATA_TEXT, T.DATA_PARAM, T.SEQNO, T.DES
+		FROM {{BF}}_PARAM_ENUM_DATA T
+		<where>
+			<if test="null != paramCode and '' != paramCode">
+				AND T.PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+			</if>
+			<if test="null != dataCode and '' != dataCode">
+	     		AND T.DATA_CODE = #{dataCode, jdbcType=VARCHAR}
+	     	</if>
+	     </where>
+	     ORDER BY T.PARAM_CODE, T.SEQNO
+	</select>
+	
+	<!-- 查询树型参数值 欧林海 20160707 -->
+	<select id="dListParamTree" resultMap="EnumParamTree">
+		SELECT PARAM_CODE,
+	        DATA_CODE,
+	        DATA_TEXT,
+	        PARENT_DATA_CODE,       
+	        DATA_ICON,
+	        DATA_PARAM,
+	        SEQNO,
+	        DES,
+		   (SELECT COUNT(1)
+		      FROM {{BF}}_PARAM_TREE_DATA
+		     WHERE PARENT_DATA_CODE = T.DATA_CODE
+				<if test="null != paramCode and '' != paramCode">
+					AND PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+				</if>
+		   ) AS COUNT	        
+	    FROM {{BF}}_PARAM_TREE_DATA T
+		<where>
+			<if test="null != paramCode and '' != paramCode">
+				AND T.PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+			</if>
+			<choose>
+				<when test="null != parentDataCode and 'root' == parentDataCode">
+					AND T.PARENT_DATA_CODE IS NULL
+				</when>
+				<when test="null != parentDataCode and '' != parentDataCode">
+					AND T.PARENT_DATA_CODE = #{parentDataCode, jdbcType=VARCHAR}
+				</when>
+				<otherwise>
+		     		AND T.DATA_CODE = #{dataCode, jdbcType=VARCHAR}
+		     	</otherwise>
+	     	</choose>
+	    </where>
+	    ORDER BY T.PARAM_CODE, T.PARENT_DATA_CODE, T.SEQNO
+	</select>
+	
+	<!-- 新增枚举参数定义 欧林海 20160707 -->
+	<insert id="dInsertParamDef">
+		INSERT INTO {{BF}}_PARAM_ENUM_DEF
+		  (PARAM_CODE, PARAM_NAME, PARAM_GROUP, PARAM_ATTR, EDITABLE, SEQNO, DES)
+		VALUES
+		  (#{paramCode, jdbcType=VARCHAR},
+		   #{paramName, jdbcType=VARCHAR},
+		   #{paramGroup, jdbcType=VARCHAR},
+		   #{paramAttr, jdbcType=VARCHAR},
+		   #{editable, jdbcType=VARCHAR},
+		   #{seqno, jdbcType=INTEGER},
+		   #{des, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 更新枚举参数定义 欧林海 20160707 -->
+	<update id="dUpdateParamDef">
+		UPDATE {{BF}}_PARAM_ENUM_DEF
+		   SET PARAM_NAME  = #{paramName, jdbcType=VARCHAR},
+		       PARAM_GROUP = #{paramGroup, jdbcType=VARCHAR},
+		       PARAM_ATTR  = #{paramAttr, jdbcType=VARCHAR},
+		       SEQNO       = #{seqno, jdbcType=INTEGER},
+		       DES         = #{des, jdbcType=VARCHAR}
+		 WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 新增枚举型参数值 欧林海 20160707 -->
+	<insert id="dInsertParamList">
+		INSERT INTO {{BF}}_PARAM_ENUM_DATA
+		  (PARAM_CODE, DATA_CODE, DATA_TEXT, DATA_PARAM, SEQNO, DES)
+		VALUES
+  		  (#{data.paramCode, jdbcType=VARCHAR},
+		   #{data.dataCode, jdbcType=VARCHAR},
+		   #{data.dataText, jdbcType=VARCHAR},
+		   #{data.dataParam, jdbcType=VARCHAR},
+		   #{data.seqno, jdbcType=INTEGER},
+		   #{data.des, jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 查找树型节点 欧林海 20160713 -->
+	<select id="dFindTreeNode" resultMap="EnumParamTree">
+		SELECT T.PARAM_CODE,
+	       T.DATA_CODE,
+	       T.DATA_TEXT,
+	       T.DATA_ICON,
+	       T.PARENT_DATA_CODE,
+	       T.DATA_PARAM,
+	       T.SEQNO,
+	       T.DES
+		FROM {{BF}}_PARAM_TREE_DATA T
+		WHERE T.PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+			AND T.DATA_CODE = #{dataCode, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 新增树型节点 欧林海 20160713 -->
+	<insert id="dInsertTreeNode">
+		INSERT INTO {{BF}}_PARAM_TREE_DATA
+		  (PARAM_CODE, DATA_CODE, DATA_TEXT, DATA_ICON, PARENT_DATA_CODE, DATA_PARAM, SEQNO, DES)
+		VALUES		
+  		  (#{paramCode, jdbcType=VARCHAR},
+		   #{dataCode, jdbcType=VARCHAR},
+		   #{dataText, jdbcType=VARCHAR},
+		   #{dataIcon, jdbcType=VARCHAR},
+		   #{parentDataCode, jdbcType=VARCHAR},
+		   #{dataParam, jdbcType=VARCHAR},
+		   #{seqno, jdbcType=INTEGER},
+		   #{des, jdbcType=VARCHAR})		
+	</insert>
+		
+	<!-- 更新树型节点 欧林海 20160713 -->		
+	<update id="dUpdateTreeNode">
+		UPDATE {{BF}}_PARAM_TREE_DATA
+		   SET DATA_TEXT = #{dataText, jdbcType=VARCHAR},
+		       DATA_ICON = #{dataIcon, jdbcType=VARCHAR},
+		       PARENT_DATA_CODE = #{parentDataCode, jdbcType=VARCHAR},
+		       DATA_PARAM = #{dataParam, jdbcType=VARCHAR},
+		       SEQNO = #{seqno, jdbcType=INTEGER},
+		       DES = #{des, jdbcType=VARCHAR}
+		 WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+		   AND DATA_CODE = #{dataCode, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- 移动树型节点 欧林海 20160713 -->
+	<update id="dMoveTreeNode">
+		UPDATE {{BF}}_PARAM_TREE_DATA
+		   SET PARENT_DATA_CODE = #{parentDataCode, jdbcType=VARCHAR},
+		       SEQNO = #{seqno, jdbcType=INTEGER}
+		 WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+		   AND DATA_CODE = #{dataCode, jdbcType=VARCHAR}		
+	</update>
+	
+	<!-- 删除树型节点 欧林海 20160713 -->
+	<delete id="dDeleteTreeNode">
+		DELETE {{BF}}_PARAM_TREE_DATA
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+		   AND DATA_CODE = #{dataCode, jdbcType=VARCHAR}
+	</delete>
+		
+	<!-- 删除参数定义 欧林海 20160707 -->
+	<delete id="dDeleteParamDef">
+		DELETE FROM {{BF}}_PARAM_ENUM_DEF 
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 删除指定枚举参数所有值 欧林海 20160707 -->
+	<delete id="dDeleteParamListForUpdate">
+		DELETE FROM {{BF}}_PARAM_ENUM_DATA 
+		WHERE PARAM_CODE = #{data.paramCode, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 删除指定枚举参数所有值 欧林海 20160707 -->
+	<delete id="dDeleteParamList">
+		DELETE FROM {{BF}}_PARAM_ENUM_DATA 
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</delete>
+	
+	<!-- 删除指定树型参数所有值 欧林海 20160707 -->
+	<delete id="dDeleteParamTree">
+		DELETE FROM {{BF}}_PARAM_TREE_DATA 
+		WHERE PARAM_CODE = #{paramCode, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

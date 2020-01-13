@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>dbtest</databaseName>
+	<flush-rows>1000</flush-rows>
+	<field-definition>
+		<field  data-type="StringType"  name="no"    />
+		<field  data-type="StringType"  name="user"     />
+	</field-definition>
+	
+	<update-sql>
+		  INSERT INTO #{schema}.TB_TEST
+					(
+					CBS_AC,
+					USER_ID,
+					)
+				VALUES 
+					(?,?
+					) 
+	</update-sql> 
+
+	<sql-parameters>    
+		<sql-parameter index = "1"  field="no" />
+		<sql-parameter index = "2"  field="user"   />
+	</sql-parameters>
+</database-output-config>

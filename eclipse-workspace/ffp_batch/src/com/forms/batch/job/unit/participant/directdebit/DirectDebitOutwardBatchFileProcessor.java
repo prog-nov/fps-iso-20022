@@ -1,0 +1,244 @@
+package com.forms.batch.job.unit.participant.directdebit;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpddo01.FFPMsgDDO01_Pacs003;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP210;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class DirectDebitOutwardBatchFileProcessor extends BatchBaseJob {
+	private static int batSubSeqNum = 0;// 报文文件序列号nnnnnnnn
+	private static String batchSubmissionDirectoryPath;
+
+	public static final String DEFAULT_ENCODING = "UTF-8";
+	private static Connection loc_conn = null;
+	
+	@Override
+	public void init() {
+		try {
+			batchSubmissionDirectoryPath = this.batchData + this.actionElement.element("parameters")
+			.element("parameter").elementText("batchSubmissionDirectoryPath");
+			this.batchLogger.info(String.format(
+					"batchSubmissionDirectoryPath=%s, clearingCode=%s",
+					batchSubmissionDirectoryPath, this.clearingCode));
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		}
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		try {
+			if (loc_conn == null) {
+				loc_conn = ConnectionManager.getInstance().getConnection();
+				this.batchLogger.info("Database is connected");
+			}
+			
+			getPacs003Dat();
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		} finally{
+			if(loc_conn != null){
+				try {
+					loc_conn.close();
+					this.batchLogger.info("Database Is Closed");
+				} catch (SQLException e) {
+					this.batchLogger.error(e.getMessage());
+				}
+			}
+		}
+		return true;
+	}
+
+	private List<Map<String, Object>> getQueryResult() {
+		this.batchLogger.info("Database is connected");
+
+		List<Map<String, Object>> listResult = null;
+		try {
+			loc_conn = ConnectionManager.getInstance().getConnection();
+			String sql = "SELECT A.SRC_REF_NM, A.TRANSACTION_ID,A.END_TO_END_ID,B.* "
+					+ "FROM tb_tx_jnl A LEFT JOIN tb_tx_p210dat B ON A.JNL_NO = B.JNL_NO " + "WHERE "
+					+ "A.TX_STAT = ? AND " + "A.TX_CODE = ? AND " + "A.TX_SRC = ? AND " + "A.TX_MODE = ?";
+			ArrayList<String> list = new ArrayList<>();
+			list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+			list.add(FFPConstantsTxJnl.TX_CODE.TX_CODE_P210.getCode());
+			list.add(FFPConstants.TX_SOURCE_AGENT);
+			list.add("BTCH");
+			listResult = EntityManager.queryMapList(loc_conn, sql, list.toArray());
+			if(listResult.size() == 0) {
+				return null;
+			}
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		} 
+		return listResult;
+	}
+
+	private void getPacs003Dat() throws BatchJobException {
+		List<Map<String, Object>> queryResult = getQueryResult();
+		if (queryResult == null) {
+			throw new BatchJobException("No Data Is Found");
+		}
+		for (Map<String, Object> object : queryResult) {
+
+			FFPJbP210 fb = new FFPJbP210();
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setJnlNo((String) object.get("JNL_NO"));
+			txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+			txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+			fb.setTxJnl(txJnl);
+			
+			fb.setSrcRefNm((String) object.get("SRC_REF_NM"));
+	    	fb.setJnlNo((String) object.get("JNL_NO"));
+			fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+			fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+			fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+			if (object.get("SETTLEMENT_AMT") != null) {
+				fb.setSettlementAmount(new BigDecimal((String) object.get("SETTLEMENT_AMT")));
+			}
+			
+			fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+			if(object.get("INSTRUCTED_AMT") != null) {
+				fb.setInstructedAmount(new BigDecimal((String) object.get("INSTRUCTED_AMT")));
+			}
+			
+			fb.setChargersAgentId((String) object.get("CHG_AGT_ID"));
+			fb.setChargersAgentBic((String) object.get("CHG_AGT_BIC"));
+			fb.setChargersCurrency((String) object.get("CHG_CUR"));
+			fb.setChargersAmount(new BigDecimal((String) object.get("CHG_AMT")));
+			
+			fb.setDrctDbtTxMndtId((String) object.get("DRCTDBT_MNDTID"));
+			
+			fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+			fb.setDebtorOrgIdAnyBIC((String) object.get("DEBTOR_ORGID_ANYBIC"));
+			fb.setDebtorOrgIdOthrId((String) object.get("DEBTOR_ORGID_OTHRID"));
+			fb.setDebtorOrgIdOthrIdSchmeNm((String) object.get("DEBTOR_ORGID_OTHRID_SCHMENM"));
+			fb.setDebtorOrgIdOthrIssr((String) object.get("DEBTOR_ORGID_OTHR_ISSR"));
+			fb.setDebtorPrvtIdOthrId((String) object.get("EBTOR_PRVTID_OTHRID"));
+			fb.setDebtorPrvtIdOthrIdSchmeNm((String) object.get("DEBTOR_PRVTID_OTHRID_SCHMENM"));
+			fb.setDebtorPrvtIdOthrIssr((String) object.get("DEBTOR_PRVTID_OTHR_ISSR"));
+			fb.setDebtorContPhone((String) object.get("DEBTOR_CONT_PHONE"));
+			fb.setDebtorContEmailAddr((String) object.get("DEBTOR_CONT_EMADDR"));
+			fb.setDebtorAccountNumber((String) object.get("DEBTOR_ACCTNO"));
+			fb.setDebtorAccountNumberType((String) object.get("DEBTOR_ACCTNO_TYPE"));
+			fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+			fb.setDebtorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			
+			fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+			fb.setCreditorOrgIdAnyBIC((String) object.get("CREDITOR_ORGID_ANYBIC"));
+			fb.setCreditorOrgIdOthrId((String) object.get("CREDITOR_ORGID_OTHRID"));
+			fb.setCreditorOrgIdOthrIdSchmeNm((String) object.get("CREDITOR_ORGID_OTHRID_SCHMENM"));
+			fb.setCreditorOrgIdOthrIssr((String) object.get("CREDITOR_ORGID_OTHR_ISSR"));
+			fb.setCreditorPrvtIdOthrId((String) object.get("CREDITOR_PRVTID_OTHRID"));
+			fb.setCreditorPrvtIdOthrIdSchmeNm((String) object.get("CREDITOR_PRVTID_OTHRID_SCHMENM"));
+			fb.setCreditorPrvtIdOthrIssr((String) object.get("CREDITOR_PRVTID_OTHR_ISSR"));
+			fb.setCreditorContPhone((String) object.get("CREDITOR_CONT_PHONE"));
+			fb.setCreditorContEmailAddr((String) object.get("CREDITOR_CONT_EMADDR"));
+			fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+			fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+			fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_ID"));
+			fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_BIC"));
+			
+			fb.setPaymentPurposeType((String) object.get("PURPOSE_TYPE"));
+			fb.setPaymentPurposeCd((String) object.get("PURPOSE_CODE"));
+			fb.setPaymentPurposeProprietary((String) object.get("PURPOSE_OTHER"));
+			
+			fb.setRemittanceInformation((String) object.get("REMIT_INFO"));
+			
+			fb.setSrvcMode((String) object.get("SRVC_MODE"));
+			
+			generate003Message(fb);
+		}
+	}
+
+	private void generate003Message(FFPJbP210 fb) {
+		try{	
+			FFPMsgDDO01_Pacs003 ffpMsgDBO01_Pacs003 = new FFPMsgDDO01_Pacs003(fb);
+			String msg = ffpMsgDBO01_Pacs003.parseHkiclMessage();
+			this.batchLogger.info("Generate A PACS003_PAYD01 Message");
+			String fileName = write003ToFile(msg);
+			this.batchLogger.info(fileName+fb.getTxJnl().getJnlNo());
+			if (fileName != null) {
+				updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus(), fileName, fb.getTxJnl().getJnlNo());
+			}else{
+				updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus(), fileName, fb.getTxJnl().getJnlNo());
+			}
+		} catch(Exception e) {
+			updateJnlTable(FFPConstantsTxJnl.TX_STATUS.TX_STAT_ERROR.getStatus(), null,fb.getTxJnl().getJnlNo());
+			this.batchLogger.error("Fail To Generate PACS003_PAYD01 Message");
+		}
+	}
+	
+	private String write003ToFile(String message) {
+		BufferedWriter bw = null;
+		SimpleDateFormat fileNameDateForm = new SimpleDateFormat("yyyyMMdd");
+		String fileName = "FPSPDDO" + clearingCode + fileNameDateForm.format(new Date())
+				+ String.format("%08d", DirectDebitOutwardBatchFileProcessor.getBatSubSeqNum()) + ".xml";
+		String path = batchSubmissionDirectoryPath + fileName;
+		this.batchLogger.info(String.format("Start To Write PACS003_PAYD01 File %s", path));
+		
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(path)), DEFAULT_ENCODING));
+			bw.write(message);
+			bw.flush();
+			this.batchLogger.info(String.format("Finish Writing PACS003_PAYD01 File %s", path));
+			return fileName;
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+			return null;
+		} finally {
+			if (bw != null) {
+				try {
+					bw.close();
+				} catch (IOException e) {
+					this.batchLogger.error(e.getMessage());
+				}
+			}
+		}
+	}
+	
+	private void updateJnlTable(String state, String fileName, String jnlNo) {
+		try {
+			this.batchLogger.info("Database Transaction Open");
+			String sql = "UPDATE tb_tx_jnl SET TX_STAT = ?, TX_FILE_NAME = ?, LAST_UPDATE_TS = ? WHERE JNL_NO  = ? ";
+			Timestamp lastUpdateTs = new Timestamp(new Date().getTime());
+			ArrayList<Object> list = new ArrayList<>();
+			list.add(state);
+			list.add(fileName);
+			list.add(lastUpdateTs);
+			list.add(jnlNo);
+
+			EntityManager.update(loc_conn, sql, list.toArray());
+			this.batchLogger.info("Database Transaction Commit");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			this.batchLogger.error(e.getMessage());
+		}
+	}
+	
+	public synchronized static int getBatSubSeqNum() {
+		batSubSeqNum++;
+		return batSubSeqNum;
+	}
+
+}

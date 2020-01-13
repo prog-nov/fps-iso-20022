@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<fixedfile-input-config>
+	<file-name>#{inputFilePath}/FILE_TO_TABLE</file-name>
+	<encoding>UTF-8</encoding>
+	<header-bytes>60</header-bytes>
+	<footer-bytes>60</footer-bytes>	
+    <footer-handle-class>com.forms.datapipe.headfoot.InputFooterHandler</footer-handle-class><!-- 必?实?自FixedFileInputHeaderHandler，可以留空 -->
+    <header-handle-class>com.forms.datapipe.headfoot.InputHeaderHandler</header-handle-class><!-- 必?实?自FixedFileInputHeaderHandler，可以留空 -->
+    <line-feed>none</line-feed>
+	<field-definition>
+        <field bytes="1"    data-type="StringType" name="recInd"      />
+        <field bytes="14"   data-type="StringType" name="no"       />
+		<field bytes="6"    data-type="StringType" name="user"      />
+		<field bytes="39"	data-type="StringType"	name="filler"	/>
+	</field-definition>
+</fixedfile-input-config>

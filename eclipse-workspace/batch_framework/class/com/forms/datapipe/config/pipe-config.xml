@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<pipe-config>
+	<pipe-data>
+		<field name="F1" data-type="java.lang.String" />
+		<field name="F2" data-type="java.lang.String" />
+		<!--管道中的数据格式定义，
+			data-type : java标准数据类型，比如：String/Integer等，建议都用String
+		-->
+	</pipe-data>
+	<inputs>
+		<input name="" class="" to-valve="import">
+			<config-file>input.xml</config-file>
+		</input>
+		<!--可以有多个输入，但每个输入只能对应一个导入阀门-->
+	</inputs>
+	<outputs>
+		<output name="" class="" from-valve="export">
+			<config-file>input.xml</config-file>
+		</output>
+		<!--可以有多个输出，但每个输出只能对应一个导出阀门-->
+	</outputs>
+
+	<global-forwards>
+		<forward name="error" next-valve="error-handle" />
+	</global-forwards>
+
+	<valves>
+		<valve name="import" class="com.szboc.databps.datapipe.valve.ImportValve">
+			<config-file>XXX.xml</config-file>
+			<forwards>
+				<forward name="success" next-valve="validate" />
+			</forwards>
+		</valve>
+		<valve name="export" class="com.szboc.databps.datapipe.valve.ExportValve">
+			<config-file>XXX.xml</config-file>
+		</valve>
+
+		<valve name="error-handle" class="error-handle Valve"></valve>
+
+		<valve name="validate" class="com.szboc.databps.datapipe.valve.ValidateValve">
+			<config-file>XXX.xml</config-file>
+			<forwards>
+				<forward name="success" next-valve="process" />
+			</forwards>
+		</valve>
+
+		<valve name="data-process" class="data-process Valve">
+			<forwards>
+				<forward name="success" next-valve="filter" />
+			</forwards>
+		</valve>
+
+		<valve name="filter" class="com.szboc.databps.datapipe.valve.FilterValve">
+			<config-file>XXX.xml</config-file>
+			<forwards>
+				<forward name="success" next-valve="export" />
+			</forwards>
+		</valve>
+
+	</valves>
+
+	<performance>
+		<multi-thread use="true" buffer-size="1" keep-order="true" />
+		<stop-at-err>true</stop-at-err><!-- 遇錯處理模式 -->
+		<!-- 多线程设定, 字段说明:
+			use		  : 是否使用多线程, 默认是false 
+			buffer-size : 缓冲池的大小(以记录的条数为单位记)
+			keep-order  : 是否保持原纪录的顺序
+		-->
+	</performance>
+
+</pipe-config>

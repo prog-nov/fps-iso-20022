@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<fixedfile-output-config>
+	<file-name>#{outputFilePath}/hktsc00001_output_error.txt</file-name>
+	<encoding>UTF-8</encoding>
+	<flush-rows>5</flush-rows>
+	<line-feed>none</line-feed> 
+	<field-definition>
+		<field name="rowIndex"    bytes = "6"    data-type="FixedNumberTypeRJ" />
+		<field name="errRowValue" bytes = "400"  data-type="CharTypeLJ"        />
+	</field-definition>
+</fixedfile-output-config>

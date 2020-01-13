@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.portal.setting.dao.ISettingDao">
+
+	
+	<!-- 查询个人参数设置列表 黄钟 20160412-->
+	<select id="dQueryUserSettings" resultType="com.forms.beneform4j.webapp.portal.setting.form.SettingForm">
+		select a.param_code,
+	       a.param_name,
+	       a.store_type,
+	       a.default_value,
+	       case
+	         when (c.param_value is null or c.param_value = '') then
+	          (case when (b.param_value is null or b.param_value = '') then a.default_value else b.param_value end)
+	         else c.param_value end as param_value,
+	      a.value_rule,
+	      a.value_rule_param
+	  from {{BF}}_param_def a
+	  left join {{BF}}_param_cfg b on a.param_code = b.param_code
+	  left join {{BF}}_user_cfg c on a.param_code = c.param_code
+	  and c.user_id = #{user.userId, jdbcType=VARCHAR} where a.param_group='USER_OPTION'
+	  <where>                       
+		<if test="null != param.paramCode and '' != param.paramCode">
+			and a.param_code = #{param.paramCode, jdbcType=VARCHAR}
+		</if>
+	</where>
+	</select>
+	
+	<!-- 新增个人参数设置  黄钟 20160413-->
+	<insert id="dInsertUserSettings">
+		insert into {{BF}}_user_cfg (user_id,param_code,param_value) 
+		values 
+		(#{user.userId,jdbcType=VARCHAR},#{param.paramCode,jdbcType=VARCHAR},#{param.paramValue,jdbcType=VARCHAR})
+	</insert>
+	
+	<!-- 更新个人参数设置  黄钟 20160413-->
+	<update id="dUpdateUserSettings">
+		update {{BF}}_user_cfg a set param_value = #{param.paramValue,jdbcType=VARCHAR} 
+		where user_id=#{user.userId,jdbcType=VARCHAR} and param_code = #{param.paramCode,jdbcType=VARCHAR} 
+	</update>
+	
+	
+	<select id="dGetUserComboData">
+		select * from (
+		select t.param_code,t2.data_code,t2.data_text,t.value_rule from  {{BF}}_param_def t
+		  join {{BF}}_param_enum_def t1 on t.param_code = t1.param_code
+		  join {{BF}}_param_enum_data t2 on t.param_code = t2.param_code
+		 where t.param_group = 'USER_OPTION' and t.value_rule='DICT'
+		 	union
+		select 'USER_DEFAULT_ROLE' as param_code,
+		       '' || a.role_id as data_code,
+		       b.role_name as data_text,'DICT' as value_rule
+		  from {{BF}}_user_role a
+		  join {{BF}}_role b on a.role_id = b.role_id
+		 where user_id = #{user.userId,jdbcType=VARCHAR} ) z
+		 <where>
+			 <if test="null != param.paramCode and '' != param.paramCode">
+				and z.param_code = #{param.paramCode, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 查询个人参数设置列表MAP 黄钟 20160412-->
+	<select id="dQueryUserSettingsMap">
+	select c.param_code,case when c.val = c.id then 'true' else 'false' end as selected,c.id,c.text from (
+		select a.param_code, case when (c.param_value is null or c.param_value = '') then
+            (case when (b.param_value is null or b.param_value = '') then a.default_value else b.param_value end)
+           else c.param_value end as val,
+        d.data_code as id,
+        d.data_text as text
+	    from {{BF}}_param_def a
+	    left join {{BF}}_param_cfg b on a.param_code = b.param_code
+	    left join {{BF}}_user_cfg c on a.param_code = c.param_code
+	    left join {{BF}}_param_enum_data d on a.param_code = d.param_code
+	    and c.user_id = #{user.userId,jdbcType=VARCHAR} where a.param_group='USER_OPTION' and a.value_rule='DICT' and a.param_code != 'USER_DEFAULT_ROLE'  
+	 ) c 
+	  <where>                       
+		<if test="null != param.paramCode and '' != param.paramCode">
+			and c.param_code = #{param.paramCode, jdbcType=VARCHAR}
+		</if>
+	</where>
+	</select>
+	
+</mapper>

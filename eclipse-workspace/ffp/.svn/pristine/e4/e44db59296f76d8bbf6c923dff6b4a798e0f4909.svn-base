@@ -1,0 +1,476 @@
+login.title=用户登录
+login.userId.tips=请输入用户名
+login.password.tips=请输入密码
+login.title=用户登录
+login.submit=登录
+login.copyright=建议浏览器：Internet Explorer 8 版本以上 | Mozilla Firefox (火狐浏览器)<br/>\建议分辨率: 1024x768 以上
+label.userId=用户名
+label.password=密码
+label.logout=注销
+label.langChange=语言
+
+button.submit=提交
+button.save = 保存
+button.reset=重置
+button.search=查询
+button.moreSearch=更多检索
+button.mulitDelete=批量删除
+button.update=修改
+button.delete=删除
+button.look=查看
+button.add=添加
+button.submitSearch=提交查询
+
+main.noteice=公告
+main.graph=图表
+main.closeOther=关闭其他
+main.closeAll=关闭所有
+main.favorites=收藏
+
+news.add.msgId=消息编号
+news.add.msgTitle=消息标题
+news.add.msgTitle.check.required=消息标示不能为空.
+news.add.msgTitle.check.invalidMessage=输入格式不正确,消息标题字数范围限制在1-100个字符之间.
+news.add.msgType=消息类型
+news.add.msgLevel=消息级别
+news.add.effectiveFlag=生效标志
+news.add.msgContent=消息内容
+news.add.msgContent.check.required=消息内容不能为空.
+news.add.msgContent.check.invalidMessage=输入格式不正确,消息内容字数范围限制在1-500个字符之间.
+news.add.msgIcon=消息图标
+news.add.targetUrl=目标URL
+news.add.targetUrl.check.invalidMessage=输入格式不正确,目标URL字数范围限制在1-200个字符之间.
+news.add.recvNet=接收机构
+news.add.recvOper=接收用户
+news.add.recvOper.check.invalidMessage=输入格式不正确,接收用户字数范围限制在1-20个字符之间.
+news.add.effectiveDayCnt=生效天数
+news.add.effectiveStartDate=生效起始日期
+news.add.effectiveStartTime=生效起始时间
+news.add.effectiveEndDate=生效结束日期
+news.add.effectiveEndTime=生效结束时间
+news.search.sendDate=消息发送日期
+news.list.button.add=添加消息
+news.list.button.edit=修改消息
+news.list.button.del=批量删除
+news.list.button.detail=消息详情
+news.list.head.title=消息管理
+
+guide.add.menuName=菜单名称
+guide.add.guideContent=指引内容
+guide.list.head.title=业务操作指引
+guide.list.menuName=菜单名称
+
+leader.view.current.place=当前位置
+leader.view.current.tooltip=当前操作界面的相关业务操作说明与指引，点击查看
+leader.view.current.title=业务操作指引
+leader.view.detail.head.title=业务操作指引详情
+
+document.list.title=文档管理
+document.list.addtitle=新增文档
+document.list.updatetitle=更新文档
+document.list.downloadtitle=下载文档
+document.list.lock=锁定
+document.list.unlock=解锁
+document.list.deletfile=删除
+document.list.docName=文档名称
+document.list.docName.check.required=文档内容不能为空.
+document.list.docName.check.invalidMessage=输入格式不正确,文档字数范围限制在1-200个字符之间.
+document.list.suffix=文档后缀
+document.list.docType=文档类型
+document.list.docState=文档状态
+document.list.checkSumType=文件校验类型
+document.list.checkSum=文件校验值
+document.list.docSize=文档大小
+document.list.storePath=存储路径
+document.list.instDate=新增日期
+document.list.instTime=新增时间
+document.list.instOper=上传用户
+document.list.modiDate=修改日期
+document.list.modiTime=修改时间
+document.list.modiOper=修改用户
+
+demo.title.moresearch=更多搜索条件
+demo.product.name=产品名称
+demo.product.type=产品类型
+demo.product.code=产品编号
+demo.product.oldprice=原价（元）
+demo.product.nowprice=现价（元）
+demo.product.count=数量
+demo.product.datelong=数据期限
+demo.product.datelongone=一个月
+demo.product.datelongtwo=半年内
+demo.product.datelongthree=一年内
+demo.product.roletype=角色类型
+demo.product.roletypelc=理财经理
+demo.product.roletypekg=开柜经理
+demo.product.roletypexd=消贷经理
+demo.product.roletypedt=大堂经理
+demo.product.date=维护日期
+demo.product.address=地址
+demo.product.remark=备注
+demo.title.cstinfo=客户个人信息
+demo.title.cstfamily=客户家庭背景
+demo.title.cstinterest=客户兴趣爱好
+demo.button.addproduct=添加产品
+demo.valid.name=产品名称必须输入1-50位字符
+
+portal.setting.title=个人参数设置
+portal.password.title=个人密码修改
+portal.password.oldPassword=旧密码
+portal.password.newPassword=新密码
+portal.password.confirmPassword=密码确认
+
+syslog.login.loginDate=登录日期
+syslog.visit.visitDate=访问日期
+
+
+#FFP Start
+#CUTOFF
+ffp.systemmaintenance.cutoffsetting.edit.title=维护时间修改
+ffp.systemmaintenance.cutoffsetting.edit.button=维护时间修改
+ffp.systemmaintenance.cutoffsetting.cutofftype=类别名称:
+ffp.systemmaintenance.cutoffsetting.workdayStart=工作日开始时间：
+ffp.systemmaintenance.cutoffsetting.workdayEnd=工作日结束时间：
+ffp.systemmaintenance.cutoffsetting.satStart=周六开始时间：
+ffp.systemmaintenance.cutoffsetting.satEnd=周六结束时间：
+ffp.systemmaintenance.cutoffsetting.holidayStart=假期开始时间：
+ffp.systemmaintenance.cutoffsetting.holidayEnd=假期结束时间：
+
+ffp.systemmaintenance.systemstat.curDate=系统当前日期:
+ffp.systemmaintenance.systemstat.runningMode=运行模式:
+ffp.systemmaintenance.systemstat.runningMode.RLTM=实时模式
+ffp.systemmaintenance.systemstat.runningMode.BTCH=批处理模式
+ffp.systemmaintenance.systemstat.fpsReceiveMode=接收消息模式:
+ffp.systemmaintenance.systemstat.fpsReceiveMode.RLTM=实时模式
+ffp.systemmaintenance.systemstat.fpsReceiveMode.BTCH=批处理模式
+ffp.systemmaintenance.systemstat.fpsReceiveMode.RLTMP=正在更新为实时模式...
+ffp.systemmaintenance.systemstat.fpsReceiveMode.BTCHP=正在更新为批处理模式...
+ffp.systemmaintenance.systemstat.realtimeListenerStat=实时监听器运行状态:
+ffp.systemmaintenance.systemstat.realtimeListenerStat.-=功能未开启
+ffp.systemmaintenance.systemstat.realtimeListenerStat.R=运行中
+ffp.systemmaintenance.systemstat.realtimeListenerStat.C=已停止
+ffp.systemmaintenance.systemstat.realtimeListenerStat.RP=正在启动监听...
+ffp.systemmaintenance.systemstat.realtimeListenerStat.CP=正在停止监听...
+ffp.systemmaintenance.systemstat.batchListenerStat=批处理监听器运行状态:
+ffp.systemmaintenance.systemstat.batchListenerStat.-=功能未开启
+ffp.systemmaintenance.systemstat.batchListenerStat.R=运行中
+ffp.systemmaintenance.systemstat.batchListenerStat.C=已停止
+ffp.systemmaintenance.systemstat.batchListenerStat.RP=正在启动监听...
+ffp.systemmaintenance.systemstat.batchListenerStat.CP=正在停止监听...
+
+#add by zhangying
+# ffp transaction
+ffp.cashmanagement.transaction.O = 向外
+ffp.cashmanagement.transaction.I = 向内
+ffp.cashmanagement.transaction.ALL =  全部
+ffp.cashmanagement.transaction.P100 = 汇出
+ffp.cashmanagement.transaction.P110 = 汇入
+ffp.cashmanagement.transaction.P200 = 出账
+ffp.cashmanagement.transaction.P210 = 入账
+ffp.cashmanagement.transaction.P300 = 退回退款
+ffp.cashmanagement.transaction.M101 = 模式切换
+ffp.cashmanagement.transaction.A100 = 寻址服务
+ffp.cashmanagement.transaction.COMPL = 完成
+ffp.cashmanagement.transaction.ERROR = 错误
+ffp.cashmanagement.transaction.APPST = 等待
+ffp.cashmanagement.transaction.REJCT = 拒绝
+ffp.cashmanagement.transaction.CREAT = 创建
+ffp.cashmanagement.transaction.TMOUT = 超时
+ffp.cashmanagement.transaction.MSYNC = 同步
+ffp.cashmanagement.transaction.transactionRecord= 交易记录
+ffp.cashmanagement.transaction.transDate= 交易时间
+
+#tx
+ffp.cashmanagement.transaction.txJnl = 交易表
+ffp.cashmanagement.transaction.jnlNo = 交易流水号
+ffp.cashmanagement.transaction.srcRefNm = 原交易号
+ffp.cashmanagement.transaction.txStat = 交易状态
+ffp.cashmanagement.transaction.txCode = 交易代码
+ffp.cashmanagement.transaction.txSrc = 交易始发站
+ffp.cashmanagement.transaction.txMode = 交易模式:
+ffp.cashmanagement.transaction.transactionId = 交易唯一编码
+ffp.cashmanagement.transaction.endToEndId = 初始化交易唯一标志
+ffp.cashmanagement.transaction.createDate = 建立时间
+#action
+ffp.cashmanagement.transaction.actionList = 报文流向表
+ffp.cashmanagement.transaction.bussiData = 业务表
+ffp.cashmanagement.transaction.msgId = 报文唯一标志
+ffp.cashmanagement.transaction.msgDirection = 报文流向
+ffp.cashmanagement.transaction.msgSystemId = 系统标志
+ffp.cashmanagement.transaction.msgType = 报文类型
+ffp.cashmanagement.transaction.msgStatus = 报文状态
+ffp.cashmanagement.transaction.msgCode = 报文编码
+ffp.cashmanagement.transaction.msgResult = 报文结果
+ffp.cashmanagement.transaction.msgCreateTs = 报文创建时间
+ffp.cashmanagement.transaction.msgProce_ts = 报文处理时间
+ffp.cashmanagement.transaction.msgComplTs =报文完成时间
+ffp.cashmanagement.transaction.refMsgId = 交易ID
+ffp.cashmanagement.transaction.isAutocheck = 是否核查
+#p100
+ffp.cashmanagement.transaction.categoryPurpose = 种类目的
+ffp.cashmanagement.transaction.acctVerf = 账户校验
+ffp.cashmanagement.transaction.settlementCur = 结算货币
+ffp.cashmanagement.transaction.settlementAmt = 结算金额
+ffp.cashmanagement.transaction.settlementDate = 结算日期
+ffp.cashmanagement.transaction.debtorName = 扣款名称
+ffp.cashmanagement.transaction.debtorAcctNo = 扣款账户
+ffp.cashmanagement.transaction.debtorAcctNoType =扣款账户类型
+ffp.cashmanagement.transaction.creditorName = 收款名称
+ffp.cashmanagement.transaction.creditorAcctNo = 收款账户
+ffp.cashmanagement.transaction.creditorAcctNoType = 收款账户类型
+#m101
+ffp.cashmanagement.transaction.msgId = 报文唯一标志
+ffp.cashmanagement.transaction.rcptMd = 接受模式
+ffp.cashmanagement.transaction.accpStatus = 接受状态
+ffp.cashmanagement.transaction.rjctCd = 拒绝理由
+ffp.cashmanagement.transaction.createDtTm = 创建时间
+
+#e100
+ffp.cashmanagement.transactionstatus.transactionId = 交易唯一编码
+ffp.cashmanagement.transactionstatus.clrSysRef = 清算参考编号
+ffp.cashmanagement.transactionstatus.dbtrAgtMmbId = 扣款方清算编号
+ffp.cashmanagement.transactionstatus.cdtrAgtMmbId = 收款方清算编号
+
+ffp.cashmanagement.accountinquery.pleaseSelect=请选择货币：
+ffp.cashmanagement.accountinquery.accountBalance=账户余额:
+
+ffp.cashmanagement.fpspaymentnotification.ntfctnId=通知编号:
+ffp.cashmanagement.fpspaymentnotification.paymentCag=交易类别
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXSALA=薪金福利
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXMRCH=商户付款
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXBSNS=企业支付
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CXPSNL=个人支付
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDBILL=缴付账单
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDTOPU=帐户充值
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDECOM=电子商务
+ffp.cashmanagement.fpspaymentnotification.paymentCag.DDOTHR=其他(直接借记支付 )
+ffp.cashmanagement.fpspaymentnotification.paymentCag.RPRTRN=退回
+ffp.cashmanagement.fpspaymentnotification.paymentCag.RPRFND=退款
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWAUTO=账户余额自动调拨
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWMANU=账户余额手动调拨
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWOPCL=账户余额调拨(CHATS)
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SWRVSL=取消账户余额调拨
+ffp.cashmanagement.fpspaymentnotification.paymentCag.SIDRCR=SI交易
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CPBADJ=CP余额调整
+ffp.cashmanagement.fpspaymentnotification.paymentCag.CPMERG=余额调整(合并行)
+ffp.cashmanagement.fpspaymentnotification.ntfctnCreateTs=通知日期:
+ffp.cashmanagement.fpspaymentnotification.paymentDbtr=扣账方:
+ffp.cashmanagement.fpspaymentnotification.paymentCdtr=入账方:
+ffp.cashmanagement.fpspaymentnotification.settlementTs=结算日期:
+
+#system
+system.login =登录
+#user
+system.sysmanager.user.userId = 用户ID:
+system.sysmanager.user.userInf = 用户基本信息:
+system.sysmanager.user.userIdMiss = 用户ID不能为空.
+system.sysmanager.user.userIdInvalid = 输入格式不正确,长度介于6到16个字符之间.
+system.sysmanager.user.userName = 用户名称:
+system.sysmanager.user.userNameMiss = 用户名称不能为空
+system.sysmanager.user.nickName = 用户昵称:
+system.sysmanager.user.orgId = 机构号:
+system.sysmanager.user.orgIdMiss = 机构号不能为空
+system.sysmanager.user.certType = 证件类型:
+system.sysmanager.user.IDCard = 身份证:
+system.sysmanager.user.centNo = 身份证号:
+system.sysmanager.user.telephone = 电话号码:
+system.sysmanager.user.mobilePhone = 手机号码:
+system.sysmanager.user.email = 电子邮件:
+system.sysmanager.user.limitIp = 登录受限IP
+system.sysmanager.user.userStatus = 用户状态
+system.sysmanager.user.start = 启用
+system.sysmanager.user.close = 停用
+system.sysmanager.user.userRoleList = 用户角色列表
+system.sysmanager.user.addUser = 添加用户
+system.sysmanager.user.updateUser = 修改用户
+system.sysmanager.user.delete = 删除
+system.sysmanager.user.resetPass = 重置密码
+system.sysmanager.user.unlock = 解锁
+system.sysmanager.user.isStart = 是否启用:
+system.sysmanager.user.isLock = 是否已锁定:
+
+#onlineUser
+system.sysmanager.onlineUser.offline =强制下线
+#role
+system.sysmanager.role.roleName =角色名称
+system.sysmanager.role.roleInf =角色基本信息
+system.sysmanager.role.roleNameMiss =角色名称不能为空
+system.sysmanager.role.des =描述
+system.sysmanager.role.roleRightsInf =角色权限信息
+system.sysmanager.role.roleId =角色ID
+system.sysmanager.role.addRole =添加角色
+system.sysmanager.role.editRole =编辑角色
+#roleallot
+system.sysmanager.roleallot.roleallotInf =角色(分配)基本信息
+system.sysmanager.roleallot.roleallotName =角色(分配)名称
+system.sysmanager.roleallot.roleallotNameMiss =角色(分配)名称不能为空.
+system.sysmanager.roleallot.roleallotDes =角色(分配)名称描述
+system.sysmanager.roleallot.roleallotRightsInf =角色(分配)权限信息
+system.sysmanager.roleallot.roleallotId =角色(分配)ID
+system.sysmanager.roleallot.addroleallot =添加角色(分配)
+#maintenance
+system.sysmanager.maintenance.roleInf =角色基本信息
+system.sysmanager.maintenance.roleName =角色名称
+system.sysmanager.maintenance.roleallotList =角色(分配)列表
+system.sysmanager.maintenance.roleallotName =角色(分配)名称
+system.sysmanager.maintenance.roleID =角色ID
+system.sysmanager.maintenance.roleChoose =请选择
+
+#rolelimit
+system.sysmanager.rolelimit.roleName =角色名称
+system.sysmanager.rolelimit.addRoleLimit =添加角色约束
+#param define
+system.sysmanager.param.define.paramCode =参数代码
+system.sysmanager.param.define.paramCodeMiss =参数代码不能为空
+system.sysmanager.param.define.paramCodeInvalid = 输入格式不正确,参数代码长度在4-32个字符之间.
+system.sysmanager.param.define.paramName =参数名称:
+system.sysmanager.param.define.paramNameMiss =参数名称不能为空
+system.sysmanager.param.define.storeType =存储类型:
+system.sysmanager.param.define.paramGroup =参数组别:
+system.sysmanager.param.define.paramGroupMiss =参数组别不能为空
+system.sysmanager.param.define.dataType =数据类型:
+system.sysmanager.param.define.editable =可否编辑:
+system.sysmanager.param.define.defaultValue =默认值:
+system.sysmanager.param.define.valueRule =取值规则:
+system.sysmanager.param.define.valueRuleParam =取值规则参数:
+system.sysmanager.param.define.des =描述:
+system.sysmanager.param.define.addParam =添加参数
+system.sysmanager.param.define.editParam =编辑参数
+system.sysmanager.param.define.delParam =删除参数
+#param enum
+system.sysmanager.param.enum.paramCode =参数代码:
+system.sysmanager.param.enum.paramName =参数名称:
+system.sysmanager.param.enum.paramGroup =参数组别:
+system.sysmanager.param.enum.enumParamType =参数特性:
+system.sysmanager.param.enum.seqNo =序列号:
+system.sysmanager.param.enum.des =描述:
+system.sysmanager.param.enum.supID =父ID:
+system.sysmanager.param.enum.ID =ID:
+system.sysmanager.param.enum.dataText =名称:
+system.sysmanager.param.enum.dataIcon =图标:
+system.sysmanager.param.enum.dataParam =参数:
+system.sysmanager.param.enum.editDetail =编辑明细
+system.sysmanager.param.enum.treeStr = 树形结构
+system.sysmanager.param.enum.dragAvail =(可拖动)
+system.sysmanager.param.enum.nodeAttr = 节点属性
+#holiday
+system.sysmanager.holiday.isHoliday = 是否节假日
+system.sysmanager.holiday.holidayName = 节假日名称
+system.sysmanager.holiday.selectDates = 已选择的日期
+#org
+system.sysmanager.org.supOrg = 父机构:
+system.sysmanager.org.orgId = 机构ID:
+system.sysmanager.org.orgIdMiss = 机构ID不能为空.
+system.sysmanager.org.orgName = 机构名称:
+system.sysmanager.org.orgNameMiss = 机构名称不能为空.
+system.sysmanager.org.orgLevel = 机构级别:
+system.sysmanager.org.orgType = 机构类型:
+system.sysmanager.org.des = 描述:
+#syslog login
+system.sysmanager.syslog.login.orgId = 机构ID:
+system.sysmanager.syslog.login.userId = 用户ID:
+system.sysmanager.syslog.login.userName = 用户名称:
+system.sysmanager.syslog.login.loginDate = 登录日期:
+#syslog visit
+system.sysmanager.syslog.visit.orgId = 机构ID:
+system.sysmanager.syslog.visit.userId = 用户ID:
+system.sysmanager.syslog.visit.userName = 用户名称:
+system.sysmanager.syslog.visit.loginDate = 登录日期:
+#news
+system.sysmanager.news.title = 标题:
+system.sysmanager.news.content = 内容:
+system.sysmanager.news.sendOper = 发送人:
+system.sysmanager.news.sendDate = 发送日期:
+#system.mainframe
+system.mainframe.title = 四方精创
+system.mainframe.newsDetail = 消息明细
+system.mainframe.myshortCutMenu = 我的快捷菜单
+system.mainframe.setshortCutMenu = 设置快捷菜单
+#system.mainframe.layout
+system.mainframe.layout.title = 四方精创
+#system.mainframe.portal
+system.mainframe.portal.notice = 公告标题:
+system.mainframe.portal.noticeContent = 公告内容:
+system.mainframe.portal.sendTime = 发出日期:
+
+system.mainframe.portal.demo = 备注1
+system.mainframe.portal.time = 时间: 9:30-11:30
+system.mainframe.portal.title = 标题:会议室开会.
+system.mainframe.portal.content = 评审..功能的设计
+
+#system.mainframe.portal.slide
+system.mainframe.portal.slide.one = 1
+system.mainframe.portal.slide.two = 2
+system.mainframe.portal.slide.three = 3
+system.mainframe.portal.slide.four = 4
+system.mainframe.portal.slide.testTitleOne = 测试标题1
+system.mainframe.portal.slide.testTitleTwo = 测试标题2
+system.mainframe.portal.slide.testTitleThree = 测试标题3
+system.mainframe.portal.slide.testTitleFour = 测试标题4
+#common.favorites
+common.favorites.menuId = 菜单ID:
+common.favorites.menuInf = 基本信息:
+common.favorites.menuIdMiss = 菜单ID不能为空.
+common.favorites.menuIdInvalide = 输入格式不正确,菜单ID是数字类型.
+common.favorites.shortMenuName = 快捷菜单名称
+common.favorites.shortMenuNameMiss = 快捷菜单名称不能为空.
+common.favorites.icon = 图标
+common.favorites.seqNo = 序号
+common.favorites.des = 描述
+common.favorites.iconList = 图标列表
+common.favorites.menuTree = 菜单树
+common.favorites.all = 全部
+common.favorites.collected = 已收藏
+common.favorites.uncollected = 未收藏
+common.favorites.shortMenuView = 快捷菜单预览
+common.favorites.addshortMenu = 添加快捷菜单
+common.favorites.editshortMenu = 编辑快捷菜单
+common.favorites.delshortMenu = 删除快捷菜单
+
+#common.error
+common.error.400.titlePage = 400 页面
+common.error.404.titlePage = 404 页面
+common.error.500.titlePage = 500 页面
+#common root
+common.authorityRefusePage = 权限拒绝页面
+common.pathError = 对不起,没有找到你访问的功能 URL:
+common.sessionError = 对不起,会话已超时,请重新 
+common.login = 登录
+common.accessAuthority = 对不起,您没有权限访问权限 URL:
+common.code = 代码:
+common.message = 信息:
+#common title
+common.favorite.title.shortMenuSet = 快捷菜单设置
+system.sysmanager.menulocale.title.menuName = 菜单名字:系统管理
+system.sysmanager.menulocale.title.menulocale = 菜单国际化
+system.sysmanager.taskrule.title.taskruleManager = 任务规则管理
+system.sysmanager.taskrule.title.chooseOrg = 选择该机构
+system.sysmanager.taskrule.title.cancleChoose = 取消选择
+system.sysmanager.cache.title.cacheManager = 缓存管理
+system.sysmanager.syslog.visit.title.visitLogSearch = 访问日志查询
+system.sysmanager.syslog.login.title.loginLogSearch = 登录日志查询
+system.sysmanager.user.title.userManager = 用户管理
+system.sysmanager.onlineuser.title.onlineUserManager = 在线用户管理
+system.sysmanager.role.title.roleManager = 角色管理
+system.sysmanager.roleallot.title.roleallotManager = 角色(分配)管理
+system.sysmanager.rolelimit.title.rolelimitManager = 角色约束管理
+system.sysmanager.param.define.title.paramDefine = 参数定义
+system.sysmanager.param.enum.title.enumParamMain = 枚举参数维护
+system.sysmanager.param.singleParam.title.singleParamMain = 单值参数维护
+system.sysmanager.holiday.title.holidayMain = 节假日维护
+system.sysmanager.org.title.orgManager = 机构管理
+system.sysmanager.org.title.orgTree = 机构树
+system.sysmanager.org.title.remark = (可右键操作机构,可拖动机构)
+system.sysmanager.org.title.orgMain = 机构维护
+system.sysmanager.org.title.addSonOrg = 添加子机构
+system.sysmanager.org.title.editOrg = 修改机构
+system.sysmanager.org.title.delOrgAndSonOrg = 删除机构以及子机构
+system.sysmanager.guide.title.searchMenuName = 查询菜单名称
+system.sysmanager.maintenance.title.roleRelMain = 角色-角色(分配)关系维护
+#button
+system.sysmanager.button.download = 下载
+system.sysmanager.button.save = 保存
+system.sysmanager.button.reset = 重置
+system.sysmanager.button.refresh = 刷新
+system.sysmanager.button.clearRefresh = 清理缓存
+system.sysmanager.button.cancleEdit = 取消编辑

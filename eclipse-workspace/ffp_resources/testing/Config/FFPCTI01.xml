@@ -1,0 +1,10 @@
+<Config>
+	<KEYS>
+	</KEYS>
+	<REPLACE_MAP>
+		<Object>
+			<NAME>##SrcRefNm##</NAME>
+			<VALUE>body.getSrcRefNm</VALUE>
+		</Object>
+	</REPLACE_MAP>
+</Config>

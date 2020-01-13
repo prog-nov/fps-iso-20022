@@ -1,0 +1,7 @@
+{
+  "threads": {
+	"noOfThreads": 5,
+	"sleepTime": 0
+  },
+  "path": "C:/Temp/fpsBankSim/bulk/"
+}

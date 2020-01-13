@@ -1,0 +1,188 @@
+package com.forms.framework.ctrl;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+import com.forms.framework.env.BatchEnvBuilder;
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.BaseDao;
+import com.forms.framework.util.CommonAPI;
+
+public class BatchJobJnlDao extends BaseDao
+{
+	private static BatchLogger logger = BatchLogger.getLogger("BatchJobJnlDao", "BatchJobJnlDao", BatchJobJnlDao.class);
+	
+	public static String BATCH_JNL_TABLE = null;
+
+	static
+	{
+		try
+		{
+			BATCH_JNL_TABLE = BatchEnvBuilder.getInstance().getParamenter(CommonAPI.PARAMETER_BATCH_JOB_JNL_TABLE);
+		} catch (Exception e)
+		{
+			logger.error(e);
+		}
+	}
+	
+	/**
+	 * insert into database.
+	 * 
+	 * @param ip_jnl
+	 *            Jnlobject.
+	 * @return 0 - fail;1 - success.
+	 * @throws BatchFrameworkException
+	 */
+	public boolean insert(BatchJobJnl ip_jnl) throws BatchFrameworkException
+	{
+		int loc_iCount = 0;
+		StringBuffer loc_stbSql = null;
+		Date loc_dtStart = null;
+		Date loc_dtEnd = null;
+		Timestamp loc_tsStart = null;
+		Timestamp loc_tsEnd = null;
+
+		loc_stbSql = new StringBuffer();
+		loc_stbSql
+				.append("insert into " + CommonAPI.schema
+						+ "."+ BATCH_JNL_TABLE +"(");
+		loc_stbSql.append("  BATCH_AC_DATE,");
+		loc_stbSql.append("  JOB_ID,");
+		loc_stbSql.append("  JNL_SEQ,");
+		loc_stbSql.append("  JOB_STAT,");
+		loc_stbSql.append("  RESULT,");
+		loc_stbSql.append("  START_TS,");
+		loc_stbSql.append("  END_TS");
+		loc_stbSql.append(") values (?, ?, ?, ?, ?, ?, ?)");
+
+		loc_dtStart = ip_jnl.getStartTs();
+		loc_dtEnd = ip_jnl.getEndTs();
+		if (loc_dtStart != null)
+		{
+			loc_tsStart = new Timestamp(loc_dtStart.getTime());
+		}
+		if (loc_dtEnd != null)
+		{
+			loc_tsEnd = new Timestamp(loc_dtEnd.getTime());
+		}
+		loc_iCount = update(loc_stbSql.toString(), ip_jnl.getBatchAcDate(),
+				ip_jnl.getJobId(), ip_jnl.getJnlSeq(), ip_jnl.getJobStat(), ip_jnl
+						.getResult(), loc_tsStart, loc_tsEnd);
+
+		return loc_iCount > 0;
+	}
+
+	/**
+	 * Jnl acdate、jobid、seq,update ActionJnl.
+	 * 
+	 * @param ip_jnl
+	 *            Jnlobject.
+	 * @return false - fail;true - success.
+	 * @throws BatchFrameworkException
+	 */
+	public boolean updateActionJnl(BatchJobJnl ip_jnl)
+			throws BatchFrameworkException
+	{
+		int loc_iCount = 0;
+		StringBuffer loc_stbSql = null;
+
+		loc_stbSql = new StringBuffer();
+		loc_stbSql.append("update " + CommonAPI.schema + "."+ BATCH_JNL_TABLE);
+		loc_stbSql.append("   set ACTION_JNL = ?");
+		loc_stbSql.append(" where BATCH_AC_DATE = ?");
+		loc_stbSql.append("   and JOB_ID = ?");
+		loc_stbSql.append("   and JNL_SEQ = ?");
+
+		loc_iCount = update(loc_stbSql.toString(), ip_jnl.getActionJnl(), ip_jnl
+				.getBatchAcDate(), ip_jnl.getJobId(), ip_jnl.getJnlSeq());
+
+		return loc_iCount > 0;
+	}
+
+	/**
+	 * Jnl acdate、jobid、seq update stats result result time.
+	 * 
+	 * @param ip_jnl
+	 *            Jnlobject.
+	 * @return false - fail;true - success.
+	 * @throws BatchFrameworkException
+	 */
+	public boolean close(BatchJobJnl ip_jnl) throws BatchFrameworkException
+	{
+		int loc_iCount = 0;
+		StringBuffer loc_stbSql = null;
+		Date loc_dtEnd = null;
+		Timestamp loc_tsEnd = null;
+
+		loc_stbSql = new StringBuffer();
+		loc_stbSql.append("update " + CommonAPI.schema + "."+ BATCH_JNL_TABLE);
+		loc_stbSql.append("   set JOB_STAT = ?,");
+		loc_stbSql.append("       RESULT = ?,");
+		loc_stbSql.append("       END_TS = ?");
+		loc_stbSql.append(" where BATCH_AC_DATE = ?");
+		loc_stbSql.append("   and JOB_ID = ?");
+		loc_stbSql.append("   and JNL_SEQ = ?");
+
+		loc_dtEnd = ip_jnl.getEndTs();
+		if (loc_dtEnd != null)
+		{
+			loc_tsEnd = new Timestamp(loc_dtEnd.getTime());
+		}
+		loc_iCount = update(loc_stbSql.toString(), ip_jnl.getJobStat(), ip_jnl.getResult(),
+				loc_tsEnd, ip_jnl.getBatchAcDate(), ip_jnl.getJobId(), ip_jnl.getJnlSeq());
+
+		return loc_iCount > 0;
+	}
+
+	/**
+	 * query last Jnl info.
+	 * 
+	 * @param ip_batchAcDate
+	 *            acdate.
+	 * @param ip_jobId .
+	 * @return .
+	 * @throws BatchFrameworkException
+	 */
+	public BatchJobJnl retrieveLastJnl(String ip_batchAcDate, String ip_jobId)
+			throws BatchFrameworkException
+	{
+		StringBuffer loc_stbSql = null;
+		BatchJobJnl loc_jnl = null;
+
+		loc_stbSql = new StringBuffer();
+		loc_stbSql.append("select BATCH_AC_DATE as batchAcDate,");
+		loc_stbSql.append("       JOB_ID as jobId,");
+		loc_stbSql.append("       JNL_SEQ as jnlSeq,");
+		loc_stbSql.append("       JOB_STAT as jobStat,");
+		loc_stbSql.append("       RESULT as result,");
+		loc_stbSql.append("       START_TS as startTs,");
+		loc_stbSql.append("       END_TS as endTs,");
+		loc_stbSql.append("       BREAK_POINT as breakPoint");
+		loc_stbSql.append("  from " + CommonAPI.schema + "."+ BATCH_JNL_TABLE);
+		loc_stbSql.append(" where BATCH_AC_DATE = ?");
+		loc_stbSql.append("   and JOB_ID = ?");
+		loc_stbSql.append(" order by JNL_SEQ desc ");
+		try
+		{
+			if(CommonAPI.ENV_DBTYPE_MYSQL.equals(BatchEnvBuilder.getInstance().getParamenter(CommonAPI.ENV_DBTYPE)))
+			{
+				loc_stbSql.append(" limit 1");
+			}
+			else
+			{
+				loc_stbSql.append(" fetch first 1 row only");
+			}
+		}
+		catch(Exception ip_e)
+		{
+			throw new BatchFrameworkException(ip_e);
+		}
+
+		loc_jnl = queryBean(BatchJobJnl.class, loc_stbSql.toString(), ip_batchAcDate,
+				ip_jobId);
+
+		return loc_jnl;
+	}
+
+}

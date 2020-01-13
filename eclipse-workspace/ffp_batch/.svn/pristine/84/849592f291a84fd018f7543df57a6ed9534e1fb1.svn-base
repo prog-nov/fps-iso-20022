@@ -1,0 +1,9 @@
+ECHO "INWARD_FPSPYCI.BAT"
+
+CD C:\Temp\BATCH\bin\windows\
+
+SET CONFIG="job/dispatcher/dispatcher.xml"
+
+call common\RunBatchJob.BAT %CONFIG% %1 %2 %3 %4 %5
+
+

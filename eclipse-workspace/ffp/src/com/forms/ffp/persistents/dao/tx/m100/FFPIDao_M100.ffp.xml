@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.tx.m100.FFPIDao_M100">
+
+	<!-- 新增交易或者更新开始 -->
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	<insert id="INSERTLIST_TB_TX_M100">
+		INSERT INTO TB_TX_M100DAT
+		(
+			JNL_NO, MSG_ID, RCPT_MD,
+			ACCP_STATUS, SWTCHG_TS
+		)
+		VALUES (#{jnlNo,jdbcType=VARCHAR},#{msgId,jdbcType=VARCHAR},#{rcptMd, jdbcType=VARCHAR},
+		#{accpStatus, jdbcType=VARCHAR},#{swtchgTs,jdbcType=TIMESTAMP})
+	</insert>
+	
+    <!-- inquiry by jnlno or MsgId -->
+	<select id="inquiryM100ByJnlNoOrMsgId" resultType="com.forms.ffp.persistents.bean.tx.m100.FFPJbM100">
+		SELECT *
+	    FROM TB_TX_M100DAT A
+	    	<where>
+	     	<if test="null != jnlNo and '' != jnlNo">
+	     		AND A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != msgId and '' != msgId">
+	     		AND A.MSG_ID = #{msgId, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+		
+	</select>
+
+	<update id="UPDATE_TB_TX_M100">
+		UPDATE TB_TX_M100DAT A 
+		SET A.ACCP_STATUS=#{accpStatus,jdbcType=VARCHAR},
+		A.RJCT_CD=#{rjctCd,jdbcType=VARCHAR}
+		   	<where>
+	     	<if test="null != jnlNo and '' != jnlNo">
+	     		AND A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != msgId and '' != msgId">
+	     		AND A.MSG_ID = #{msgId, jdbcType=VARCHAR}
+	     	</if>
+		</where>
+	</update> 
+</mapper>

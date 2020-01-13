@@ -1,0 +1,94 @@
+package com.forms.ffp.core.connector.listener.msg;
+
+import java.net.Socket;
+import java.sql.Timestamp;
+
+import javax.jms.Message;
+import javax.jms.TextMessage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.core.msg.FFPMessageWrapper;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPStringUtils;
+
+public abstract class FFPBaseMsgListener
+{
+	private static Logger _logger = LoggerFactory.getLogger(FFPBaseMsgListener.class);
+	
+	public abstract boolean onValidateSignature(TextMessage message, boolean ignoreException) throws Exception;
+
+	public abstract FFPMessageWrapper onMessageParse(TextMessage message, String queueName, String priority) throws Exception;
+	
+	public abstract FFPMessageWrapper onTcpMessageParse(String message, Socket socket) throws Exception;
+	
+	public abstract void handleMessage(FFPMessageWrapper warpper);
+	
+	public void onMessage(Message message, String queueName, String priority)
+	{
+		Long sysTime = Long.valueOf(System.currentTimeMillis());
+		FFPMessageWrapper warpper = null;
+		String jmsId = null;
+		try
+		{
+			jmsId = message.getJMSMessageID();
+			if (!(message instanceof TextMessage))
+			{
+				_logger.error(String.format("[%s]>> Skip handling message due to message is not TextMessage: %s", new Object[] { queueName, message.getJMSMessageID() }));
+				return;
+			}
+			
+			TextMessage textMessage = (TextMessage) message;
+			
+			_logger.info(String.format("[%s]Receive JmsId=[%s] Msg=[%s]", new Object[] {queueName, message.getJMSMessageID(), textMessage.getText() }));
+			onValidateSignature(textMessage, true);
+			
+			warpper = onMessageParse(textMessage, queueName, priority);
+
+			if (_logger.isInfoEnabled())
+			{
+				_logger.info(String.format("[queueName %s]>> Message received on [%s].",
+						new Object[] { queueName, sysTime != null ? FFPDateUtils.getTimeStr(new Timestamp(sysTime.longValue()), "yyyy-MM-dd-HH.mm.ss.SSS") : "null" }));
+			}
+			
+		}
+		catch (Exception e)
+		{
+			_logger.error(String.format("[%s]>> Failed to parse message:[%s]", new Object[] { queueName, jmsId}), e);
+			return;
+		}
+		handleMessage(warpper);
+	}
+	
+	/**
+	 * add by yrd
+	 * @param message
+	 * @param queueName
+	 * @throws Exception
+	 */
+	public void onTcpMessage(String message, Socket socket, long threadId)
+	{
+		
+		Long sysTime = Long.valueOf(System.currentTimeMillis());
+		if (FFPStringUtils.isEmptyOrNull(message))
+		{
+			_logger.error(String.format("[AGENT]>> Skip handling message due to message is NULL or EMPTY: %s", new Object[] {message}));
+			return;
+		}
+		
+		FFPMessageWrapper warpper = null;
+		try
+		{
+			warpper = onTcpMessageParse(message, socket);
+			_logger.info(String.format("[%s]>> Message received on [%s].",
+				new Object[] {threadId, sysTime != null ? FFPDateUtils.getTimeStr(new Timestamp(sysTime.longValue()), "yyyy-MM-dd-HH.mm.ss.SSS") : "null" }));
+		}
+		catch (Exception e)
+		{
+			_logger.error(String.format("[%s]>> Failed to parse message:[%s]", new Object[] { threadId, "TCP"}), e);
+			return;
+		}
+		handleMessage(warpper);
+	}
+}

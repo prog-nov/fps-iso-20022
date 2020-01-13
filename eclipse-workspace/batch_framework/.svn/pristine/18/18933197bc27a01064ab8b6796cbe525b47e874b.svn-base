@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	updateDate:2012-04-26
+	ModifiedBy:hch
+	ModifiedReason:CKP0840JOB
+	updateVersion:7 month
+ -->
+<head-foot-list>
+	<head-foot name="BATCH_DETAIL_FILE_TEST">
+		<field name="fileId"     bytes="10"  data-type="CharTypeLJ"    value="TEST10000"></field>
+		<field name="fileName"   bytes="44"  data-type="CharTypeLJ"    value="BATCH_DETAIL_FILE_TEST"></field>
+	</head-foot>
+	<head-foot name="BATCH_DAT_FILE">
+		<field name="fileId"     bytes="10"  data-type="CharTypeLJ"    value="TEST10001"></field>
+		<field name="fileName"   bytes="44"  data-type="CharTypeLJ"    value="BATCH_DAT_FILE"></field>
+	</head-foot>
+	<head-foot name="FILE_TO_TABLE">
+		<field name="fileId"     bytes="10"  data-type="CharTypeLJ"></field>
+		<field name="fileName"   bytes="44"  data-type="CharTypeLJ"></field>
+	</head-foot>
+	
+</head-foot-list>

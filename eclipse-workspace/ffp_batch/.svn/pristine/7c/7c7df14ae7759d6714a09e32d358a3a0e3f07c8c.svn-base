@@ -1,0 +1,50 @@
+package com.forms.batch.job.unit.participant.receivefile;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.env.BatchEnvBuilder;
+import com.forms.framework.exception.BatchJobException;
+
+public class FFPStopReceiveParticipantMsg extends BatchBaseJob
+{
+	private File tokenFile = null;
+	
+	private int port;
+	
+	public void init() throws BatchJobException
+	{
+		try
+		{
+			port = Integer.valueOf(BatchEnvBuilder.getInstance().getEnv("RECEIVE_FILE_SERVER_PORT"));
+			tokenFile = new File(this.batchData + FFPReceiveParticipantMsg.TOKEN_FILE_NAME);
+			
+		} catch (Exception e)
+		{
+			throw new BatchJobException();
+		}
+	}
+	
+	@Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			// CHECK EXCUTED
+			if(tokenFile.exists())
+			{
+				tokenFile.delete();
+			}
+			
+			// create unused Socket let ServerSocket skip out accept
+			Socket socket = new Socket("localhost", port);
+			socket.close();
+		} catch (IOException e)
+		{
+			this.batchLogger.error(e);
+		}
+		return true;
+	}
+}

@@ -1,0 +1,503 @@
+package com.forms.batch.job.unit.iclfps.payment.returnorrefund;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.forms.batch.job.unit.iclfps.payment.message.FFPBatchMsg_RRI01;
+import com.forms.batch.util.CuttoffUtils;
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPStatus;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class ReturnOrRefundInwardProcessor extends BatchBaseJob
+{
+	private final static String RESPONSE_HEAD_STATUS_N = "N";
+	private final static String RESPONSE_HEAD_STATUS_E = "E";
+	private final static String MESSAGE_DIRECTION_INWARD = "I";
+	private final static String MESSAGE_DIRECTION_OUTWARD = "O";
+	
+	public void init()
+	{
+		
+	}
+	
+	
+	@Override
+	public boolean execute() throws BatchJobException 
+	{
+		
+		try 
+		{
+			this.processor();
+			return true;
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			throw new BatchJobException(e);
+		}
+	}
+
+	
+	public void processor() throws Exception
+	{
+		batchLogger.info("Started processor return or refund batch file data");
+		FFPAdaptorMgr ffpMgr = FFPAdaptorMgr.getInstance();
+		Connection con = null;
+		
+		try
+		{
+			con = ConnectionManager.getInstance().getConnection();
+			
+			boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+			if(agentCutOff)
+			{
+				batchLogger.info("FFP Agent CUT OFF right now!");
+				return;
+			}
+			
+			List<FFPJbP300> FFPJbP300List = getTempData(con);
+			
+			processRtnData(con, FFPJbP300List, ffpMgr);
+			
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error("Error on ");
+		}
+		finally
+		{
+			if(con != null)
+				con.close();
+		}
+	}
+	
+	private void processRtnData(Connection conn, List<FFPJbP300> FFPJbP300List, FFPAdaptorMgr ffpMgr)
+	{
+		batchLogger.info("Start to process inward return and refund transaction data.");
+		for(FFPJbP300 p300 : FFPJbP300List)
+		{
+			String txId = p300.getTxJnl().getTransactionId();
+			String endToEndId = p300.getTxJnl().getEndToEndId();
+			String fpsRef = p300.getTxJnl().getFpsRefNm();
+			List<String> keyList = new ArrayList<String>();
+			String tempId = p300.getSrcRefNm();
+			try
+			{
+				String ffpJnlNo = FFPIDUtils.getJnlNo();
+				String reqRefNo = FFPIDUtils.getRefno();
+				boolean canRefundOrReturn = checkCanBeRefundOrReturn(conn, txId, endToEndId, fpsRef, keyList);
+				if(!canRefundOrReturn)
+				{
+					batchLogger.info("The inward return or refund transaction check fail!");
+					continue;
+				}
+				
+				String orgJnlNo = keyList.get(0);
+				String orgSrcRef = keyList.get(1);
+				
+				saveAndUpt(conn, p300, ffpJnlNo, orgJnlNo, tempId);
+				
+				p300.setSrcRefNm(orgSrcRef);
+				p300.setPymtCatPrps("RPRFND");
+				
+				boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+				if(agentCutOff)
+				{
+					batchLogger.info(String.format("FFP Agent CUT OFF right now in processing transaction data[TX_ID:%s]!", txId));
+					continue;
+				}
+				
+				FFPBatchMsg_RRI01 rri01 = new FFPBatchMsg_RRI01(p300);
+				rri01.setReqRefNo(reqRefNo);
+				insertAcitonFlow(conn, orgJnlNo, reqRefNo, MESSAGE_DIRECTION_OUTWARD, FFPConstants.MSG_CODE_AGENT, FFPJaxbConstants.JAXB_MSG_TYPE_FFPRRI01, 
+						FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), null, null, null, null, "N");
+				
+				FFPBaseResp result = ffpMgr.execute(rri01);
+				
+				if(result != null)
+				{
+					FFPSendTcpMessageResp rri01_reply = (FFPSendTcpMessageResp)result;
+					if(rri01_reply.isTimeOut())
+					{
+						//a.update tb_tx_jnl status = TMOUT
+						//b.update tb_tx_jnlaction status = TMOUT
+						batchLogger.info(String.format("Update FFP Transaction_Status[%s] and Action_Request_Status[%s] with FFP_JNL_NM[%s] and Source_Reference_Number[%s] and Request_MSG_ID[%s]", 
+								FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), ffpJnlNo, p300.getSrcRefNm(), reqRefNo));
+						updateResultSts(conn, FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), null, null, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), 
+								null, null, null, ffpJnlNo, reqRefNo, p300.getSrcRefNm());
+					}
+					else
+					{
+						String resMsg = rri01_reply.getRespMessage();
+						if(resMsg == null || resMsg.trim().length() < 1)
+						{
+							//FFP not get response message
+							batchLogger.warn("Response Object doesn't contain the FFPRRI01 response message which from FFP Agent");
+						}
+						else
+						{
+							rri01.unmarshalResponseMsg(rri01_reply.getRespMessage());
+							
+							String resultSts;
+							String res_action_sts;
+							if(RESPONSE_HEAD_STATUS_E.equals(rri01.getResponseSts()))
+							{
+								resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+								res_action_sts = FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus();
+							}
+							else if(RESPONSE_HEAD_STATUS_N.equals(rri01.getResponseSts()))
+							{
+								resultSts = "S".equals(rri01.getRsltCd()) ? FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus() : FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+								res_action_sts = "S".equals(rri01.getRsltCd()) ? FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus() : FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_REJCT.getStatus();
+							}
+							else
+							{
+								batchLogger.warn(String.format("Invalid response head status[%s] with resultCode[%s] from FFP Agent.", rri01.getResponseSts(), rri01.getRsltCd()));
+								throw new BatchJobException(String.format("Invalid response head status[%s] with resultCode[%s] from FFP Agent.", rri01.getResponseSts(), rri01.getRsltCd()));
+							}
+							//a. update tb_tx_jnl status = REFUND/REJECT
+							//b. update tb_tx_jnl request status = MSYNC/REJECT
+							
+							batchLogger.info(String.format("Update FFP Transaction_Status[%s] and Action_Status[%s] with Return_Refund_Status[%s] and Source_Reference_Number[%s]", 
+									resultSts, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), rri01.getRsltCd(), p300.getSrcRefNm()));
+							
+							updateResultSts(conn, resultSts, rri01.getRejCd(), rri01.getRejMsg(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), null, null, new Date(), 
+									orgJnlNo, reqRefNo, p300.getSrcRefNm());
+							
+							//c.Insert action flow of refund or return response from Agent
+							insertAcitonFlow(conn, orgJnlNo, rri01.getResRefNo(), MESSAGE_DIRECTION_INWARD, FFPConstants.MSG_CODE_AGENT, FFPJaxbConstants.JAXB_MSG_TYPE_FFPRRI01, 
+									res_action_sts, rri01.getResponseMsgCode(), rri01.getResponseMsg(), new Date(), reqRefNo, "N");
+						}
+					}
+				}
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+				batchLogger.error(String.format("Process return or refund data error:TRANSACTION_ID[%s] and END_TO_END_ID[%s] and FPS_REF_NUM[%s]", txId, endToEndId, fpsRef), ex);
+			}
+		}
+		
+	}
+	
+	private void saveAndUpt(Connection conn, FFPJbP300 p300, String ffpJnlNo, String orgJnlNo, String tempId) throws Exception
+	{
+		//a.Insert into tb_tx_p300dat
+		//b.Update tb_bh_inward_return_fpspyci
+		//c.Use transaction
+		String insert_p300_sql = "INSERT INTO TB_TX_P300DAT(JNL_NO, JNL_REF, RETURN_ID, RETURN_SETTLEMENT_CUR, RETURN_SETTLEMENT_AMT, RETURN_SETTLEMENT_DATE, "
+							+	 "RETURN_INSTRUCTED_CUR, RETURN_INSTRUCTED_AMT, RETURN_CHG_AGT_ID, RETURN_CHG_AGT_BIC, RETURN_CHG_CUR, RETURN_CHG_AMT, RETURN_CODE, "
+							+ 	 "RETURN_REASON, BIZ_SVC_TYPE, ORIG_SETTLEMENT_AMT, ORIG_SETTLEMENT_CUR, ORIG_SETTLEMENT_DATE, ORIG_CATEGORY_PURPOSE, ORIG_MANDATE_INFO, "
+							+ 	 "ORIG_REM_INFO, ORIG_DEBTOR_NAME, ORIG_DEBTOR_ACCTNO, ORIG_DEBTOR_ACCTNO_TYPE, ORIG_DEBTOR_AGT_ID, ORIG_DEBTOR_AGT_BIC, ORIG_CREDITOR_NAME, "
+							+ 	 "ORIG_CREDITOR_ACCTNO, ORIG_CREDITOR_ACCTNO_TYPE, ORIG_CREDITOR_AGT_ID, ORIG_CREDITOR_AGT_BIC) "
+							+ 	 "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		
+		String update_return_sql = "UPDATE TB_BH_INWARD_RETURN_FPSPYCI SET STATUS = ? WHERE ID = ? AND STATUS = ?";
+		List<Object> params1 = new ArrayList<Object>();
+		List<Object> params2 = new ArrayList<Object>();
+		
+		try
+		{
+			conn.setAutoCommit(false);
+			
+			params1.add(ffpJnlNo);
+			params1.add(orgJnlNo);
+			params1.add(p300.getReturnId());
+			params1.add(p300.getRetIntSetCur());
+			params1.add(p300.getRetIntSetAmt());
+			params1.add(p300.getSettlementDate());
+			params1.add(p300.getRetInsCur());
+			params1.add(p300.getRetInsAmt());
+			params1.add(p300.getChgAgtID());
+			params1.add(p300.getChgAgtBIC());
+			params1.add(p300.getChargersCurrency());
+			params1.add(p300.getChargersAmount());
+			params1.add(p300.getReasonCode());
+			params1.add(p300.getAdditionalInformation());
+			params1.add(p300.getSrvcMode());
+			params1.add(p300.getOrgnlInterbankSettAmt());
+			params1.add(p300.getOrgnlInterbankSettCcy());
+			params1.add(p300.getOrgnlInterbankSettDate());
+			params1.add(p300.getOrgnlCatgyPurp());
+			params1.add(p300.getOrgnlMandateInfo());
+			params1.add(p300.getOrgnlRemtInfo());
+			params1.add(p300.getDebtorName());
+			params1.add(p300.getDebtorAccountNumber());
+			params1.add(p300.getDebtorAccountNumberType());
+			params1.add(p300.getDebtorAgentId());
+			params1.add(p300.getDebtorAgentBic());
+			params1.add(p300.getCreditorName());
+			params1.add(p300.getCreditorAccountNumber());
+			params1.add(p300.getCreditorAccountNumberType());
+			params1.add(p300.getCreditorAgentId());
+			params1.add(p300.getCreditorAgentId());
+			
+			
+			params2.add(FFPStatus.TEMP_RETURN_REFUND_STATUS.INWARD_FINISH.getCode());
+			params2.add(tempId);
+			params2.add(FFPStatus.TEMP_RETURN_REFUND_STATUS.INWARD_INITATE.getCode());
+			
+			EntityManager.update(insert_p300_sql, params1.toArray());
+			EntityManager.update(update_return_sql, params2.toArray());
+			
+			conn.commit();
+			conn.setAutoCommit(true);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Save and Update return or refund transaction data error", ex);
+			if(conn != null)
+			{
+				conn.rollback();
+			}
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private boolean checkCanBeRefundOrReturn(Connection conn, String txId, String endToEndId, String fpsRef, List<String> keyList) throws BatchJobException
+	{
+		String query_orgTx_sql = "SELECT JNL_NO, SRC_REF_NM, TX_STAT FROM TB_TX_JNL WHERE TRANSACTION_ID = ? AND END_TO_END_ID = ? AND FPS_REF_NUM = ? ";
+		//String query_busTx_sql = "SELECT SRC_REF_NM FROM TB_TX_%sDAT WHERE JNL_NO = %s";
+		
+		List<Object> params = new ArrayList<Object>();
+		boolean canBeRefund = true;
+		try
+		{
+			params.add(txId);
+			params.add(endToEndId);
+			params.add(fpsRef);
+			List<Object[]> orgTxList = EntityManager.queryArrayList(conn, query_orgTx_sql, params.toArray());
+			
+			if(orgTxList == null || orgTxList.size() < 1)
+			{
+				//CHECK EXSIT
+				batchLogger.warn(String.format("FFP not found the transaction info with TRANSACTION_ID[%s] and END_TO_END_ID[%s] and FPS_REF_NUM[%s]", txId, endToEndId, fpsRef));
+				canBeRefund = false;
+			}
+			else
+			{
+				if(orgTxList.size() > 1)
+				{
+					//CHECK MULTI EXSIT
+					batchLogger.warn(String.format("FFP had found more than one transaction info with TRANSACTION_ID[%s] and END_TO_END_ID[%s] and FPS_REF_NUM[%s]", txId, endToEndId, fpsRef));
+					canBeRefund = false;
+				}
+				else
+				{
+					Object[] orgTx = orgTxList.get(0);
+					String jnl_no = (String)orgTx[0];
+					String src_ref = (String)orgTx[1];
+					String tx_stat = (String)orgTx[2];
+					if(!FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus().equals(tx_stat) && 
+							(!FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus().equals(tx_stat) || 
+								!FFPConstantsTxJnl.TX_STATUS.TX_STAT_RETURN.getStatus().equals(tx_stat)))
+					{
+						//CHECK STATUS
+						batchLogger.info(String.format("The transaction info with TRANSACTION_STATUS[%s] can't be refunded", tx_stat));
+						canBeRefund = false;
+					}
+					else if(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REFUND.getStatus().equals(tx_stat) || 
+								FFPConstantsTxJnl.TX_STATUS.TX_STAT_RETURN.getStatus().equals(tx_stat))
+					{
+						batchLogger.info(String.format("Multi return or refund transaction with JNL_NO[%s]", jnl_no));
+						canBeRefund = false;
+					}
+					else
+					{
+						keyList.add(jnl_no);
+						keyList.add(src_ref);
+						//CHECK BUSINESS DATA EXSIT
+						//Object[] busTx = EntityManager.queryArray(String.format(query_busTx_sql, tx_code, jnl_no));
+						//if(busTx == null)
+						//{
+						//	batchLogger.warn(String.format("FFP not found the business info with JNL_NO[%s]", jnl_no));
+						//	canBeRefund = false;
+						//}
+						//else
+						//{
+							//keyList.add(jnl_no);
+							//keyList.add((String)busTx[0]);
+						//}
+					}
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Check return or refund transaction info error", ex);
+			throw new BatchJobException(ex);
+		}
+		
+		return canBeRefund;
+	}
+	
+	private List<FFPJbP300> getTempData(Connection con) throws Exception
+	{
+		String sql = "SELECT * FROM TB_BH_INWARD_RETURN_FPSPYCI WHERE STATUS = ?";
+		
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		List<FFPJbP300> list = new ArrayList<FFPJbP300>();
+		try
+		{
+			pstm = con.prepareStatement(sql);
+			pstm.setString(1, FFPStatus.TEMP_RETURN_REFUND_STATUS.INWARD_INITATE.getCode());
+			
+			rs = pstm.executeQuery();
+			while(rs.next())
+			{
+				FFPJbP300 p300 = new FFPJbP300();
+				FFPTxJnl txJnl = new FFPTxJnl();
+				txJnl.setTransactionId(rs.getString("ORIG_TRANSACTION_ID"));
+				txJnl.setEndToEndId(rs.getString("ORIG_END_TO_END_ID"));
+				txJnl.setFpsRefNm(rs.getString("ORIG_FPS_REF"));
+				
+				p300.setTxJnl(txJnl);
+				p300.setSrcRefNm(rs.getString("ID"));//just use this field to save temporary id
+				p300.setReturnId(rs.getString("RETURN_ID"));
+				p300.setRetIntSetAmt(rs.getString("RETURN_SETTLEMENT_AMT") != null ? new BigDecimal(rs.getString("RETURN_SETTLEMENT_AMT")) : null);
+				p300.setRetIntSetCur(rs.getString("RETURN_SETTLEMENT_CUR"));
+				p300.setSettlementDate(rs.getDate("RETURN_SETTLEMENT_DATE"));
+				p300.setRetInsCur(rs.getString("RETURN_INSTRUCTED_CUR"));
+				p300.setRetInsAmt(rs.getString("RETURN_INSTRUCTED_AMT") != null ? new BigDecimal(rs.getString("RETURN_INSTRUCTED_AMT")) : null);
+				p300.setChargersAmount(rs.getString("RETURN_CHG_AMT") != null ? new BigDecimal(rs.getString("RETURN_CHG_AMT")) : null);
+				p300.setChargersCurrency(rs.getString("RETURN_CHG_CUR"));
+				p300.setChgAgtID(rs.getString("RETURN_CHG_AGT_ID"));
+				p300.setChgAgtBIC(rs.getString("RETURN_CHG_AGT_BIC"));
+				p300.setReasonCode(rs.getString("RETURN_CODE"));
+				p300.setAdditionalInformation(rs.getString("RETURN_REASON"));
+				p300.setOrgnlInterbankSettAmt(rs.getString("ORIG_SETTLEMENT_AMT") != null ? new BigDecimal(rs.getString("ORIG_SETTLEMENT_AMT")) : null);
+				p300.setOrgnlInterbankSettCcy(rs.getString("ORIG_SETTLEMENT_CUR"));
+				p300.setOrgnlInterbankSettDate(rs.getDate("ORIG_SETTLEMENT_DATE"));
+				p300.setOrgnlCatgyPurp(rs.getString("ORIG_CATEGORY_PURPOSE"));
+				p300.setOrgnlMandateInfo(rs.getString("ORIG_MANDATE_INFO"));
+				p300.setOrgnlRemtInfo(rs.getString("ORIG_REM_INFO"));
+				p300.setDebtorName(rs.getString("ORIG_DEBTOR_NAME"));
+				p300.setDebtorAccountNumber(rs.getString("ORIG_DEBTOR_ACCTNO"));
+				p300.setDebtorAccountNumberType(rs.getString("ORIG_DEBTOR_ACCTNO_TYPE"));
+				p300.setDebtorAgentId(rs.getString("ORIG_DEBTOR_AGT_ID"));
+				p300.setDebtorAgentBic(rs.getString("ORIG_DEBTOR_AGT_BIC"));
+				p300.setCreditorName(rs.getString("ORIG_CREDITOR_NAME"));
+				p300.setCreditorAccountNumber(rs.getString("ORIG_CREDITOR_ACCTNO"));
+				p300.setCreditorAccountNumberType(rs.getString("ORIG_CREDITOR_ACCTNO_TYPE"));
+				p300.setCreditorAgentBic(rs.getString("ORIG_CREDITOR_AGT_BIC"));
+				p300.setCreditorAgentId(rs.getString("ORIG_CREDITOR_AGT_ID"));
+				p300.setSrvcMode(rs.getString("BIZ_SVC_TYPE"));
+				
+				list.add(p300);
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error(String.format("Failed to get return and refund file data from temporary table with batchDate[%s]", this.batchAcDate), ex);
+			throw new BatchJobException(ex);
+		}
+		finally
+		{
+			if(rs != null) rs.close();
+			if(pstm != null) pstm.close();
+		}
+		
+		return list;
+	}
+	
+	private void insertAcitonFlow(Connection conn, String jnlNo, String msgId, String msgDirection, String msgSystemId, String msgType, String msgStatus, 
+			String msgCode, String msgResult, Date comDate, String refMsgId, String is_check) throws BatchJobException
+	{
+		//String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, "
+		//		+ "REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		//String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, REQUEST_MSG_ID, REQUEST_MSG_TYPE, REQUEST_MSG_DIRECTION, REQUEST_SYSTEMID, REQUEST_MSG_CREATE_TS, REQUEST_MSG_STAT,"
+		//		+ 	 "REQUEST_MSG_REJ_CODE, REQUEST_MSG_REJ_RSN, RESPONSE_MSG_ID, RESPONSE_MSG_TYPE, RESPONSE_MSG_DIRECTION, RESPONSE_SYSTEMID, "
+		//		+ 	 "RESPONSE_MSG_STAT, RESPONSE_MSG_REJ_CODE, RESPONSE_MSG_REJ_RSN) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		
+		String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_DIRECTION, MSG_SYSTEMID, MSG_TYPE, MSG_STATUS, MSG_CODE, MSG_RESULT, MSG_CREAT_TS, "
+				+ 	 "MSG_PROCE_TS, MSG_COMPL_TS, REF_MSG_ID, IS_AUTOCHECK) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(jnlNo);								//JNL_NO
+			list.add(msgId);								//MSG_ID
+			list.add(msgDirection);							//MSG_DIRECTION
+			list.add(msgSystemId);							//MSG_SYSTEMID
+			list.add(msgType);								//MSG_TYPE
+			list.add(msgStatus);							//MSG_STATUS
+			list.add(msgCode);								//MSG_CODE
+			list.add(msgResult);							//MSG_RESULT
+			list.add(new java.sql.Timestamp(new Date().getTime()));//MSG_CREAT_TS
+			list.add(new java.sql.Timestamp(new Date().getTime()));//MSG_PROCE_TS
+			list.add(comDate == null ? "0000-00-00 00:00:00" : comDate);//MSG_COMPL_TS
+			list.add(refMsgId);								//REF_MSG_ID
+			list.add(is_check);								//IS_AUTOCHECK
+			
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Error on adding action flow", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void updateResultSts(Connection conn, String tx_status, String tx_rejCd, String tx_rejRsn, String action_msgStatus, String action_msgCode, String action_msgResult, 
+			Date action_msgCompleDate, String jnlNo, String action_msgId, String srcRefNm) throws Exception
+	{
+		String jnl_sql = "UPDATE TB_TX_JNL SET TX_STAT = ?, TX_REJ_CODE = ?, TX_REJ_REASON = ?, LAST_UPDATE_TS = ? WHERE JNL_NO = ? AND SRC_REF_NM = ?";
+		String action_sql = "UPDATE TB_TX_JNLACTION SET MSG_STATUS = ?, MSG_CODE = ?, MSG_RESULT = ?, MSG_COMPL_TS = ? WHERE JNL_NO = ? AND MSG_ID = ?";
+		try
+		{
+			conn.setAutoCommit(false);
+			
+			List<Object> jnl_params = new ArrayList<Object>();
+			List<Object> action_params = new ArrayList<Object>();
+			jnl_params.add(tx_status);
+			jnl_params.add(tx_rejCd);
+			jnl_params.add(tx_rejRsn);
+			jnl_params.add(new java.sql.Timestamp(new Date().getTime()));
+			jnl_params.add(jnlNo);
+			jnl_params.add(srcRefNm);
+			
+			action_params.add(action_msgStatus);
+			action_params.add(action_msgCode);
+			action_params.add(action_msgResult);
+			action_params.add(action_msgCompleDate == null ? "0000-00-00 00:00:00" : action_msgCompleDate);
+			action_params.add(jnlNo);
+			action_params.add(action_msgId);
+			EntityManager.update(conn, jnl_sql, jnl_params.toArray());
+			EntityManager.update(conn, action_sql, action_params.toArray());
+			
+			conn.commit();
+			conn.setAutoCommit(true);
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error(String.format("Update TX_STATUS[%s] and MSG_STATUS[%s] with JNL_NO[%s] and MSG_ID failed", tx_status, action_msgStatus, jnlNo, action_msgId), ex);
+			ex.printStackTrace();
+			if(conn != null)
+			{
+				conn.rollback();
+			}
+			throw new BatchJobException(ex);
+		}
+	}
+}

@@ -1,0 +1,2 @@
+http\://www.formssi.com/schema/beneform4j/exception=com.forms.beneform4j.core.service.spring.schema.exception.Beneform4jExceptionNamespaceHandler
+http\://www.formssi.com/schema/beneform4j/logger=com.forms.beneform4j.core.service.spring.schema.logger.Beneform4jLoggerNamespaceHandler

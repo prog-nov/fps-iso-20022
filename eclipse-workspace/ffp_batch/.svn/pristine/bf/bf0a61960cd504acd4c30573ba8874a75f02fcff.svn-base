@@ -1,0 +1,134 @@
+package com.forms.batch.util;
+
+import java.util.List;
+import java.util.Map;
+
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class RisCreatBackupTable
+{
+	private String tableName;
+	
+	private String subfix;
+	
+	private String schema;
+	
+	private BatchLogger loger;
+	
+	private void init(String tableName, String agoyear) throws BatchFrameworkException
+	{
+		this.tableName = tableName;
+		this.subfix = agoyear;
+		this.schema = ConnectionManager.getInstance().getDefaultSchema();
+		this.loger = BatchLogger.getLogger("CreateHistoryTable", tableName + "_" + agoyear, RisCreatBackupTable.class); 
+	}
+	
+	public boolean createHistoryTable(String tableName, String subfix) throws Exception
+	{
+		boolean flag = false;
+		this.init(tableName, subfix);
+		if(!isExists())
+		{
+			this.create();
+			this.addPrimaryKey();
+			loger.info("CREATE" + tableName + "_" + subfix + "SUCCESS");
+			flag = true;
+		}else
+		{
+			loger.info(tableName + "_" + subfix + "IS EXISTS");
+			flag = false;
+		}
+		return flag;
+	}
+	
+	private boolean isExists() throws Exception
+	{
+		String sql = "SELECT 'TRUE'									" +
+					 "FROM SYSIBM.SYSTABLES							" + 
+					 "WHERE CREATOR = '" + schema + "'				" +
+					 "	AND NAME = '" + tableName + "_" + subfix + 	"'";
+		Object[] obj = EntityManager.queryArray(sql);
+		if(null != obj)
+		{
+			String tmp = (String) obj[0];
+			return Boolean.valueOf(tmp).booleanValue();
+		}
+		return false;
+	}
+	
+	private void create() throws Exception
+	{	
+		String create_sql = "CREATE TABLE " + schema + "." + tableName + "_" + subfix + "(";
+		String columnsql = "SELECT 	NAME,												" +
+						   "			CASE WHEN COLTYPE='CHAR' 						" +
+						   "						OR COLTYPE='VARCHAR'				" +
+						   "					THEN COLTYPE||'('||CHAR(LENGTH)||')'	" +
+						   "				 WHEN COLTYPE='DECIMAL' " +
+						   "					THEN COLTYPE||'('||CHAR(LENGTH)||','||CHAR(SCALE)||')' " +
+						   "				 ELSE COLTYPE								" +
+						   "			END												" +
+						   "		DATATYPE,											" +
+						   "			CASE WHEN NULLS='N' THEN 'NOT NULL'				" +
+						   "				ELSE ''										" +
+						   "			END												" +
+						   "		ISNULLS												" +
+						   "FROM SYSIBM.SYSCOLUMNS										" +
+						   "WHERE TBCREATOR = '" + schema + "'							" +
+						   "	AND TBNAME ='" + this.tableName + "'					" +
+						   "	ORDER BY COLNO											";
+//		List<Map<String, Object>> columns = EntityManager.queryMapList(columnsql);
+		List columns = EntityManager.queryMapList(columnsql);
+		if(null != columns)
+		{
+//			Map<String, Object> tmp = null;
+			Map tmp = null;
+			for(int i = 0; i < columns.size(); i++)
+			{
+				tmp = (Map) columns.get(i);
+				if(i == columns.size() - 1)
+				{
+					create_sql = create_sql + tmp.get("NAME") + " " + tmp.get("DATATYPE") + " " + tmp.get("ISNULLS");
+				}else
+				{
+					create_sql = create_sql + tmp.get("NAME") + " " + tmp.get("DATATYPE") + " " + tmp.get("ISNULLS") + ",";
+				}
+			}
+			create_sql = create_sql + ")";
+			EntityManager.update(create_sql);
+		}
+	}
+	
+	private void addPrimaryKey() throws Exception
+	{
+		String keynamesql = "SELECT 	NAME												" +
+						   "FROM SYSIBM.SYSCOLUMNS										" +
+						   "WHERE TBCREATOR = '" + schema + "'							" +
+						   "	AND TBNAME ='" + this.tableName + "'					" +
+						   "	AND KEYSEQ IS NOT NULL									" +
+						   "	ORDER BY KEYSEQ											";
+		String alter_sql = "ALTER TABLE " + schema + "." + tableName + "_" + subfix + 
+						   " ADD PRIMARY KEY(";
+//		List<Object[]> names = EntityManager.queryArrayList(keynamesql);
+		List names = EntityManager.queryArrayList(keynamesql);
+		if(null != names && names.size() > 0)
+		{
+			Object[] tmp = null;
+			for(int i = 0; i < names.size(); i++)
+			{
+				tmp = (Object[]) names.get(i);
+				if(i == names.size() - 1)
+				{
+					alter_sql = alter_sql + tmp[0];
+				}else
+				{
+					alter_sql = alter_sql + tmp[0] + ",";
+				}
+			}
+			alter_sql = alter_sql + ")";
+			EntityManager.update(alter_sql);
+		}
+	}
+}

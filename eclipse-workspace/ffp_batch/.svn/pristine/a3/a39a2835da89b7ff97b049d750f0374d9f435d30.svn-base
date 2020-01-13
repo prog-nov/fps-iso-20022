@@ -1,0 +1,220 @@
+package com.forms.batch.job.unit.transactioncheck;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
+import java.util.Calendar;
+import java.util.Date;
+
+import com.forms.batch.job.unit.transactioncheck.message.FFPMsg_REQ_CHK01;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+
+public class BatchTransactionCheckFileMover extends BatchBaseJob {
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static String MESSAGE_TYPE = "FFPCHK01";
+	
+	private int dataRecordNum = 0;
+	private String filePath = null;
+	private String fileName = null;
+
+	public void init() throws BatchJobException {
+
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		try {
+			String msg = getResponseMessageFromAgent();
+			getFileInfoFromMessage(msg);
+			moveFileToDestionationDir();
+			checkDataNum();
+			createRecordFile(this.actionElement.element("parameters").elementText("directory-root") + this.filePath + this.fileName);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckFileMover");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			throw new BatchJobException("Error Occurred In BatchTransactionCheckFileMover");
+		}
+
+		return true;
+
+	}
+	
+	// tcp socket
+	private String getResponseMessageFromAgent() throws Exception {
+		String resMsg = "";
+		FFPMsg_REQ_CHK01 ffpmsgchk01 = generateReqMessage();
+
+		FFPAdaptorMgr ffpMsgAdaptor = FFPAdaptorMgr.getInstance();
+		FFPSendTcpMessageResp messageResp = (FFPSendTcpMessageResp) ffpMsgAdaptor.execute(ffpmsgchk01);
+
+		if (messageResp.getRespMessage() == null) {
+			throw new Exception("Get Nullpoint Response Replies!");
+		}
+
+		resMsg = messageResp.getRespMessage();
+
+		return resMsg;
+	}
+
+	// generate ffpchk01 request message
+	private FFPMsg_REQ_CHK01 generateReqMessage() throws Exception {
+
+		this.batchLogger.info("Begin To Generate FFPCHK01 Request Message");
+
+		String transactionType = this.actionElement.element("parameters").elementText("transactionType");
+		String transactionDate = getSpecifiedDayBefore();
+		String transactionStartTime = this.actionElement.element("parameters").elementText("transactionStartTime");
+		String transactionEndTime = this.actionElement.element("parameters").elementText("transactionEndTime");
+
+		FFPMsg_REQ_CHK01 ffpmsgchk01 = new FFPMsg_REQ_CHK01(transactionType, transactionDate, transactionStartTime,
+				transactionEndTime);
+
+		this.batchLogger.info("Finishing Generating FFPCHK01 Request Message");
+
+		return ffpmsgchk01;
+
+	}
+
+	// get yesterday date
+	private String getSpecifiedDayBefore() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+
+		return FFPDateUtils.convertDateToString(calendar.getTime());
+	}
+
+	// get file info from message
+	private void getFileInfoFromMessage(String message) throws Exception{
+		com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = FFPParticipantMessageConverter
+				.parseXml2ReponseObject(message);
+		com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = (com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD) root
+				.getHEAD();
+		com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01 body = (com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01) root
+				.getBODY();
+
+		if (head.getRequestID().equals(FFPConstants.MSG_CODE_FFP)
+				&& head.getResponseID().equals(FFPConstants.MSG_CODE_AGENT) && head.getMessageType().equals(MESSAGE_TYPE)
+				&& head.getResponseStatus().equals("N")) {
+
+		} else {
+			throw new Exception("The Format Of Response Message Is Error");
+		}
+
+		this.dataRecordNum = Integer.parseInt(body.getRecordCount());
+		this.filePath = body.getFilePath();
+		this.fileName = body.getFileName();
+		this.batchLogger.info(String.format("Transaction_Check_File=%s, dataRecordNum=%d", this.fileName, this.dataRecordNum));
+	}
+
+	
+	// move file to destination
+	@SuppressWarnings("resource")
+	private void moveFileToDestionationDir() throws IOException{
+		File resFile = new File(this.actionElement.element("parameters").elementText("directory-root") + this.filePath + this.fileName);
+		String destination = this.batchIsb + this.actionElement.element("parameters").elementText("destination");
+        File desDir = new File(destination);
+        if(!resFile.exists()){
+        	throw new IOException(String.format("Source File(%s) Is Not Exists!", resFile));
+        }
+        
+        if(!desDir.exists()){
+        	desDir.mkdirs();
+        	this.batchLogger.info(String.format("Create A Directory %s", desDir));
+        }
+        
+        this.batchLogger.info(String.format("Start To Move File(%s) From %s To %s", this.fileName, this.actionElement.element("parameters").elementText("directory-root") + this.filePath, destination));
+
+        FileChannel inputChannel = new FileInputStream(resFile).getChannel();
+        FileChannel outputChannel = new FileOutputStream(new File(destination + this.fileName)).getChannel();
+        outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+
+        inputChannel.close();
+        outputChannel.close();
+        
+        
+        this.batchLogger.info(String.format("Success To Move File(%s) From %s To %s", this.fileName, this.actionElement.element("parameters").elementText("directory-root") + this.filePath, desDir));
+        
+        this.batchLogger.info(String.format("Finish Moving File(%s) From %s To %s", this.fileName, this.actionElement.element("parameters").elementText("directory-root") + this.filePath, destination));
+
+	}
+	
+	// check data number
+	@SuppressWarnings("resource")
+	private void checkDataNum() throws IOException{
+		this.batchLogger.info(String.format("Start To Difference Data And Check Data Number From File: %s", filePath));
+		this.batchLogger.info(String.format("Data_Count=%d", this.dataRecordNum));
+
+		String srcFile = this.actionElement.element("parameters").elementText("directory-root")+this.filePath+this.fileName;
+		String desFile = this.batchIsb + this.actionElement.element("parameters").elementText("destination")+this.fileName;
+		
+		BufferedReader srcbr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(srcFile)), CHARACTER_ENCODING));
+		BufferedReader desbr = new BufferedReader(new InputStreamReader(new FileInputStream(new File(desFile)), CHARACTER_ENCODING));
+		int lineCount = 0;
+		String srcline = srcbr.readLine();
+		String desline = desbr.readLine();
+		while ((srcline!= null) || (desline != null)) {
+			if((srcline == null) || (desline == null)){
+				throw new IOException(String.format("The Differences Are Found Between %s And %s", srcFile, desFile));
+			}
+
+			if(!srcline.equals(desline)){
+				throw new IOException(String.format("The Differences Are Found Between %s And %s", srcFile, desFile));
+			}
+			
+			lineCount++;
+			
+			srcline = srcbr.readLine();
+			desline = desbr.readLine();
+		}
+		
+		this.batchLogger.info(String.format("The Differences Are Not Found Between %s And %s", srcFile, desFile));
+
+		if(srcbr !=  null){
+			srcbr.close();
+		}
+		
+		if(desbr !=  null){
+			desbr.close();
+		}
+		
+		
+		if (lineCount > dataRecordNum + 1) {
+			throw new IOException("The Count Of Data Is Out Of Index!");
+		}else{
+			this.batchLogger.info("The Data Number Is Matched!");
+		}
+
+		this.batchLogger.info(String.format("Finish Difference Data And Checking Data Number From File: %s", filePath));
+		
+	}
+	
+	private void createRecordFile(String content) throws IOException{
+		String filePath = this.batchData + this.actionElement.element("parameters").elementText("destination") + this.actionElement.element("parameters").elementText("record-fileName");
+		File file = new File(filePath);
+		
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false), CHARACTER_ENCODING));  
+        bw.write(content);// 往已有的文件上添加字符串  
+
+        bw.close();  
+	}
+
+}

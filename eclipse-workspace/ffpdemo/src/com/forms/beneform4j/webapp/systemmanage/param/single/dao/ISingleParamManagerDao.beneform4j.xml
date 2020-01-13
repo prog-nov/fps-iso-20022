@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.param.single.dao.ISingleParamManagerDao">
+	
+	<resultMap id="SingleParam" type="com.forms.beneform4j.webapp.systemmanage.param.single.bean.SingleParamBean">
+	</resultMap>
+	
+	<select id="queryParamList" resultMap="SingleParam">
+		select a.param_code,
+		       a.param_name,
+		       a.store_type,
+		       a.param_group,
+		       a.data_type,
+		       a.default_value,
+		       a.value_rule,
+		       a.value_rule_param,
+		       a.seqno,
+		       a.des,
+		       c.data_code,
+               c.data_text,
+		       case when b.param_value is null then a.default_value else b.param_value end as param_value 
+		  from {{BF}}_param_def a
+		  left join {{BF}}_param_cfg b on a.param_code = b.param_code  
+		  left join {{BF}}_param_tree_data c on a.param_group = c.data_code and c.param_code='PARAM_GROUP'
+		  where a.editable='1'
+		  <if test="null != codes and codes.size > 0">
+		   AND a.param_group in (
+		 	<foreach item="code" collection="codes" separator=",">
+		 		#{code, jdbcType=VARCHAR}
+		 	</foreach>
+		 	)
+		 </if>
+		<if test="null != paramCode and '' != paramCode">
+			and a.param_code = #{paramCode, jdbcType=VARCHAR}
+		</if>
+		<if test="null != paramName and '' != paramName">
+     		AND a.param_name like #{concat('%' paramName '%'), jdbcType=VARCHAR}
+     	</if>
+     	order by a.seqno
+	</select>
+	
+	<select id="dGetSingleParamComboData" resultMap="SingleParam">
+		select t.param_code,t2.data_code,t2.data_text,t.value_rule from {{BF}}_param_def t
+      	join {{BF}}_param_enum_def t1 on t.param_code = t1.param_code
+      	join {{BF}}_param_enum_data t2 on t.param_code = t2.param_code
+     	where  t.value_rule='DICT' and t.editable='1'
+		  <if test="null != codes and codes.size > 0">
+		   	AND t.param_group in (
+		 	<foreach item="code" collection="codes" separator=",">
+		 		#{code, jdbcType=VARCHAR}
+		 	</foreach>
+		 	)
+		 </if>
+		 <if test="null != param.paramCode and '' != param.paramCode">
+				and t.param_code = #{param.paramCode, jdbcType=VARCHAR}
+		 </if>
+	</select>
+	
+	<insert id="addParamValue">
+		insert into {{BF}}_param_cfg
+		  (param_code,
+		   param_value)
+		values
+		  (#{paramCode, jdbcType=VARCHAR},
+		   #{paramValue, jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="updateParamValue">
+		update {{BF}}_param_cfg set 
+		       param_value = #{paramValue, jdbcType=VARCHAR} 
+		 where param_code = #{paramCode, jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deleteParamValue">
+		delete from {{BF}}_param_cfg where param_code=#{paramCode, jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

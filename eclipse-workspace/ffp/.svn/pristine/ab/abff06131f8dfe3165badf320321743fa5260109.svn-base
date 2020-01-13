@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.forms.beneform4j.webapp.common.docmanager.dao.IDocManagerDao" >
+	<insert id="dInsert" parameterType="com.forms.beneform4j.webapp.common.docmanager.form.DocForm" >
+	    insert into {{BF}}_DOC (DOC_ID, DOC_NAME, SUFFIX, 
+	      CHECK_SUM_TYPE, CHECK_SUM, DOC_SIZE, 
+	      DOC_TYPE, DOC_STATE, STORE_PATH, 
+	      INST_DATE, INST_TIME, INST_OPER
+	      )
+	    values (#{doc.docId,jdbcType=VARCHAR}, #{doc.docName,jdbcType=VARCHAR}, #{doc.suffix,jdbcType=VARCHAR}, 
+	      #{doc.checkSumType,jdbcType=VARCHAR}, #{doc.checkSum,jdbcType=VARCHAR}, #{doc.docSize,jdbcType=INTEGER}, 
+	      #{doc.docType,jdbcType=VARCHAR}, #{doc.docState,jdbcType=VARCHAR}, #{doc.storePath,jdbcType=VARCHAR}, 
+	      #{doc.instDate,jdbcType=CHAR}, #{doc.instTime,jdbcType=CHAR}, #{doc.instOper,jdbcType=VARCHAR}
+	      )
+  	</insert>
+  	<!-- 删除操作 -->
+	<delete id="dDeleteMidData">
+		delete from {{BF}}_DOC_MID where DOC_ID = #{docId}
+	</delete>
+	<!-- 根据文档编号进行删除文档表数据 -->
+	<delete id="dDeleteDoc">
+		delete from {{BF}}_DOC where DOC_ID = #{docId}
+	</delete>
+	<!-- 根据文档编号进行删除附件表数据 -->
+	<delete id="dDeleteAttachByDocid">
+		delete from {{BF}}_ATTACH where DOC_ID = #{docId}
+	</delete>
+	<!-- 根据附件编号进行删除 附件表-->
+	<delete id="dDeleteAttach">
+		delete from {{BF}}_ATTACH where ATTACH_ID = #{attachId}
+	</delete>
+	<!-- 根据id查对应的消息 ,从数据主表当中查-->
+	<select id="dFind" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+		SELECT * FROM {{BF}}_DOC T WHERE  T.DOC_ID = #{docId}
+	</select>
+	<!-- 根据id查对应的消息 ,从数据主表当中查-->
+	<select id="dList" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+		SELECT * FROM {{BF}}_DOC T left join Bf_Attach b on t.doc_id = b.doc_id
+		<where>
+			<if test="null != docIds and docIds.length > 0">
+				T.DOC_ID in
+				<foreach item = "item" index="index" collection="docIds" open="(" separator="," close=")" >
+					#{item}
+				</foreach>
+			</if>
+			<if test="null != attachId and '' != attachId">
+				 b.attach_id = #{attachId}
+			</if>
+		</where>
+	</select>
+	<!-- 根据id查对应的消息 ，从临时表当中查-->
+	<select id="dFindMid" resultType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean">
+		SELECT * FROM {{BF}}_DOC_MID T WHERE  T.DOC_ID = #{docId}
+	</select>
+	<insert id="dCopyDocRecode" parameterType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean" >
+	   insert into BF_DOC
+		  (DOC_ID,
+		   DOC_NAME,
+		   SUFFIX,
+		   CHECK_SUM_TYPE,
+		   CHECK_SUM,
+		   DOC_SIZE,
+		   DOC_TYPE,
+		   DOC_STATE,
+		   STORE_PATH,
+		   INST_DATE,
+		   INST_TIME,
+		   INST_OPER)
+		  select t.doc_id,
+		         t.doc_name,
+		         t.suffix,
+		         t.CHECK_SUM_TYPE,
+		         t.check_sum,
+		         t.doc_size,
+		         #{doc.docType}, 
+		         #{doc.docState},
+		         #{doc.storePath},
+		         t.inst_date,
+		         t.inst_time,
+		         t.inst_oper
+		    from BF_DOC_MID t
+		   where t.doc_id = #{doc.docId}
+  	</insert>
+  	<insert id="dInsertAttach" parameterType="com.forms.beneform4j.webapp.common.docmanager.bean.DocBean" >
+	    insert into {{BF}}_ATTACH (ATTACH_ID, DOC_ID, BUSSINESS_KEY)
+	    values (#{doc.attachId,jdbcType=VARCHAR}, #{doc.docId,jdbcType=VARCHAR}, #{doc.bussinessKey,jdbcType=VARCHAR})
+  	</insert>
+  	<insert id="dPlugInsert" parameterType="com.forms.beneform4j.webapp.common.docmanager.form.DocForm" >
+	    insert into {{BF}}_DOC_MID (DOC_ID, DOC_NAME, SUFFIX, 
+	      CHECK_SUM_TYPE, CHECK_SUM, DOC_SIZE, 
+	      DOC_TYPE, DOC_STATE, STORE_PATH, 
+	      INST_DATE, INST_TIME, INST_OPER
+	      )
+	    values (#{doc.docId,jdbcType=VARCHAR}, #{doc.docName,jdbcType=VARCHAR}, #{doc.suffix,jdbcType=VARCHAR}, 
+	      #{doc.checkSumType,jdbcType=VARCHAR}, #{doc.checkSum,jdbcType=VARCHAR}, #{doc.docSize,jdbcType=INTEGER}, 
+	      #{doc.docType,jdbcType=VARCHAR}, #{doc.docState,jdbcType=VARCHAR}, #{doc.storePath,jdbcType=VARCHAR}, 
+	      #{doc.instDate,jdbcType=CHAR}, #{doc.instTime,jdbcType=CHAR}, #{doc.instOper,jdbcType=VARCHAR}
+	      )
+  	</insert>
+</mapper>

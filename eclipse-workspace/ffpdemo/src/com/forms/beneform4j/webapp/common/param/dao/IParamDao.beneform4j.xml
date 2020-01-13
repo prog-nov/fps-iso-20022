@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.common.param.dao.IParamDao">
+
+	<resultMap id="SingleParam" type="com.forms.beneform4j.util.param.single.impl.SingleParamEntity">
+	</resultMap>
+
+	<resultMap id="EnumParam" type="com.forms.beneform4j.util.param.enums.impl.EnumParam">
+		<id property="paramCode" column="PARAM_CODE" javaType="string" jdbcType="VARCHAR"/>
+		<collection property="items" columnPrefix="ITEM" ofType="com.forms.beneform4j.util.param.enums.impl.EnumParamItem"></collection>
+	</resultMap>
+	
+	<resultMap id="TreeParam" type="com.forms.beneform4j.util.param.tree.impl.TreeParam">
+		<id property="paramCode" column="PARAM_CODE" javaType="string" jdbcType="VARCHAR"/>
+		<collection property="items" columnPrefix="ITEM" ofType="com.forms.beneform4j.util.param.tree.impl.TreeParamNode"></collection>
+	</resultMap>
+	
+	<!-- 加载系统参数列表 林济松 20160406-->
+	<select id="loadParams" resultMap="SingleParam">
+		SELECT A.PARAM_CODE,
+		       A.PARAM_NAME,
+		       A.STORE_TYPE,
+		       A.PARAM_GROUP,
+		       A.DATA_TYPE,
+		       A.EDITABLE,
+		       A.DEFAULT_VALUE,
+		       A.VALUE_RULE,
+		       A.VALUE_RULE_PARAM,
+		       A.SEQNO,
+		       A.DES,
+		       CASE
+		         WHEN B.PARAM_VALUE IS NULL THEN
+		          A.DEFAULT_VALUE
+		         ELSE
+		          B.PARAM_VALUE
+		       END AS PARAM_VALUE
+		  FROM {{BF}}_PARAM_DEF A
+		  LEFT JOIN {{BF}}_PARAM_CFG B
+		    ON A.PARAM_CODE = B.PARAM_CODE
+		  <where>
+			 <if test="null != names and names.size > 0">
+			  and A.PARAM_CODE IN(
+			 	<foreach item="name" collection="names" separator=",">
+			 		#{name, jdbcType=VARCHAR}
+			 	</foreach>
+			 	)
+			 </if>
+			 <if test="null != groups and groups.size > 0">
+			  and A.PARAM_GROUP IN(
+			 	<foreach item="group" collection="groups" separator=",">
+			 		#{group, jdbcType=VARCHAR}
+			 	</foreach>
+			 	)
+			 </if>
+		  </where>
+	</select>
+	
+	<!-- 加载用户参数列表 林济松 20160412-->
+	<select id="loadUserParams" resultMap="SingleParam">
+		SELECT A.PARAM_CODE,
+		       A.PARAM_NAME,
+		       A.STORE_TYPE,
+		       A.PARAM_GROUP,
+		       A.DATA_TYPE,
+		       A.EDITABLE,
+		       A.DEFAULT_VALUE,
+		       A.VALUE_RULE,
+		       A.VALUE_RULE_PARAM,
+		       A.SEQNO,
+		       A.DES,
+		       CASE
+		         WHEN B.PARAM_VALUE IS NULL THEN
+		          A.DEFAULT_VALUE
+		         ELSE
+		          B.PARAM_VALUE
+		       END AS PARAM_VALUE
+		  FROM {{BF}}_PARAM_DEF A
+		  LEFT JOIN {{BF}}_USER_CFG B
+		    ON A.PARAM_CODE = B.PARAM_CODE
+		   AND B.USER_ID = #{userId, jdbcType=VARCHAR}
+		 <where>
+			 <if test="null != names and names.size > 0">
+			  and A.PARAM_CODE IN(
+			 	<foreach item="name" collection="names" separator=",">
+			 		#{name, jdbcType=VARCHAR}
+			 	</foreach>
+			 	)
+			 </if>
+			 <if test="null != groups and groups.size > 0">
+			  and A.PARAM_GROUP IN(
+			 	<foreach item="group" collection="groups" separator=",">
+			 		#{group, jdbcType=VARCHAR}
+			 	</foreach>
+			 	)
+			 </if>
+		  </where>
+	</select>
+	
+	<!-- 加载系统枚举参数列表 林济松 20160412-->
+	<select id="loadEnumParams" resultMap="EnumParam">
+		SELECT A.PARAM_CODE,
+		       A.PARAM_NAME,
+		       A.PARAM_GROUP,
+		       A.PARAM_ATTR,
+		       A.EDITABLE,
+		       A.SEQNO,
+		       A.DES,
+		       B.PARAM_CODE  AS ITEM_PARAM_CODE,
+		       B.DATA_CODE   AS ITEM_DATA_CODE,
+		       B.DATA_TEXT   AS ITEM_DATA_TEXT,
+		       B.DATA_PARAM  AS ITEM_DATA_PARAM,
+		       B.SEQNO       AS ITEM_SEQNO,
+		       B.DES         AS ITEM_DES
+		  FROM {{BF}}_PARAM_ENUM_DEF A
+		  LEFT JOIN {{BF}}_PARAM_ENUM_DATA B
+		    ON A.PARAM_CODE = B.PARAM_CODE
+		 WHERE A.PARAM_ATTR = 'LIST'
+		 <if test="null != names and names.size > 0">
+		   AND A.PARAM_CODE IN(
+		 	<foreach item="name" collection="names" separator=",">
+		 		#{name, jdbcType=VARCHAR}
+		 	</foreach>
+		 	)
+		 </if>
+		 ORDER BY A.SEQNO, B.SEQNO
+	</select>
+	
+	<!-- 加载系统树型参数列表 林济松 20160412-->
+	<select id="loadTreeParams" resultMap="TreeParam">
+		SELECT A.PARAM_CODE,
+	           A.PARAM_NAME,
+	           A.PARAM_GROUP,
+	           A.PARAM_ATTR,
+	           A.EDITABLE,
+	           A.SEQNO,
+	           A.DES,
+	           B.PARAM_CODE  AS ITEM_PARAM_CODE,
+	           B.DATA_CODE   AS ITEM_CODE,
+	           B.DATA_TEXT   AS ITEM_TEXT,
+	           B.DATA_ICON   AS ITEM_ICON,
+	           B.PARENT_DATA_CODE AS ITEM_PARENT_CODE,
+	           B.DATA_PARAM  AS ITEM_USER_DATA,
+	           B.SEQNO       AS ITEM_SEQNO,
+	           B.DES         AS ITEM_DES
+	      FROM {{BF}}_PARAM_ENUM_DEF A
+	      LEFT JOIN {{BF}}_PARAM_TREE_DATA B
+	        ON A.PARAM_CODE = B.PARAM_CODE
+	     WHERE A.PARAM_ATTR = 'TREE'
+		 <if test="null != names and names.size > 0">
+		   AND A.PARAM_CODE IN(
+		 	<foreach item="name" collection="names" separator=",">
+		 		#{name, jdbcType=VARCHAR}
+		 	</foreach>
+		 	)
+		 </if>
+		 ORDER BY A.SEQNO, B.SEQNO
+	</select>
+</mapper>

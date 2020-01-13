@@ -1,0 +1,20 @@
+root.folder=C:/ffp/ffpresources/
+participant.LOCAL_FPS_PARTICIPANT_ID=012
+participant.LOCAL_BIC_CODE=012
+
+connector.key.iclfps=connector.refName.2
+connector.key.participant=connector.refName.3
+
+config.keystore.filename=keystore.properties
+config.keystore.message.folder=keystore/message/
+
+CUTOFF_CHECK_PERIOD=60000
+
+# Runtime Config
+config.env=DEVNOMQ
+init.config.folder=${root.folder}/config/${config.env}
+config.connector.filename=connector.properties
+config.bankKeystore.filename=bank-keystore.properties
+
+# Send and receive
+# sent.message.waitForAcknowledge.timeout=900000

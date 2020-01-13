@@ -1,0 +1,42 @@
+package com.forms.ffp.bussiness.participant.addressing.ffpadr02;
+
+public class FFPMsgFpsadr004_Ffpamr01REPLY {
+
+	private String SrcRefNm;
+	private String Sts;
+	private String RsnInfCd;
+	private String ProxyId;
+	private String ProxyIdTp;
+	
+	public String getSrcRefNm() {
+		return SrcRefNm;
+	}
+	public void setSrcRefNm(String srcRefNm) {
+		SrcRefNm = srcRefNm;
+	}
+	public String getSts() {
+		return Sts;
+	}
+	public void setSts(String sts) {
+		Sts = sts;
+	}
+	public String getRsnInfCd() {
+		return RsnInfCd;
+	}
+	public void setRsnInfCd(String rsnInfCd) {
+		RsnInfCd = rsnInfCd;
+	}
+	public String getProxyId() {
+		return ProxyId;
+	}
+	public void setProxyId(String proxyId) {
+		ProxyId = proxyId;
+	}
+	public String getProxyIdTp() {
+		return ProxyIdTp;
+	}
+	public void setProxyIdTp(String proxyIdTp) {
+		ProxyIdTp = proxyIdTp;
+	}
+	
+}

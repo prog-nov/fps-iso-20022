@@ -1,0 +1,249 @@
+package com.forms.framework.job.common.backupservice;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.sql.Connection;
+import java.util.Map;
+import java.util.regex.Matcher;
+
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.framework.util.DateUtil;
+import com.forms.framework.util.SqlJobUtil;
+
+/**
+ * backup BASE class
+ * 
+ * @author lyz createDate:2011-04-28 updateDate:2011-04-28
+ */
+public abstract class BackupBaseService implements BackupService
+{
+
+	public final String deleteFlag = "delete";
+	
+	public final String defaultSplit = "|";
+
+	public String scheam = null;
+
+	protected String backupTable = "_HIS";
+
+	protected int fileBufferSize = 5;
+
+	
+
+	public BackupBaseService() throws BatchFrameworkException
+	{
+		scheam = ConnectionManager.getInstance().getDefaultSchema();
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param ip_backupParameter
+	 * @return
+	 * @throws BatchJobException
+	 */
+	protected String getConditionStr(Map<String, String> ip_backupParameter)
+			throws BatchJobException
+	{
+		String loc_conStr = "";
+		try
+		{
+			SqlJobUtil loc_sqlJob = new SqlJobUtil(ip_backupParameter
+					.get("acDate"));
+			// parameter
+			SqlParameter loc_sqlParameter = null;
+			if (null != ip_backupParameter.get("sqlParameter"))
+			{
+				loc_sqlParameter = (SqlParameter) Class.forName(
+						ip_backupParameter.get("sqlParameter")).newInstance();
+			} else
+			{
+				loc_sqlParameter = new SqlParameter();
+			}
+			loc_conStr = ip_backupParameter.get("backupCondition") == null ? ""
+					: ip_backupParameter.get("backupCondition");
+			if (null != loc_conStr && !"".equals(loc_conStr))
+			{
+				loc_conStr = " WHERE "
+						+ loc_sqlJob.sqlParaReplace(loc_sqlParameter.dealSqlStr(),
+								loc_conStr);
+			}
+		} catch (Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+		return loc_conStr;
+	}
+
+	/**
+	 * delete data
+	 * 
+	 * @param ip_conn
+	 * @param ip_backupParameter
+	 * @param ip_conStr
+	 * @throws BatchJobException
+	 */
+	protected void deleteData(Connection ip_conn,
+			Map<String, String> ip_backupParameter, String ip_conStr)
+			throws BatchJobException
+	{
+		// delete data
+		try
+		{
+			if (null != ip_backupParameter.get("afterBackup")
+					&& deleteFlag.equals(ip_backupParameter.get("afterBackup")))
+			{
+				// delete data begin....
+				String loc_deleteSql = "DELETE FROM " + scheam + "."
+						+ ip_backupParameter.get("sourceName");
+				EntityManager.update(ip_conn, loc_deleteSql + ip_conStr);
+			}
+		} catch (Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+	}
+
+	/**
+	 * delete backup data
+	 * 
+	 * @param backupParameter
+	 * @throws BatchJobException
+	 */
+	protected void deleteBackupFile(String ip_targetName, String ip_keepFileDays,
+			String ip_acDate) throws BatchJobException
+	{
+		try
+		{
+			String loc_deleteFileName = new File(ip_targetName.replaceAll(
+					SqlJobUtil.PATTERN_STRING, "")).getName();
+			if (ip_keepFileDays != null && !ip_keepFileDays.equals("0"))
+			{
+				int loc_index = 0;
+				Matcher loc_m = SqlJobUtil.PATTERN.matcher(ip_targetName);
+				String loc_format = DateUtil.BATCH_DATE_FORMAT;
+				String loc_backupName = "";
+				String loc_endName = "";
+				while (loc_m.find())
+				{
+					String loc_tag = loc_m.group();
+					String loc_name = loc_tag.substring(2, loc_tag.length() - 1);
+					if (loc_name.startsWith("acDate"))
+					{
+						loc_index = loc_name.indexOf("[");
+						if (loc_index != -1)
+							loc_format = loc_name.substring(loc_index + 1, loc_name
+									.indexOf("]"));
+						loc_backupName = ip_targetName.substring(0, loc_m.start());
+						loc_endName = ip_targetName.substring(loc_m.end());
+						break;
+					}
+				}
+				File loc_file1 = new File(loc_backupName);
+				SqlJobUtil loc_jobUtil = new SqlJobUtil(DateUtil.addAcDays(
+						ip_acDate, DateUtil.BATCH_DATE_FORMAT, -Integer
+								.parseInt(ip_keepFileDays)));
+				if (loc_file1.exists())
+				{
+					if (loc_file1.isDirectory())
+					{
+						final String loc_fname = DateUtil.addAcDays(DateUtil
+								.dateToString(DateUtil.stringToDate(ip_acDate,
+										DateUtil.BATCH_DATE_FORMAT), loc_format),
+								loc_format, -Integer.parseInt(ip_keepFileDays));
+						// directory
+						File[] loc_files = loc_file1.listFiles(new FileFilter() {
+							public boolean accept(File pathname)
+							{
+								if (pathname.getName().compareTo(loc_fname) < 0
+										&& pathname.isDirectory())
+								{
+									return true;
+								}
+								return false;
+							}
+						});
+						for (File loc_f : loc_files)
+						{
+							this.deleteFile(loc_backupName + loc_f.getName()
+									+ loc_jobUtil.sqlParaReplace(null, loc_endName),
+									loc_deleteFileName);
+						}
+					}
+				} else
+				{
+					this.deleteFile(loc_jobUtil.sqlParaReplace(null, ip_targetName),
+							loc_deleteFileName);
+				}
+
+			}
+		} catch (Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+	}
+
+	/**
+	 * delete file
+	 * 
+	 * @param ip_deleteTargetName
+	 * @param ip_targetFileName
+	 */
+	private void deleteFile(String ip_deleteTargetName, final String ip_targetFileName)
+	{
+		File loc_deleteTarget = null;
+		loc_deleteTarget = new File(ip_deleteTargetName);
+		final String loc_fileName = loc_deleteTarget.getName();
+		loc_deleteTarget.getParentFile().listFiles(new FileFilter() {
+			public boolean accept(File ip_pathname)
+			{
+				if (ip_pathname.getName().startsWith(ip_targetFileName)
+						&& ip_pathname.getName().substring(0,
+								ip_targetFileName.length() + 8).compareTo(
+								loc_fileName.substring(0, ip_targetFileName
+										.length() + 8)) <= 0
+						&& ip_pathname.getName().length() == loc_fileName
+								.length())
+				{
+					ip_pathname.delete();
+				}
+				return false;
+			}
+		});
+	}
+
+	/**
+	 * get backup TARGET file
+	 * 
+	 * @param ip_fileName
+	 * @return
+	 * @throws BatchJobException
+	 */
+	protected File getTargetFile(String ip_fileName,
+			Map<String, String> ip_backupParameter) throws BatchJobException
+	{
+		File loc_file = null;
+		try
+		{
+			// format file path
+			SqlJobUtil loc_sqlJob = new SqlJobUtil(ip_backupParameter
+					.get("acDate"));
+			ip_fileName = loc_sqlJob.sqlParaReplace(null, ip_fileName);
+			loc_file = new File(ip_fileName);
+			File loc_directory = new File(ip_fileName.substring(0, ip_fileName
+					.lastIndexOf("/")));
+			if (!loc_directory.exists())
+			{
+				// directory not exists create
+				loc_directory.mkdirs();
+			}
+		} catch (Exception e)
+		{
+			throw new BatchJobException(e);
+		}
+		return loc_file;
+	}
+}

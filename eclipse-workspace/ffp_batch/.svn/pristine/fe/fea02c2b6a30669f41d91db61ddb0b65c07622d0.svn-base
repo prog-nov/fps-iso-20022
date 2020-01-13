@@ -1,0 +1,360 @@
+package com.forms.batch.job.outward;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.beneform4j.util.Tool;
+import com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.MessageRejectV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.FPSTransactionStatusCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.PaymentTransaction801;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.StatusReasonInformation92;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPTcpParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchResponseFileProcessor {
+	public static final String FILE_PATH = "C:\\Users\\zhang qing wen\\Desktop\\dy";
+	public static final String TO_IP = "172.21.21.252";
+	public static final int TO_PORT = 100;
+	public static final int SEQ_NO_ONE = 2;
+	public static final String FROM_FFP_O = "FFP";
+	public static final String TO_AGENT_O = "AGENT";
+	public static final String CTO01_O_RES = "CTO01";
+	public static final String ACCP_FROM_ICL_O = "ACCP";
+	public static final String ACSP_FROM_ICL_O = "ACSP";
+	public static final String PDNG_FROM_ICL_O = "PDNG";
+	public static final String RJCT_FROM_ICL_O = "RJCT";
+	public static Map<String, List<ISO20022BusinessDataV01>> map = null;
+	public static final boolean FALSE = false;
+	private static BatchLogger _logger = null;
+
+	public CreditTransferOutwardBatchResponseFileProcessor() {
+		map = new HashMap<String, List<ISO20022BusinessDataV01>>();
+		_logger = BatchLogger.getLogger("CreditTransfer", "OutwardBatchResponseFileProcessor", CreditTransferOutwardBatchResponseFileProcessor.class);
+	}
+
+	public static String readFromFile(File src) {
+
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = new BufferedReader(new FileReader(src));
+			StringBuilder stringBuilder = new StringBuilder();
+			String content;
+			while ((content = bufferedReader.readLine()) != null) {
+				stringBuilder.append(content);
+			}
+			return stringBuilder.toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} finally {
+			try {
+				bufferedReader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// 锟斤拷锟斤拷ICL
+	public static void main(String[] args) {
+		CreditTransferOutwardBatchResponseFileProcessor processor = new CreditTransferOutwardBatchResponseFileProcessor();
+		Connection conn = null;
+		try {
+			conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+			try {
+				processor.dealXml(conn);
+			} catch (Exception e) {
+				_logger.error("dealXml error..");
+			}
+			try {
+				processor.sendXML(conn);
+			} catch (Exception e) {
+				_logger.error("sendXML error...");
+			}
+			try {
+				boolean delAllFile = processor.delAllFile(FILE_PATH);
+			} catch (Exception e) {
+				_logger.error("delAllFile...");
+			}
+		} catch (Exception e) {
+			_logger.error("connection error");
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				_logger.error("Connection close error...");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void dealXml(Connection conn) throws Exception {
+		List<File> readfiles = CreditTransferOutwardBatchResponseFileProcessor.readfiles(FILE_PATH);
+		List list = null;
+		String updateTB_TX_JNL = null;
+		String updateTB_tX_JNL_ACTION = null;
+		String txsts = null;
+		String orgnlTxId = null;
+		String orgnlEndToEndId = null;
+		FpsMessageEnvelope fpsMsg = null;
+		if (readfiles.size() == 0 || readfiles == null) {
+			_logger.info("the file folder "+FILE_PATH+ " is empty...");
+			return;
+		}
+		for (File file : readfiles) {
+			String fileString = CreditTransferOutwardBatchResponseFileProcessor.readFromFile(file);
+			try {
+				fpsMsg = FFPHkiclMessageConverter.parseObject(fileString);
+			} catch (Exception e) {
+				_logger.error(file.getName() + " can't be cast to Object from xml");
+				continue;
+			}
+			List<ISO20022BusinessDataV01> bizData = fpsMsg.getFpsPylds().getBizData();
+			try {
+				Object document = bizData.get(0).getContent().get(1).getValue();
+				if (document instanceof com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) {
+					MessageRejectV01 admi00200101 = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+							.getAdmi00200101();
+					String rjctgPtyRsn = admi00200101.getRsn().getRjctgPtyRsn();
+					String ref = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+							.getAdmi00200101().getRltdRef().getRef();
+					if (ref.equals("NOREF")) {
+						_logger.info(file.getName() + " is on NOREF status");
+					} else {
+						_logger.info(file.getName() + " is on NORMAL status");
+					}
+				} else if (document instanceof Document) {
+					_logger.info(file.getName() + " is casting.....");
+					List<PaymentTransaction801> txInfAndSts = ((Document) document).getFIToFIPmtStsRpt()
+							.getTxInfAndSts();
+					if (!(txInfAndSts.size() + "").equals(fpsMsg.getNbOfMsgs())) {
+						_logger.info(file.getName() + " not correct format,please retry");
+						continue;
+					}
+					map.put(file.getName(), bizData);
+					try {
+
+						for (PaymentTransaction801 tx : txInfAndSts) {
+							FPSTransactionStatusCode txSts = tx.getTxSts();
+							txsts = txSts.value();
+							orgnlTxId = tx.getOrgnlTxId();
+							orgnlEndToEndId = tx.getOrgnlEndToEndId();
+							updateTB_TX_JNL = " update tb_tx_jnl set tx_stat = ? where transaction_id  = ? AND end_to_end_id = ? ";
+							updateTB_tX_JNL_ACTION = "update tb_tx_jnlaction a1 inner join tb_tx_jnl a2  on a1.jnl_no=a2.jnl_no set a1.msg_status =? where a2.transaction_id = ? and a2.end_to_end_id = ? ";
+							list = new ArrayList();
+							list.add(txsts);
+							list.add(orgnlTxId);
+							list.add(orgnlEndToEndId);
+							try {
+								EntityManager.update(conn, updateTB_TX_JNL, list.toArray());
+							} catch (Exception e) {
+								_logger.error(updateTB_TX_JNL + " error...");
+								e.printStackTrace();
+							}
+							list.clear();
+							list.add(txsts);
+							list.add(orgnlTxId);
+							list.add(orgnlEndToEndId);
+							try {
+								EntityManager.update(conn, updateTB_tX_JNL_ACTION, list.toArray());
+							} catch (Exception e) {
+								_logger.error(updateTB_tX_JNL_ACTION + "error");
+								e.printStackTrace();
+							}
+						}
+					} catch (Exception e) {
+						_logger.error("dealXml error for txInfAndSts...");
+						e.printStackTrace();
+					}
+				}
+			} catch (Exception ip_ex) {
+				_logger.error("Object document error...");
+				ip_ex.printStackTrace();
+			}
+		}
+	}
+
+	public void sendXML(Connection conn) throws Exception {
+		String orgnlTxId = null;
+		String orgnlEndToEndId = null;
+		List<PaymentTransaction801> txInfAndSts = null;
+		List<File> readfiles = null;
+		try {
+			readfiles = readfiles(FILE_PATH);
+		} catch (Exception e) {
+			_logger.error("readfiles folder error");
+		}
+		List listData = null;
+		String findJnl = null;
+		String insertAction = null;
+		String value = null;
+		List<Map<String, Object>> queryMapList = null;
+		if (readfiles.size() == 0 || readfiles == null) {
+			_logger.info("the file folder "+FILE_PATH+ " is empty...");
+			return;
+		}
+		for (File file : readfiles) {
+			List<ISO20022BusinessDataV01> list = map.get(file.getName());
+			if (list == null || list.size() == 0) {
+				continue;
+			}
+			Object document = list.get(0).getContent().get(1).getValue();
+			if (document instanceof Document) {
+				try {
+
+					 txInfAndSts = ((Document) document).getFIToFIPmtStsRpt()
+							.getTxInfAndSts();
+					for (PaymentTransaction801 tx : txInfAndSts) {
+						listData = new ArrayList();
+						orgnlTxId = tx.getOrgnlTxId();
+						orgnlEndToEndId = tx.getOrgnlEndToEndId();
+						value = tx.getTxSts().value();
+						StatusReasonInformation92 stsRsnInf = tx.getStsRsnInf();
+						listData.add(orgnlTxId);
+						listData.add(orgnlEndToEndId);
+						// 通锟斤拷每一锟斤拷transactionid 锟斤拷endtoendid锟斤拷锟斤拷锟斤拷菘锟斤拷锟斤拷锟捷硷拷锟斤拷装锟斤拷voForroot
+						// 锟斤拷锟斤拷,锟斤拷锟捷革拷root锟街讹拷锟斤拷锟斤拷要锟侥革拷锟斤拷值.
+						findJnl = "select A.jnl_no from tb_tx_jnl A  where transaction_id  = ? AND end_to_end_id = ? ";
+						queryMapList = EntityManager.queryMapList(conn, findJnl, listData.toArray());
+						insertAction = " insert into tb_tx_jnlaction(jnl_no,seq_no,msg_from_type,msg_to_type,msg_type,msg_status)  values(?,?,?,?,?,?)";
+						if(queryMapList==null||queryMapList.size() == 0){
+							_logger.info("orgnlTxId: "+orgnlTxId+"orgnlEndToEndId: "+orgnlEndToEndId+" no data");
+							continue;
+						}
+						try {
+							for (Map<String, Object> map : queryMapList) {
+								listData = new ArrayList();
+								String transctionId = FFPIDUtils.getTransactionId();
+								System.out.println("transactionId: " + transctionId);
+								listData.add(transctionId);
+								listData.add(SEQ_NO_ONE);
+								listData.add(FROM_FFP_O);
+								listData.add(TO_AGENT_O);
+								listData.add(CTO01_O_RES);
+								listData.add(ACCP_FROM_ICL_O);
+								int update = EntityManager.update(conn, insertAction, listData.toArray());
+								VOForRoot voForRoot = new VOForRoot();
+								voForRoot.setSrcReFNm((String) (map.get("JNL_NO")));
+								voForRoot.setFFPTransactionId(orgnlTxId);
+								voForRoot.setRsltCd(value);
+								if (stsRsnInf != null) {
+									voForRoot.setRejCd(stsRsnInf.getRsn().getPrtry());
+									voForRoot.setRejMsg(stsRsnInf.getAddtlInf().get(0));
+								}
+								try {
+									TCPBegin(voForRoot);// 锟斤拷取root锟斤拷要锟斤拷锟斤拷莘锟阶帮拷锟揭伙拷锟斤拷锟斤拷锟�,锟斤拷锟斤拷body锟斤拷head锟斤拷锟斤拷
+								} catch (Exception e) {
+									_logger.error("TCPBegin error...");
+								}
+							}
+						} catch (Exception e) {
+							_logger.error("queryMapList ..error");
+						}
+					}
+				} catch (Exception e) {
+					_logger.error("sendXml error for txInfAndSts...");
+
+				}
+			}
+		}
+	}
+
+	public void TCPBegin(VOForRoot vo) throws Exception {
+		ROOT root = new ROOT();
+		HEAD head = new HEAD();
+		head.setRequestID(Tool.STRING.getRandomNumeric(2));
+		head.setTransactionDate(Tool.STRING.getRandomNumeric(8));
+		head.setTransactionTime(Tool.STRING.getRandomNumeric(6));
+		head.setRequestRefno(Tool.STRING.getRandomNumeric(16));
+		head.setRequestID(Tool.STRING.getRandomNumeric(2));
+		head.setMessageType(Tool.STRING.getRandomNumeric(4));
+		FFPCTO01 body = new FFPCTO01();
+		body.setSrcRefNm(vo.getSrcReFNm());
+		body.setFFPTransactionId(vo.getFFPTransactionId());
+		if (vo.getRsltCd().equals("ACCP")) {
+			body.setRsltCd("S");
+		} else {
+			body.setRsltCd("R");
+			body.setRejCd(vo.getRejCd());
+			body.setRejMsg(vo.getRejMsg());
+		}
+		root.setHEAD(head);
+		root.setBODY(body);
+		String parseAck2FFPAgent = FFPTcpParticipantMessageConverter.parseXml2FFPAgent(root);
+		System.out.println(parseAck2FFPAgent);
+		Socket s = new Socket(TO_IP, TO_PORT);
+		BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+		bufOut.write(parseAck2FFPAgent);
+		bufOut.flush();
+		s.close();
+	}
+
+	public static List<File> readfiles(String filepath) throws FileNotFoundException, IOException {
+		List<File> listFiles = new ArrayList();
+		try {
+			File file = new File(filepath);
+			if (file.isDirectory()) {
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File readfile = new File(filepath + "\\" + filelist[i]);
+					listFiles.add(readfile);
+				}
+			}
+		} catch (Exception e) {
+		}
+		return listFiles;
+	}
+	public boolean delAllFile(String path) {
+		boolean flag = false;
+		File file = new File(path);
+		if (!file.exists()) {
+			return flag;
+		}
+		if (!file.isDirectory()) {
+			return flag;
+		}
+		String[] tempList = file.list();
+		File temp = null;
+		for (int i = 0; i < tempList.length; i++) {
+			if (path.endsWith(File.separator)) {
+				temp = new File(path + tempList[i]);
+			} else {
+				temp = new File(path + File.separator + tempList[i]);
+			}
+			if (temp.isFile()) {
+				temp.delete();
+			}
+			if (temp.isDirectory()) {
+				delAllFile(path + "/" + tempList[i]);// 删锟斤拷锟侥硷拷锟斤拷锟斤拷锟斤拷锟斤拷募锟�
+				flag = true;
+			}
+		}
+		return flag;
+	}
+}

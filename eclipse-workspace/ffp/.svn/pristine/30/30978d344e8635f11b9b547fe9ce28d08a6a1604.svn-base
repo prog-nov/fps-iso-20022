@@ -1,0 +1,224 @@
+package com.forms.ffp.core.service;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.bussiness.common.FFPTXM101;
+import com.forms.ffp.core.config.FFPConnectorConfig;
+import com.forms.ffp.core.config.mq.FFPMqConfig;
+import com.forms.ffp.core.config.tcp.FFPTcpConfig;
+import com.forms.ffp.core.connector.listener.FFPListenerAgentInterface;
+import com.forms.ffp.core.connector.listener.FFPMqListenerAgentInterface;
+import com.forms.ffp.core.connector.listener.FFPTcpListenerAgentInterface;
+import com.forms.ffp.core.connector.listener.mq.FFPApacheMqListenerAgent;
+import com.forms.ffp.core.connector.listener.mq.FFPIbmWebSphereMqListenerAgent;
+import com.forms.ffp.core.connector.listener.tcp.FFPTcpListenerAgent;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.utils.FFPCutoffUtils;
+import com.forms.ffp.persistents.bean.ss.FFPSsSystem;
+import com.forms.ffp.persistents.dao.ss.FFPIDao_System;
+
+@Component("listenerAgentThread")
+@Scope("prototype")
+public class FFPListenerAgentThread extends Thread
+{
+	private Logger _logger = LoggerFactory.getLogger(FFPListenerAgentSvc.class);
+
+	private Map<String, FFPListenerAgentInterface> listenerAgentMap = new HashMap<String, FFPListenerAgentInterface>();
+
+	@Autowired
+	private BeanFactory beanFactory;
+
+	@Resource(name = "FFPIDao_System")
+	private FFPIDao_System daoSystem;
+
+	@Autowired
+	private FFPCutoffUtils cutoffUtils;
+
+	private int period;
+
+	public void run()
+	{
+		try
+		{
+			_logger.info("[FFPListenerAgentThread]:START");
+			while (true)
+			{
+				FFPSsSystem system = daoSystem.inquiry();
+				String realTimeListenerStat = system.getRealtimeListenerStat();
+				String runningMode = system.getRunningMode();
+				_logger.info("[FFPListenerAgentThread]:RUNNING MODE=" + runningMode + ",REALTIME LISTENER STAT=" + realTimeListenerStat);
+				if (FFPConstants.REALTIME_LISTENER_STATUS_NOFUNCTION.equals(realTimeListenerStat))
+				{
+					// not open this function
+					if (FFPConstants.RUNNING_MODE_REALTIME.equals(runningMode))
+					{
+						_logger.warn("REALTIME LISTENER STAT=" + FFPConstants.REALTIME_LISTENER_STATUS_CLOSE + ",BUT RUNNING MODE=" + FFPConstants.RUNNING_MODE_REALTIME);
+					}
+					break;
+				} else if (FFPConstants.REALTIME_LISTENER_STATUS_RUNNING.equals(realTimeListenerStat))
+				{
+					if (this.cutoffUtils.isCutoff(FFPConstants.CUTOFF_TYPE_FFP))
+					{
+						// call ICL update listener mode to batch
+						_logger.info("[FFPListenerAgentThread]:call ICL update listener mode to batch");
+						_logger.info("[FFPListenerAgentThread]:call ICL update listener mode to batch");
+						
+						FFPTXM101 txBase = (FFPTXM101) this.beanFactory.getBean("com.forms.ffp.bussiness.common.FFPTXM101");
+						boolean perform = false;
+						if (txBase != null)
+						{
+							txBase.init(FFPConstants.RUNNING_MODE_BATCH);
+							//txBase.init("BTCH");
+							txBase.validate();
+							perform = txBase.perform();
+						}
+						if (perform)
+						{
+							stopListener();
+							system.setRealtimeListenerStat(FFPConstants.REALTIME_LISTENER_STATUS_CLOSE);
+							daoSystem.update(system);
+						}
+						// stop listener
+					}
+				} else if (FFPConstants.REALTIME_LISTENER_STATUS_CLOSE.equals(realTimeListenerStat))
+				{
+					if (!this.cutoffUtils.isCutoff(FFPConstants.CUTOFF_TYPE_FFP))
+					{
+						// start listener
+						FFPTXM101 txBase = (FFPTXM101) this.beanFactory.getBean("com.forms.ffp.bussiness.common.FFPTXM101");
+						boolean perform = false;
+						if (txBase != null)
+						{
+							txBase.init(FFPConstants.RUNNING_MODE_REALTIME);
+							//txBase.init("RLTM");
+							txBase.validate();
+							perform = txBase.perform();
+						}
+						if (perform)
+						{
+							startListener();
+							system.setRealtimeListenerStat(FFPConstants.REALTIME_LISTENER_STATUS_RUNNING);
+							daoSystem.update(system);
+							// call ICL update listener mode to realtime
+
+						}
+
+					}
+				} else
+				{
+					_logger.error("STAT NOT DEFINE!!!");
+					break;
+				}
+
+				Thread.sleep(period);
+			}
+		} catch (Exception ip_e)
+		{
+			_logger.error("[FFPListenerAgentThread]:EXIT WITH EXCEPTION");
+			_logger.error(ip_e.getMessage());
+		}
+	}
+
+	public void init() throws Exception
+	{
+		period = FFPRuntimeConfigSvc.getInstance().getRootConfig().getInteger("CUTOFF_CHECK_PERIOD");
+
+		Map<String, FFPConnectorConfig> connectorConfigMap = FFPConnectorConfigSvc.getInstance().getConnectorConfigMap();
+
+		Iterator<String> iter = connectorConfigMap.keySet().iterator();
+		while (iter.hasNext())
+		{
+			String key = iter.next();
+			FFPConnectorConfig connectorConfig = connectorConfigMap.get(key);
+
+			if (_logger.isInfoEnabled())
+			{
+				_logger.info("Start initialize Connector Config for: {}", connectorConfig.getConnectorName());
+			}
+
+			if (connectorConfig instanceof FFPMqConfig)
+			{
+				FFPMqConfig mqConfig = (FFPMqConfig) connectorConfig;
+				FFPMqListenerAgentInterface agent = null;
+				if (FFPConstants.CONNECTTOR_TYPE_MQ_APACHEMQ.equals(mqConfig.getConnectorType()))
+				{
+					agent = (FFPMqListenerAgentInterface) this.beanFactory.getBean(FFPApacheMqListenerAgent.class, new Object[] { mqConfig });
+				} else if (FFPConstants.CONNECTTOR_TYPE_MQ_WEBPHEREMQ.equals(mqConfig.getConnectorType()))
+				{
+					agent = (FFPMqListenerAgentInterface) this.beanFactory.getBean(FFPIbmWebSphereMqListenerAgent.class, new Object[] { mqConfig });
+				} else
+				{
+					throw new Exception(mqConfig.getConnectorName() + " type not define!");
+				}
+				agent.init();
+				this.listenerAgentMap.put(key, agent);
+			} else if (connectorConfig instanceof FFPTcpConfig)
+			{
+				FFPTcpConfig tcpConfig = (FFPTcpConfig) connectorConfig;
+				FFPTcpListenerAgentInterface agent = (FFPTcpListenerAgentInterface) this.beanFactory.getBean(FFPTcpListenerAgent.class, new Object[] { tcpConfig });
+				agent.init();
+				this.listenerAgentMap.put(key, agent);
+			} else
+			{
+				throw new Exception(connectorConfig.getConnectorName() + " type not define!");
+			}
+		}
+	}
+
+	public FFPListenerAgentInterface getMqAgent(String mqName)
+	{
+		if (this.listenerAgentMap == null)
+		{
+			return null;
+		}
+
+		return this.listenerAgentMap.get(mqName);
+	}
+
+	private void startListener() throws Exception
+	{
+		if (listenerAgentMap != null)
+		{
+			Iterator<String> iter = listenerAgentMap.keySet().iterator();
+			while (iter.hasNext())
+			{
+				String key = iter.next();
+				FFPListenerAgentInterface agent = listenerAgentMap.get(key);
+				_logger.info("FFP Listener will be start(key=" + key + ")");
+				agent.startListeners();
+				if (agent.getStartWithException())
+				{
+					throw new Exception("Start Listener failure");
+				}
+				_logger.info("FFP Listener started(key=" + key + ")");
+			}
+		}
+	}
+
+	private void stopListener() throws Exception
+	{
+		if (listenerAgentMap != null)
+		{
+			Iterator<String> iter = listenerAgentMap.keySet().iterator();
+			while (iter.hasNext())
+			{
+				String key = iter.next();
+				FFPListenerAgentInterface agent = listenerAgentMap.get(key);
+				_logger.info("FFP Listener will be stop(key=" + key + ")");
+				agent.onDestory();
+				_logger.info("FFP Listener stopped(key=" + key + ")");
+			}
+		}
+	}
+}

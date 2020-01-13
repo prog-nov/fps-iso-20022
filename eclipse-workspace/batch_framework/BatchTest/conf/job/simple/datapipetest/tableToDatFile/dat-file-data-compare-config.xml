@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<compare-config>
+  <configs>
+  	<config name="BATCH_DAT_FILE">
+	<use-mapping>Y</use-mapping>
+	<mappings>
+		<mapping input-name="NOA"		output-name="NOB"	/> 
+		<mapping input-name="STAT1A"		output-name="STAT1B"	/> 
+		<mapping input-name="STAT2A"		output-name="STAT2B"	/> 
+	</mappings>
+  </config>
+  </configs>
+</compare-config>

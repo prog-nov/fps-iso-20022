@@ -1,0 +1,475 @@
+package com.forms.batch.job.outward;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+
+import com.forms.ffp.bussiness.participant.ffpcto01.FFPMsgCTO01_MutiPacs008;
+import com.forms.ffp.core.msg.iclfps.FFPMsgBaseHkiclMessage;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+import com.forms.framework.persistence.ConnectionManager;
+
+public class CreditTransferOutwardBatchFileProcessor {
+
+    private static SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+    private static String path = "";
+    private String BUSINESS_SERVER_TYPE = "";
+
+    public void init(String type) {
+	// file path
+	// batch date
+	path = "";
+	BUSINESS_SERVER_TYPE = type;
+    }
+
+    // read DB
+    // FFPJbP100 = Select * from tb_tx_p100dat.....credit name ,debtor name.
+    // String sql = "select * from tb_tx_jnl where create_ts between =
+    // >tx_id,end_to_id
+
+    // List<FFPJbP100> ...
+    private void getPacs008Dat() throws Exception {
+
+	List<Map<String, Object>> queryResult = IOGCL.getQueryResult(getConnection());
+	List<FFPJbP100> C3list = new ArrayList<FFPJbP100>();
+
+	for (Map<String, Object> object : queryResult) {
+	    // String mode = object.get("MODE");
+	    String mode = "C2";
+	    if (("C1").equals(mode)) {
+		continue;
+	    }
+
+	    FFPJbP100 fb = new FFPJbP100();
+	    FFPTxJnl txJnl = new FFPTxJnl();
+	    txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+	    txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+	    fb.setTxJnl(txJnl);
+	    fb.setSrcRefNm("");
+	    fb.setSrvcMode(mode);
+	    fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+	    fb.setAccountVerification("");
+	    fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+	    fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+	    fb.setSettlementAmount((BigDecimal) object.get("INSTRUCTED_AMT"));
+	    fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+	    fb.setInstructedAmount((BigDecimal) object.get("INSTRUCTED_AMT"));
+	    fb.setChargersAgentId((String) object.get("CHG_AGT_ID"));
+	    fb.setChargersAgentBic((String) object.get("CHG_AGT_BIC"));
+	    fb.setChargersCurrency((String) object.get("CHG_CUR"));
+	    fb.setChargersAmount((BigDecimal) object.get("CHG_AMT"));
+	    fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+	    fb.setDebtorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+	    fb.setDebtorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+	    fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+	    fb.setCreditorAgentId((String) object.get("DEBTOR_AGT_BIC"));
+	    fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+	    fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+	    fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+
+	    if (("C2").equals(mode)) {
+		List<FFPJbP100> C2list = new ArrayList<FFPJbP100>();
+		C2list.add(fb);
+		FFPMsgCTO01_MutiPacs008 pacs008 = new FFPMsgCTO01_MutiPacs008(C2list);
+		FFPMsgBaseHkiclMessage messageObj = pacs008;
+		String msg = messageObj.parseHkiclMessage();
+		// 7、创建输出格式的对象，规定输出的格式为带换行和缩进的格式
+		OutputFormat format = OutputFormat.createPrettyPrint();
+		try {
+		    // 8、创建输出对象
+		    String fileName = "D:/GCL/xml/";
+		    String name = "FPSPCROkkkYYYMMDD" + ".xml";
+		    XMLWriter writer = new XMLWriter(new FileOutputStream(new File(fileName + name)), format);
+		    // 9、设置输出，这里设置输出的内容不将特殊字符转义，例如<符号就输出<，如果不设置，系统默认会将特殊字符转义
+		    writer.setEscapeText(false);
+		    // 10、输出xml文件
+		    writer.write(msg);
+		    writer.flush();
+		    writer.close();
+		    // 返回路径及文件名+数据数量
+		    // return fileName+name+","+stu.size();
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    // return "";
+		}
+
+	    } else if (("C3").equals(mode)) {
+		C3list.add(fb);
+	    }
+	}
+
+	// txJnl.setEndToEndId("21212121212212");
+	// txJnl.setTransactionId("44444444444");
+	// fb.setTxJnl(txJnl);
+	// fb.setSrcRefNm("ABC");
+	// fb.setSrvcMode("PAYC03");
+	// fb.setPymtCatPrps("CXSALA");
+	// fb.setAccountVerification("SKIP_PYE_VRF");
+	// fb.setSettlementDate(format1.parse("2018-03-05"));
+	// fb.setSettlementCurrency("HKD");
+	// fb.setSettlementAmount(new BigDecimal("2000"));
+	// fb.setInstructedCurrency("HKD");
+	// fb.setInstructedAmount(new BigDecimal("1000"));
+	// fb.setChargersAgentId("123456");
+	// fb.setChargersAgentBic("AAAAAABNABC");
+	// fb.setChargersCurrency("HKD");
+	// fb.setChargersAmount(new BigDecimal("30"));
+	// fb.setDebtorName("weihui");
+	// fb.setDebtorAccountNumber("01288888");
+	// fb.setDebtorAccountNumberType("BBAN");
+	// fb.setDebtorAgentId("001");
+	// fb.setCreditorAgentId("005");
+	// fb.setCreditorName("zhang");
+	// fb.setCreditorAccountNumber("999999999");
+	// fb.setCreditorAccountNumberType("MOBN");
+	//
+	// List<FFPJbP100> list = new ArrayList<FFPJbP100>();
+	// list.add(fb);
+    }
+
+    // 3.generate pacs008.xml
+    // 4.I/O write path
+
+    // C2/C3
+    // FFPMsgCTO01_MutiPacs008 pacs008 = new
+    // FFPMsgCTO01_MutiPacs008(List<FFPJbP100>);
+
+    // XML==>IO generate file (file path)
+
+    // C2的逻辑
+    public static void DBxmlC2(List<String> dbList) {
+	Integer c2 = 0;
+	List<String> fileList = new ArrayList<>();
+	for (String stu : dbList) {
+	    if (stu.equals("C2")) {
+		c2++;
+		List<String> c2List = new ArrayList<>();
+		c2List.add(stu);
+		String createXml = createXml(c2List, c2);
+		String fileName = createXml.split(",")[0];
+		fileList.add(fileName);
+	    }
+	}
+	for (String stu : fileList) {
+	    setCountNum(stu, String.valueOf(c2));
+	}
+    }
+
+    // C3的逻辑
+    public static void DBxmlC3(List<String> dbList) {
+	Integer c3 = 0;
+	List<String> c3List = new ArrayList<>();
+	// 超过70mb被删除的数据放到muchDate集合中
+	List<String> muchDate = new ArrayList<>();
+	// 存放每个xml生成的路径以及文件名
+	List<String> fileList = new ArrayList<>();
+	for (String stu : dbList) {
+	    if (stu.equals("C3")) {
+		// 首先看看C3一共有多少条记录
+		c3List.add(stu);
+		c3++;
+	    }
+	}
+	if (c3 != 0) {
+	    if (c3 > 10000) {
+		double num = (double) c3 / 10000;
+		double ceil = Math.ceil(num);
+		int cc3 = (int) ceil;
+		for (int j = 0; j < cc3; j++) {
+		    List<String> data = new ArrayList<>();
+		    for (int i = j * 10000; i < (j + 1) * 10000; i++) {
+			if (i < c3List.size()) {
+			    data.add(c3List.get(i));
+			} else {
+			    break;
+			}
+		    }
+		    // 调用创建xml的方法，一次性插入10000条数据
+		    String retrunXml = createXml(data, j + 1);
+		    String fileName = retrunXml.split(",")[0];
+		    fileList.add(fileName);
+		    String dataSize = retrunXml.split(",")[1];
+		    // 如果文件大于70mb
+		    /*
+		     * if (getFileSize(fileName) > 70) { for (int i =
+		     * Integer.parseInt(dataSize); i > 0; i--) { //
+		     * 调用方法删除节点下所以子节点 boolean flot = removeNode(fileName,
+		     * String.valueOf(i)); if (flot) { muchDate.add(c3List.get(i
+		     * - 1)); if (getFileSize(fileName) <= 70) { break; } } } }
+		     * else { if (10000 - Integer.parseInt(dataSize) > 0) { if
+		     * (muchDate.size() > 0) { // int muchNum=0; for (int i = 0;
+		     * i < muchDate.size(); i++) { data.add(muchDate.get(i)); }
+		     * // muchDate.clear(); String returnCx = createXml(data,
+		     * cc3); String fileName1 = returnCx.split(",")[0]; String
+		     * dataSize1 = returnCx.split(",")[1]; boolean xhFlot =
+		     * true; while (xhFlot) { List<String> muchD = new
+		     * ArrayList<>(); if (getFileSize(fileName1) > 70 ||
+		     * Integer.parseInt(dataSize1) > 10000) { for (int i =
+		     * Integer.parseInt(dataSize1); i > 0; i--) { //
+		     * 调用方法删除节点下所以子节点 boolean flot = removeNode(fileName1,
+		     * String.valueOf(i)); if (flot) { muchD.add(c3List.get(i -
+		     * 1)); if (getFileSize(fileName1) <= 70) { break; } } }
+		     * cc3++; String createXml = createXml(muchD, cc3);
+		     * fileName1 = createXml.split(",")[0];
+		     * fileList.add(fileName1); dataSize1 =
+		     * createXml.split(",")[1]; } else { xhFlot = false; } }
+		     * 
+		     * } } }
+		     */
+
+		}
+
+		/*
+		 * for (String stu : fileList) { setCountNum(stu,
+		 * String.valueOf(cc3)); }
+		 */
+
+	    } else {
+		// 调用创建xml的方法，一次性插入10000条数据
+		int num = 1;
+		String retrunXml = createXml(c3List, num);
+		String fileName = retrunXml.split(",")[0];
+		fileList.add(fileName);
+		String dataSize = retrunXml.split(",")[1];
+		/*
+		 * boolean xhFlot = true; while (xhFlot) { List<String> muchD =
+		 * new ArrayList<>(); if (getFileSize(fileName) > 70) { for (int
+		 * i = Integer.parseInt(dataSize); i > 0; i--) { //
+		 * 调用方法删除节点下所以子节点 boolean flot = removeNode(fileName,
+		 * String.valueOf(i)); if (flot) { muchD.add(c3List.get(i - 1));
+		 * if (getFileSize(fileName) <= 70) { break; } } } num++; String
+		 * createXml = createXml(muchD, num); fileName =
+		 * createXml.split(",")[0]; dataSize = createXml.split(",")[1];
+		 * fileList.add(fileName); } else { xhFlot = false; } }
+		 */
+		/*
+		 * for (String stu : fileList) { setCountNum(stu,
+		 * String.valueOf(num)); }
+		 */
+
+	    }
+
+	}
+    }
+
+    // 创建xml及写入文件方法
+    public static String createXml(List<String> stu, int j) {
+	Document document = DocumentHelper.createDocument();
+	OutputFormat format = OutputFormat.createPrettyPrint();
+	String str = null;
+	/*
+	 * try { FFPJbP100 jb = new FFPJbP100(); FFPTxJnl txJnl = new
+	 * FFPTxJnl(); txJnl.setEndToEndId("21212121212212");
+	 * txJnl.setTransactionId("44444444444"); jb.setTxJnl(txJnl);
+	 * jb.setSrcRefNm("ABC"); jb.setSrvcMode("PAYC03");
+	 * jb.setPymtCatPrps("CXSALA");
+	 * jb.setAccountVerification("SKIP_PYE_VRF");
+	 * jb.setSettlementDate(format1.parse("2018-03-05"));
+	 * jb.setSettlementCurrency("HKD"); jb.setSettlementAmount(new
+	 * BigDecimal("2000")); jb.setInstructedCurrency("HKD");
+	 * jb.setInstructedAmount(new BigDecimal("1000"));
+	 * jb.setChargersAgentId("123456");
+	 * jb.setChargersAgentBic("AAAAAABNABC"); jb.setChargersCurrency("HKD");
+	 * jb.setChargersAmount(new BigDecimal("30"));
+	 * jb.setDebtorName("weihui"); jb.setDebtorAccountNumber("01288888");
+	 * jb.setDebtorAccountNumberType("BBAN"); jb.setDebtorAgentId("001");
+	 * jb.setCreditorAgentId("005"); jb.setCreditorName("zhang");
+	 * jb.setCreditorAccountNumber("999999999");
+	 * jb.setCreditorAccountNumberType("MOBN");
+	 * 
+	 * FFPJbP100 jb1 = new FFPJbP100(); jb1.setTxJnl(txJnl);
+	 * jb1.setSrcRefNm("ABC"); jb1.setSrvcMode("PAYC03");
+	 * jb1.setPymtCatPrps("CXSALA");
+	 * jb1.setAccountVerification("SKIP_PYE_VRF"); //
+	 * jb1.setSettlementDate(format1.parse("2018-03-05"));
+	 * jb1.setSettlementCurrency("HKD"); jb1.setSettlementAmount(new
+	 * BigDecimal("2000")); jb1.setInstructedCurrency("HKD");
+	 * jb1.setInstructedAmount(new BigDecimal("1000"));
+	 * jb1.setChargersAgentId("123456");
+	 * jb1.setChargersAgentBic("AAAAAABNABC");
+	 * jb1.setChargersCurrency("HKD"); jb1.setChargersAmount(new
+	 * BigDecimal("30")); jb1.setDebtorName("weihui");
+	 * jb1.setDebtorAccountNumber("01288888");
+	 * jb1.setDebtorAccountNumberType("BBAN"); jb1.setDebtorAgentId("001");
+	 * jb1.setCreditorAgentId("005"); jb1.setCreditorName("zhang");
+	 * jb1.setCreditorAccountNumber("999999999");
+	 * jb1.setCreditorAccountNumberType("MOBN");
+	 * 
+	 * List<FFPJbP100> list = new ArrayList<FFPJbP100>(); list.add(jb);
+	 * list.add(jb1); FFPMsgCTO01_MutiPacs008 pacs008 = new
+	 * FFPMsgCTO01_MutiPacs008(list); FFPMsgBaseHkiclMessage messageObj =
+	 * pacs008; try { str = messageObj.parseHkiclMessage();
+	 * System.out.println(str);
+	 * 
+	 * Date date = new Date(); SimpleDateFormat sdf = new
+	 * SimpleDateFormat("yyyyMMddHHmmss"); String str1 = sdf.format(date);
+	 * String fileName = "D:/GCL/xml/"; String name = "FPSPCROkkk" + str1 +
+	 * j + ".xml"; XMLWriter writer = new XMLWriter(new FileOutputStream(new
+	 * File(fileName + name)), format); //
+	 * 9、设置输出，这里设置输出的内容不将特殊字符转义，例如<符号就输出<，如果不设置，系统默认会将特殊字符转义
+	 * writer.setEscapeText(false); // 10、输出xml文件 writer.write(str); } catch
+	 * (Exception e) { // TODO Auto-generated catch block
+	 * e.printStackTrace(); } } catch (Exception ex) { ex.printStackTrace();
+	 * }
+	 */
+	return str;
+
+	// list.add(jb1);
+
+	/*
+	 * Element book = root.addElement("book"); book.addAttribute("id",
+	 * String.valueOf(i + 1)); Element name = book.addElement("name");
+	 * name.setText(stu.get(i)); Element author = book.addElement("author");
+	 * author.setText(stu.get(i) + "的数据"); Element time =
+	 * book.addElement("time"); time.setText("2014"); Element price =
+	 * book.addElement("price"); price.setText("60"); Element testText =
+	 * book.addElement("test");
+	 * testText.setText("这个标签包含特殊字符，在写入xml文档时转换为的形式，现在不想将它转义");
+	 */
+
+    }
+
+    /**
+     * 获取本地磁盘文件大小，以mb计算
+     * 
+     * @param filename
+     * @return
+     */
+    public static double getFileSize(String filename) {
+	File file = new File(filename);
+	if (!file.exists() || !file.isFile()) {
+	    System.out.println("文件不存在");
+	    return -1;
+	}
+	BigDecimal b = new BigDecimal((double) file.length() / 1024 / 1024);
+	double f1 = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+	return f1;
+    }
+
+    /**
+     * 删除某个节点下的所有子节点
+     */
+    public static boolean removeNode(String fileName, String nodeId) {
+	SAXReader reader = new SAXReader();
+	Document document;
+	try {
+	    document = reader.read(new File(fileName));
+	    Element root = document.getRootElement();
+	    Element node = parse(root, "id", nodeId);
+	    if (node != null) {
+		Iterator<Element> iterator = node.elementIterator();
+		while (iterator.hasNext()) {
+		    Element e = iterator.next();
+		    node.remove(e);
+		}
+		root.remove(node);
+	    }
+	    OutputFormat format = OutputFormat.createPrettyPrint();
+	    XMLWriter writer = new XMLWriter(new FileOutputStream(fileName), format);
+	    writer.write(document);
+
+	    return true;
+	} catch (Exception e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
+    }
+
+    /**
+     * 获得X属性结果是X值的整个标签
+     */
+    public static Element parse(Element node, String type, String val) {
+	for (Iterator iter = node.elementIterator(); iter.hasNext();) {
+	    Element element = (Element) iter.next();
+	    Attribute name = element.attribute(type);
+	    if (name != null) {
+		String value = name.getValue();
+		if (value != null && val.equals(value))
+		    return element;
+		else
+		    parse(element, type, val);
+	    }
+	}
+	return null;
+    }
+
+    /**
+     * 给总数标签赋值
+     * 
+     * @param fileName
+     * @param count
+     */
+    public static void setCountNum(String fileName, String count) {
+	SAXReader reader = new SAXReader();
+	Document document;
+	try {
+	    document = reader.read(new File(fileName));
+	    Element root = document.getRootElement();
+	    Element element = root.element("count");
+	    element.setText(count);
+
+	    OutputFormat format = OutputFormat.createPrettyPrint();
+	    XMLWriter writer = new XMLWriter(new FileOutputStream(fileName), format);
+	    writer.write(document);
+	} catch (Exception e) {
+	    // TODO: handle exception
+	}
+    }
+
+    // public static void main1(String[] args) throws Exception {
+    // List<String> stu = new ArrayList<String>();
+    // // 执行步骤，你的查询数据库方法，查询数据得到一个List<FFPJbP100> list=new ArrayList<String>();
+    // // 再调用createXml方法传入list，就可以了。
+    // // createXml(stu, 0);
+    //
+    // }
+
+    public static void main(String[] args) throws Exception {
+	// args[0] = "C2";
+	//
+	// init();
+	// List<Object[]> listResult = IOGCL.getQueryResult(getConnection());
+	// for (Object[] object : listResult) {
+	// for (int i = 0; i < object.length; i++) {
+	// System.out.print(object[i] + " , ");
+	// }
+	// System.out.println();
+	// }
+	// System.out.println("zong gong you :" + listResult.size());
+	System.out.println("starting");
+	CreditTransferOutwardBatchFileProcessor ctobfp = new CreditTransferOutwardBatchFileProcessor();
+	ctobfp.getPacs008Dat();
+    }
+
+    public static Connection getConnection() throws Exception {
+	Properties loc_prop = new Properties();
+	loc_prop.put("databaseName", "ffp");
+	loc_prop.put("url", "jdbc:MySQL://172.21.21.198:3306/ffp");
+	loc_prop.put("driverClassName", "com.mysql.jdbc.Driver");
+	loc_prop.put("username", "clous");
+	loc_prop.put("password", "123456");
+	ConnectionManager.registerDatabase(loc_prop);
+	ConnectionManager.setDefaultDatabase("ffp");
+	ConnectionManager loc_connMgr = ConnectionManager.getInstance();
+	Connection loc_conn = loc_connMgr.getConnection();
+	return loc_conn;
+    }
+}

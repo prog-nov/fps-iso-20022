@@ -1,0 +1,112 @@
+package com.forms.batch.job.unit.risec1;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import com.forms.datapipe.ValveMapping;
+import com.forms.datapipe.config.ValveConfig;
+import com.forms.datapipe.context.InputContext;
+import com.forms.datapipe.context.OutputContext;
+import com.forms.datapipe.context.PipeContext;
+import com.forms.datapipe.exception.DataPipeException;
+import com.forms.datapipe.pipedata.PipeData;
+import com.forms.framework.job.common.valve.BaseOutputDataProcessValve;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.util.CommonAPI;
+
+public class RisEc1DataProcessValve extends BaseOutputDataProcessValve
+{
+	private Object[] send_msgno_array;
+	
+	private Object[] payno_array;
+	
+	public void init(ValveConfig ip_config, PipeContext ip_pipeContext)
+		throws DataPipeException
+	{
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		ResultSet rs2 = null;
+		try
+		{
+			super.init(ip_config, ip_pipeContext);
+			List oref_list = new ArrayList();
+			String schema = ConnectionManager.getInstance().getDefaultSchema();
+			String sql = "SELECT DISTINCT RTRIM(SEND_MSGNO) FROM (" +
+						 "SELECT SEND_MSGNO						" +
+						 "FROM " + schema + ".D_OVERSEAS_PAY	" +
+						 "UNION									" +
+						 "SELECT SEND_MSGNO						" + 
+						 "FROM " + schema + ".D_OVERSEAS_PAY_OUTGO ) A " +
+						 "ORDER BY RTRIM(SEND_MSGNO)";
+			conn = ConnectionManager.getInstance().getConnection();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);
+			String oref = null;
+			while(rs.next())
+			{
+				oref = rs.getString(1);
+				oref_list.add(oref);
+			}
+			send_msgno_array = oref_list.toArray();
+			
+			List payno_list = new ArrayList();
+			sql = "SELECT DISTINCT PAY_NO FROM (" +
+				 "SELECT PAY_NO						" +
+				 "FROM " + schema + ".D_OVERSEAS_PAY	" +
+				 "UNION									" +
+				 "SELECT PAY_NO						" + 
+				 "FROM " + schema + ".D_OVERSEAS_PAY_OUTGO ) A " +
+				 "ORDER BY A.PAY_NO";
+			rs2 = stmt.executeQuery(sql);
+			String payno = null;
+			while(rs2.next())
+			{
+				payno = rs2.getString(1);
+				payno_list.add(payno);
+			}
+			payno_array = payno_list.toArray();
+		}catch(Exception e)
+		{
+			throw new DataPipeException(e);
+		}finally
+		{
+			try {
+				if(conn !=null)conn.close();
+				if(stmt !=null)stmt.close();
+				if(rs !=null)rs.close();
+				if(rs2 !=null)rs2.close();
+			} catch (SQLException e) {
+				throw new DataPipeException(e);
+			}
+		}
+	}
+	
+//	List<ValveForward> process(ValveMapping ip_valveMapping,
+	public List process(ValveMapping ip_valveMapping,
+			PipeData ip_pipeData, InputContext ip_in, OutputContext ip_out)
+			throws DataPipeException
+	{
+		// count file record
+		synchronized (config)
+		{
+			docCnt++;
+			ip_in.getPipeContext().setAttribute("docCnt", new Integer(docCnt));
+		}
+		String oref = ip_pipeData.getPipeFieldStringValue("PADT_EXTN_REF_NO");
+		String payno = ip_pipeData.getPipeFieldStringValue("PADT_INTL_REF_NO");
+//		if(oref_list.contains(oref))
+		if(Arrays.binarySearch(send_msgno_array, oref) < 0 || Arrays.binarySearch(payno_array, payno) < 0)
+		{
+			return ip_valveMapping.findForwards("failure");
+		}else
+		{
+			return ip_valveMapping.findForwards(CommonAPI.DATAPIPE_SUCCESS);
+		}
+	}
+}

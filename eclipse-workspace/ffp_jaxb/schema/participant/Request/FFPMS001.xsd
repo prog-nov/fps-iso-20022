@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_OTHER.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPMS001"></xs:element>
+	<xs:complexType name="FFPMS001">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="SysStat" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RltmPort" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="BtchPort" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

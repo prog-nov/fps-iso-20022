@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.payment.directdebit.FFPIDao_P210">
+
+	<!-- 新增交易或者更新开始 -->
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	<!-- 新增業務員信息 -->
+	<insert id="INSERT_TB_TX_P210DAT">
+		INSERT INTO TB_TX_P210DAT
+		(
+			JNL_NO,					CATEGORY_PURPOSE,			SETTLEMENT_CUR,
+			SETTLEMENT_AMT,			SETTLEMENT_DATE,			INSTRUCTED_CUR,		
+			INSTRUCTED_AMT,			CHG_AGT_ID,					CHG_AGT_BIC,
+			CHG_CUR,				CHG_AMT,            		DRCTDBT_MNDTID,
+			DEBTOR_NAME,			DEBTOR_ORGID_ANYBIC,	DEBTOR_ORGID_OTHRID,
+			DEBTOR_ORGID_OTHRID_SCHMENM,	DEBTOR_ORGID_OTHR_ISSR,	DEBTOR_PRVTID_OTHRID,
+			DEBTOR_PRVTID_OTHRID_SCHMENM,	DEBTOR_PRVTID_OTHR_ISSR,	DEBTOR_CONT_PHONE,
+			DEBTOR_CONT_EMADDR,		DEBTOR_ACCTNO,				DEBTOR_ACCTNO_TYPE,
+			DEBTOR_AGT_ID,			DEBTOR_AGT_BIC,				CREDITOR_NAME,
+			CREDITOR_ORGID_ANYBIC,	CREDITOR_ORGID_OTHRID,		CREDITOR_ORGID_OTHRID_SCHMENM,
+			CREDITOR_ORGID_OTHR_ISSR,	CREDITOR_PRVTID_OTHRID,	CREDITOR_PRVTID_OTHRID_SCHMENM,
+			CREDITOR_PRVTID_OTHR_ISSR,	CREDITOR_CONT_PHONE,	CREDITOR_CONT_EMADDR,
+			CREDITOR_ACCTNO,		CREDITOR_ACCTNO_TYPE,		CREDITOR_AGT_ID,
+		    CREDITOR_AGT_BIC,		PURPOSE_TYPE, 				PURPOSE_CODE,
+	    	PURPOSE_OTHER,			REMIT_INFO,				SRVC_MODE
+	    )
+	    VALUES 
+	    (
+	    	#{jnlNo, jdbcType=VARCHAR},		#{pymtCatPrps, jdbcType=VARCHAR},	#{settlementCurrency, jdbcType=VARCHAR},
+			#{settlementAmount, jdbcType=VARCHAR},		#{settlementDate, jdbcType=TIMESTAMP},	#{instructedCurrency, jdbcType=VARCHAR},
+			#{instructedAmount, jdbcType=VARCHAR},		#{chargersAgentId, jdbcType=TIMESTAMP},	#{chargersAgentBic, jdbcType=VARCHAR},
+			#{chargersCurrency, jdbcType=VARCHAR},		#{chargersAmount, jdbcType=TIMESTAMP},	#{drctDbtTxMndtId, jdbcType=VARCHAR},
+			#{debtorName, jdbcType=VARCHAR},			#{debtorOrgIdAnyBIC, jdbcType=VARCHAR},	#{debtorOrgIdOthrId, jdbcType=TIMESTAMP},
+			#{debtorOrgIdOthrIdSchmeNm, jdbcType=VARCHAR},	#{debtorOrgIdOthrIssr, jdbcType=VARCHAR},	#{debtorPrvtIdOthrId, jdbcType=TIMESTAMP},
+			#{debtorPrvtIdOthrIdSchmeNm, jdbcType=VARCHAR},	#{debtorPrvtIdOthrIssr, jdbcType=VARCHAR},	#{debtorContPhone, jdbcType=TIMESTAMP},
+			#{debtorContEmailAddr, jdbcType=VARCHAR},	#{debtorAccountNumber, jdbcType=VARCHAR},	#{debtorAccountNumberType, jdbcType=TIMESTAMP},
+			#{debtorAgentId, jdbcType=VARCHAR},			#{debtorAgentBic, jdbcType=VARCHAR},	#{creditorName, jdbcType=TIMESTAMP},
+			#{creditorOrgIdAnyBIC, jdbcType=VARCHAR},	#{creditorOrgIdOthrId, jdbcType=VARCHAR},	#{creditorOrgIdOthrIdSchmeNm, jdbcType=TIMESTAMP},
+			#{creditorOrgIdOthrIssr, jdbcType=VARCHAR},	#{creditorPrvtIdOthrId, jdbcType=VARCHAR},	#{creditorPrvtIdOthrIdSchmeNm, jdbcType=TIMESTAMP},
+			#{creditorPrvtIdOthrIssr, jdbcType=VARCHAR},	#{creditorContPhone, jdbcType=VARCHAR},	#{creditorContEmailAddr, jdbcType=TIMESTAMP},
+			#{creditorAccountNumber, jdbcType=VARCHAR},	#{creditorAccountNumberType, jdbcType=VARCHAR},	#{creditorAgentId, jdbcType=TIMESTAMP},
+			#{creditorAgentBic, jdbcType=VARCHAR},	#{paymentPurposeType, jdbcType=VARCHAR},	#{paymentPurposeCd, jdbcType=TIMESTAMP},
+			#{paymentPurposeProprietary, jdbcType=VARCHAR},	#{remittanceInformation, jdbcType=VARCHAR},	#{srvcMode, jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 新增報文信息或者更新 -->
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<!-- inquiry jnl_no by SrcRefNm -->
+	<select id="inquiryJnlNoBySrcRefNm" resultType="String">
+		SELECT
+			A.JNL_NO
+		FROM
+			TB_TX_P210DAT A
+		WHERE
+			A.SRC_REF_NM = #{SrcRefNm, jdbcType=VARCHAR}
+	</select>
+	<!-- 交易资料表查询 -->
+	<select id="inquiryByJnlNo" resultType="com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP210">
+		SELECT
+			JNL_NO                                     AS jnlNo,
+			CATEGORY_PURPOSE                           AS pymtCatPrps,
+			SETTLEMENT_CUR                             AS settlementCurrency,
+			SETTLEMENT_AMT                             AS settlementAmount,
+			SETTLEMENT_DATE                            AS settlementDate,
+			INSTRUCTED_CUR                             AS instructedCurrency,
+			INSTRUCTED_AMT                             AS instructedAmount,
+			CHG_AGT_ID                                 AS chargersAgentId,
+			CHG_AGT_BIC                                AS chargersAgentBic,
+			CHG_CUR                                    AS chargersCurrency,
+			CHG_AMT                                    AS chargersAmount,
+			DRCTDBT_MNDTID                             AS drctDbtTxMndtId,
+			DEBTOR_NAME                                AS debtorName,
+			DEBTOR_ORGID_ANYBIC                        AS debtorOrgIdAnyBIC,
+			DEBTOR_ORGID_OTHRID                        AS debtorOrgIdOthrId,
+			DEBTOR_ORGID_OTHRID_SCHMENM                AS debtorOrgIdOthrIdSchmeNm,
+			DEBTOR_ORGID_OTHR_ISSR                     AS debtorOrgIdOthrIssr,
+			DEBTOR_PRVTID_OTHRID                       AS debtorPrvtIdOthrId,
+			DEBTOR_PRVTID_OTHRID_SCHMENM               AS debtorPrvtIdOthrIdSchmeNm,
+			DEBTOR_PRVTID_OTHR_ISSR                    AS debtorPrvtIdOthrIssr,
+			DEBTOR_CONT_PHONE                          AS debtorContPhone,
+			DEBTOR_CONT_EMADDR                         AS debtorContEmailAddr,
+			DEBTOR_ACCTNO                              AS debtorAccountNumber,
+			DEBTOR_ACCTNO_TYPE                         AS debtorAccountNumberType,
+			DEBTOR_AGT_ID                              AS debtorAgentId,
+			DEBTOR_AGT_BIC                             AS debtorAgentBic,
+			CREDITOR_NAME                              AS creditorName,
+			CREDITOR_ORGID_ANYBIC                      AS creditorOrgIdAnyBIC,
+			CREDITOR_ORGID_OTHRID                      AS creditorOrgIdOthrId,
+			CREDITOR_ORGID_OTHRID_SCHMENM              AS creditorOrgIdOthrIdSchmeNm,
+			CREDITOR_ORGID_OTHR_ISSR                   AS creditorOrgIdOthrIssr,
+			CREDITOR_PRVTID_OTHRID                     AS creditorPrvtIdOthrId,
+			CREDITOR_PRVTID_OTHRID_SCHMENM             AS creditorPrvtIdOthrIdSchmeNm,
+			CREDITOR_PRVTID_OTHR_ISSR                  AS creditorPrvtIdOthrIssr,
+			CREDITOR_CONT_PHONE                        AS creditorContPhone,
+			CREDITOR_CONT_EMADDR                       AS creditorContEmailAddr,
+			CREDITOR_ACCTNO                            AS creditorAccountNumber,
+			CREDITOR_ACCTNO_TYPE                       AS creditorAccountNumberType,
+			CREDITOR_AGT_ID                            AS creditorAgentId,
+			CREDITOR_AGT_BIC                           AS creditorAgentBic,
+			PURPOSE_TYPE                               AS paymentPurposeType,
+			PURPOSE_CODE                             AS paymentPurposeCd,
+			PURPOSE_OTHER							AS paymentPurposeProprietary,
+			REMIT_INFO                                 AS remittanceInformation,
+			SRVC_MODE                                  AS srvcMode
+		FROM TB_TX_P210DAT A
+		WHERE A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+</mapper>

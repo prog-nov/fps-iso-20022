@@ -1,0 +1,103 @@
+package com.forms.ffp.core.msg;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.core.config.runtime.FFPRuntimeConstants;
+import com.forms.ffp.core.connecor.sender.FFPSenderAgentSvc;
+import com.forms.ffp.core.connecor.sender.mq.FFPMqSenderAgent;
+import com.forms.ffp.core.connecor.sender.tcp.FFPTcpSenderAgent;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsMsg;
+import com.forms.ffp.core.msg.iclfps.FFPMsgBaseHkiclMessage;
+import com.forms.ffp.core.msg.iclfps.FFPSendMessageResp;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseParticipantMessage;
+import com.forms.ffp.core.utils.FFPDateUtils;
+
+public class FFPAdaptorMgr
+{
+	private static Logger _logger = LoggerFactory.getLogger(FFPAdaptorMgr.class);
+	private static FFPAdaptorMgr instance = null;
+	
+	public static FFPAdaptorMgr getInstance()
+	{
+		if(instance == null)
+			instance = new FFPAdaptorMgr();
+		return instance;
+	}
+	
+	//发送到tcp服务器
+	public FFPSendMessageResp executeTcpMsg(String msg) throws Exception{
+		FFPSendMessageResp resp = new FFPSendMessageResp();
+		//读取配置文件得到tcp参数
+		FFPTcpSenderAgent sender = (FFPTcpSenderAgent) FFPSenderAgentSvc.getSenderAgent(FFPRuntimeConstants.PARTICIPANT_TCP_CONFIG_SELECT);
+		String destinationName = null;
+		resp = sender.send(msg, null, destinationName);
+		
+//		Socket socket  = new Socket("172.21.21.249", 10006);
+//		BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//		bufOut.write("send to tcp?");
+//		bufOut.flush();
+//		socket.close();
+		
+		return resp;
+	}
+	
+	public FFPSendMessageResp execute(Object object) throws Exception
+	{
+		if (object instanceof FFPMsgBaseHkiclMessage)
+		{
+			FFPMsgBaseHkiclMessage messageObj = (FFPMsgBaseHkiclMessage) object;
+
+			String message = "";
+			try
+			{
+				 message = messageObj.parseHkiclMessage();
+			} catch (Exception e)
+			{
+				throw e;
+			}
+
+			FFPSendMessageResp resp = new FFPSendMessageResp();
+			try
+			{
+				FFPMqSenderAgent sender = (FFPMqSenderAgent) FFPSenderAgentSvc.getSenderAgent(FFPRuntimeConstants.ICL_MQ_CONFIG_SELECT);
+				if (FFPConstants.SEND_TYPE_REQ.equals(messageObj.getSendType()))
+				{
+					resp = sender.sendRequest(message, null, messageObj.getPriority());
+				}
+				else if (FFPConstants.SEND_TYPE_ACK.equals(messageObj.getSendType()))
+				{
+					resp = sender.sendAcknowledge(message, null, messageObj.getPriority());
+				}
+				resp.setMessageStatus(FFPConstantsMsg.RESP_MSG_STS_SUCCESS);
+				resp.setMessage(String.format("The message is sent to target MQ. (%s)", new Object[] { FFPDateUtils.getDateStr(new Date(resp.getSentSysTime().longValue()), "yyyy-MM-dd HH:mm:ss") }));
+				
+				
+			} catch (Exception e)
+			{
+				resp = new FFPSendMessageResp();
+				resp.setMessageStatus(FFPConstantsMsg.RESP_MSG_STS_TMOUT);
+				resp.setMessage(String.format("Error (%s) : Fail to send message to MQ due to %s - %s",
+						new Object[] { FFPDateUtils.getDateStr(new Date(), "yyyy-MM-dd HH:mm:ss"), e.getClass().getSimpleName(), e.getMessage() }));
+				_logger.error(resp.getMessage(), e);
+			}
+
+			return resp;
+
+		} else if (object instanceof FFPMsgBaseParticipantMessage)
+		{
+			FFPSendMessageResp resp = null;
+			return resp;
+		} else
+		{
+			// TODO
+			throw new Exception("TODO");
+		}
+	}
+}

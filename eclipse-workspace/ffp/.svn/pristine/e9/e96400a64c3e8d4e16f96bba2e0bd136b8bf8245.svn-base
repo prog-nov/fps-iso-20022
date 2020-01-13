@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.systemmanage.task.taskrule.dao.ITaskRuleDao">
+
+	<select id="dList"
+		resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskRuleBean">
+		SELECT   R.RULE_ID,
+				 R.TASK_ID,
+				 P.TASK_NAME,
+				 P.DETAIL_MENU_ID,
+				 M.MENU_NAME DETAIL_MENU_NAME,
+				 R.OPER_FLAG,
+				 R.ROLE_FLAG,
+				 R.ORG_FLAG,
+				 R.DETAIL_FLAG,
+				 R.INST_DATE,
+				 R.INST_TIME,
+				 R.MODI_DATE,
+				 R.MODI_TIME
+		FROM {{BF}}_TASK_REGEX R
+		JOIN {{BF}}_TASK_PARAM P
+		on R.TASK_ID = P.TASK_ID
+		LEFT JOIN {{BF}}_MENU M ON P.DETAIL_MENU_ID = M.MENU_ID
+		<where>
+			<if test="null != ruleId and '' != ruleId">
+				AND R.RULE_ID = #{ruleId, jdbcType=VARCHAR}
+			</if>
+			<choose>
+				<when test="_databaseId == 'mysql'">
+					<if test="null != taskName and '' != taskName">
+						AND P.TASK_NAME LIKE CONCAT('%',#{taskName, jdbcType=VARCHAR},'%')
+					</if>
+				</when>
+				<otherwise>
+					<if test="null != taskName and '' != taskName">
+						AND P.TASK_NAME LIKE #{concat('%' taskName '%'), jdbcType=VARCHAR}
+					</if>
+				</otherwise>
+			</choose>
+			<if test="null != operFlag and '' != operFlag">
+				AND R.OPER_FLAG = #{operFlag, jdbcType=VARCHAR}
+			</if>
+			<if test="null != roleFlag and '' != roleFlag">
+				AND R.ROLE_FLAG = #{roleFlag, jdbcType=VARCHAR}
+			</if>
+			<if test="null != orgFlag and '' != orgFlag">
+				AND R.ORG_FLAG = #{orgFlag, jdbcType=VARCHAR}
+			</if>
+			<if test="null != detailFlag and '' != detailFlag">
+				AND R.DETAIL_FLAG = #{detailFlag, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY R.RULE_ID
+	</select>
+	
+	<select id="dCheckExistParam"
+		resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskRuleBean">
+		SELECT   P.RULE_ID
+		FROM {{BF}}_TASK_REGEX P
+		WHERE P.TASK_ID = #{taskId, jdbcType=VARCHAR}
+			<if test="null != ruleId and '' != ruleId">
+				AND R.RULE_ID = #{ruleId, jdbcType=VARCHAR}
+			</if>
+	</select>
+
+	<update id="dUpdateTaskParam">
+		UPDATE {{BF}}_TASK_PARAM T
+		   SET T.RULE_ID = #{ruleId, jdbcType=VARCHAR}
+		 WHERE T.TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="dUpdateTaskParamDel">
+		UPDATE {{BF}}_TASK_PARAM T
+		   SET T.RULE_ID = ''
+		 WHERE T.RULE_ID = #{taskId, jdbcType=VARCHAR}
+	</update>
+
+	<select id="dListOrgTreeAdd" resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskOrgBean">
+		<choose>
+			<when test="_databaseId == 'mysql'">
+				SELECT CODE,PARENT_CODE,TEXT,CHECK_STATUS,ORG_ID, @rownum:=@rownum+1 SEQNO
+				  FROM (SELECT O.ORG_ID     AS CODE,
+							   O.SUP_ORG_ID AS PARENT_CODE,
+							   O.ORG_NAME   AS TEXT,
+							   0 CHECK_STATUS,
+							   ORG_ID,
+							   @rownum:=0
+						  FROM {{BF}}_ORG O
+					  ORDER BY O.ORG_ID) ORG
+			</when>
+			<otherwise>
+				SELECT ORG.*, ROWNUM SEQNO
+				  FROM (SELECT O.ORG_ID     AS CODE,
+							   O.SUP_ORG_ID AS PARENT_CODE,
+							   O.ORG_NAME   AS TEXT,
+							   0 CHECK_STATUS,
+							   ORG_ID
+						  FROM {{BF}}_ORG O
+					  ORDER BY O.ORG_ID) ORG
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="dListOrgTree" resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskOrgBean">
+		<choose>
+			<when test="_databaseId == 'mysql'">
+				SELECT CODE,PARENT_CODE,TEXT,CHECK_STATUS,ORG_ID, @rownum:=@rownum+1 SEQNO
+				  FROM (SELECT O.ORG_ID     AS CODE,
+							   O.SUP_ORG_ID AS PARENT_CODE,
+							   O.ORG_NAME   AS TEXT,
+							   CASE WHEN L.RULE_ID IS NOT NULL THEN 1 ELSE 0 END CHECK_STATUS,
+							   ORG_ID,
+							   @rownum:=0
+						  FROM {{BF}}_ORG O
+						  LEFT JOIN {{BF}}_TASK_REGEX_SUB_INFO L
+						    ON O.ORG_ID = L.LIMIT_KEY_ID AND L.RULE_ID = #{ruleId, jdbcType=VARCHAR} AND L.LIMIT_FLAG = 'O'
+					  ORDER BY O.ORG_ID) ORG
+			</when>
+			<otherwise>
+				SELECT ORG.*, ROWNUM SEQNO
+				  FROM (SELECT O.ORG_ID     AS CODE,
+							   O.SUP_ORG_ID AS PARENT_CODE,
+							   O.ORG_NAME   AS TEXT,
+							   CASE WHEN L.RULE_ID IS NOT NULL THEN 1 ELSE 0 END CHECK_STATUS,
+							   ORG_ID
+						  FROM {{BF}}_ORG O
+						  LEFT JOIN {{BF}}_TASK_REGEX_SUB_INFO L
+						    ON O.ORG_ID = L.LIMIT_KEY_ID AND L.RULE_ID = #{ruleId, jdbcType=VARCHAR} AND L.LIMIT_FLAG = 'O'
+					  ORDER BY O.ORG_ID) ORG
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="dListRoleForAdd" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES,'0' AS CHECKED
+		    FROM {{BF}}_ROLE A
+		   ORDER BY A.ROLE_ID
+	</select>
+
+	<select id="dListRoleForEdit" resultType="com.forms.beneform4j.webapp.systemmanage.role.bean.RoleBean">
+		  SELECT DISTINCT A.ROLE_ID, A.ROLE_NAME, A.DES,CASE WHEN B.RULE_ID IS NULL THEN 0 ELSE 1 END AS CHECKED
+		    FROM {{BF}}_ROLE A
+		    LEFT JOIN {{BF}}_TASK_REGEX_SUB_INFO B
+		      ON A.ROLE_ID = B.LIMIT_KEY_ID AND B.RULE_ID = #{ruleId, jdbcType=VARCHAR} AND B.LIMIT_FLAG = 'R'
+		   ORDER BY A.ROLE_ID
+	</select>
+
+	<select id="dListTaskNode" resultType="com.forms.beneform4j.webapp.systemmanage.task.taskrule.bean.TaskRuleBean">
+		SELECT P.TASK_ID,P.TASK_NAME text,P.MENU_ID,P.DETAIL_MENU_ID,M.MENU_NAME DETAIL_MENU_NAME
+		  FROM {{BF}}_TASK_PARAM P
+		  LEFT JOIN {{BF}}_MENU M ON M.MENU_ID = P.DETAIL_MENU_ID
+		  <where>
+	     	<if test="null != taskId and '' != taskId">
+	     		AND P.TASK_ID = #{taskId, jdbcType=VARCHAR}
+	     	</if>
+	     </where>
+		  ORDER BY P.TASK_ID
+	</select>
+	
+	<select id="dListTaskUser" resultType="java.util.HashMap">
+		SELECT U.USER_ID,U.USER_NAME,'1' AS CHECKED
+		  FROM {{BF}}_TASK_REGEX_SUB_INFO P
+		  LEFT JOIN {{BF}}_USER U ON P.LIMIT_KEY_ID = U.USER_ID 
+		  WHERE P.RULE_ID =#{ruleId, jdbcType=VARCHAR}
+		  	AND P.LIMIT_FLAG = 'U'
+		  ORDER BY U.USER_ID
+	</select>
+
+	<!-- 查询用户列表  林济松 20160411-->
+	<select id="dSearchTaskUser" >
+		SELECT U.USER_ID,
+		       U.USER_NAME,
+		       U.NICK_NAME,
+		       U.USER_STATUS,
+		       U.ORG_ID,
+		       U.CERT_TYPE,
+		       U.CERT_NO,
+		       U.MOBILE_PHONE,
+		       U.TELEPHONE,
+		       U.EMAIL
+		  FROM {{BF}}_USER U
+	     <where>
+	     	<if test="null != userId and '' != userId">
+	     		AND U.USER_ID = #{userId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != orgId and '' != orgId">
+	     		AND U.ORG_ID = #{orgId, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != certNo and '' != certNo">
+	     		AND U.CERT_NO = #{certNo, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != userStatus and '' != userStatus">
+	     		AND U.USER_STATUS = #{userStatus, jdbcType=VARCHAR}
+	     	</if>
+	     	<if test="null != lockFlag and '' != lockFlag">
+	     	<!-- 暂未考虑超时自动解锁 -->
+	     		AND U.LOCK_FLAG = #{lockFlag, jdbcType=VARCHAR}
+	     	</if>
+	     	<choose>
+				<when test="_databaseId == 'mysql'">
+					<if test="null != userName and '' != userName">
+			     		AND U.USER_NAME LIKE CONCAT('%',#{userName, jdbcType=VARCHAR},'%')
+			     	</if>
+			     	<if test="null != nickName and '' != nickName">
+			     		AND U.NICK_NAME LIKE CONCAT('%',#{nickName, jdbcType=VARCHAR},'%')
+			     	</if>
+				</when>
+				<otherwise>
+					<if test="null != userName and '' != userName">
+			     		AND U.USER_NAME LIKE #{concat('%' userName '%', jdbcType=VARCHAR}
+			     	</if>
+			     	<if test="null != nickName and '' != nickName">
+			     		AND U.NICK_NAME LIKE #{concat('%' nickName '%', jdbcType=VARCHAR}
+			     	</if>
+				</otherwise>
+			</choose>
+	     </where>
+	     ORDER BY U.ORG_ID, U.USER_ID
+	</select>
+
+	<insert id="dInsertRegex">
+		insert into {{BF}}_TASK_REGEX (RULE_ID,TASK_ID,OPER_FLAG,ROLE_FLAG,ORG_FLAG,DETAIL_FLAG,DETAIL_MENU_ID,INST_OPER,INST_DATE,INST_TIME)
+		values (#{ruleId,jdbcType=VARCHAR},
+				#{taskId,jdbcType=VARCHAR}, 
+				#{operFlag,jdbcType=VARCHAR},
+				#{roleFlag,jdbcType=VARCHAR},
+				#{orgFlag,jdbcType=VARCHAR},
+				#{detailFlag,jdbcType=VARCHAR},
+				#{detailMenuId,jdbcType=VARCHAR},
+				#{instOper,jdbcType=VARCHAR},
+				#{instDate,jdbcType=VARCHAR},
+				#{instTime,jdbcType=VARCHAR})
+	</insert>
+
+	<insert id="dInsertUsers">
+		insert into {{BF}}_TASK_REGEX_SUB_INFO (RULE_ID,LIMIT_FLAG,LIMIT_KEY_ID)
+		values (#{param1.ruleId, jdbcType=VARCHAR},'U', #{user.userId, jdbcType=VARCHAR})
+	</insert>
+	<insert id="dInsertOrgs">
+		insert into {{BF}}_TASK_REGEX_SUB_INFO (RULE_ID,LIMIT_FLAG,LIMIT_KEY_ID)
+		values (#{param1.ruleId, jdbcType=VARCHAR},'O', #{org.orgId, jdbcType=VARCHAR})
+	</insert>
+	<insert id="dInsertRoles">
+		insert into {{BF}}_TASK_REGEX_SUB_INFO (RULE_ID,LIMIT_FLAG,LIMIT_KEY_ID)
+		values (#{param1.ruleId, jdbcType=VARCHAR},'R', #{role.roleId, jdbcType=VARCHAR})
+	</insert>
+
+	<update id="dUpdate">
+		update {{BF}}_TASK_REGEX
+		   set
+			  OPER_FLAG = #{operFlag,jdbcType=VARCHAR},
+			  ROLE_FLAG = #{roleFlag,jdbcType=VARCHAR},
+			  ORG_FLAG  = #{orgFlag,jdbcType=VARCHAR},
+			  DETAIL_FLAG = #{detailFlag,jdbcType=VARCHAR},
+			  MODI_OPER = #{modiOper,jdbcType=VARCHAR},
+			  MODI_DATE = #{modiDate,jdbcType=VARCHAR},
+			  MODI_TIME = #{modiTime,jdbcType=VARCHAR}
+		 where RULE_ID = #{ruleId,jdbcType=VARCHAR}
+	</update>
+
+	<delete id="dDeleteRegex">
+		DELETE FROM {{BF}}_TASK_REGEX WHERE RULE_ID = #{ruleId, jdbcType=VARCHAR}
+	</delete>
+	
+	<delete id="dDeleteUsers">
+		DELETE FROM {{BF}}_TASK_REGEX_SUB_INFO WHERE RULE_ID = #{ruleId, jdbcType=VARCHAR} AND LIMIT_FLAG = 'U'
+	</delete>
+	
+	<delete id="dDeleteRoles">
+		DELETE FROM {{BF}}_TASK_REGEX_SUB_INFO WHERE RULE_ID = #{ruleId, jdbcType=VARCHAR} AND LIMIT_FLAG = 'R'
+	</delete>
+
+	<delete id="dDeleteOrgs">
+		DELETE FROM {{BF}}_TASK_REGEX_SUB_INFO WHERE RULE_ID = #{ruleId, jdbcType=VARCHAR} AND LIMIT_FLAG = 'O'
+	</delete>
+</mapper>

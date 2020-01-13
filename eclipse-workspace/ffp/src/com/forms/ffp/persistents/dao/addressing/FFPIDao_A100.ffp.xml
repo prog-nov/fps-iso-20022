@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100">
+
+	<!-- about table tb_tx_txjnl tb_tx_txjnlaction   START -->
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<select id="inqueryJnlNoByMsgId" resultType="String">
+		SELECT
+			A.JNL_NO
+		FROM
+			tb_tx_jnlaction A
+		WHERE
+			A.MSG_ID = #{msgId, jdbcType=VARCHAR}
+	</select>
+	<!-- about table tb_tx_txjnl tb_tx_txjnlaction   END -->
+	
+	<!-- about table tb_tx_a110dat   START -->
+	<insert id="INSERT_UPDATE_TB_TX_A100DAT">
+		<include refid="INSERT_UPDATE_A100DAT"></include>
+	</insert>
+	
+	<sql id="INSERT_UPDATE_A100DAT">
+		INSERT INTO TB_TX_A100DAT(
+			JNL_NO,		ADR_REQ_ID,		
+			MSG_TP,		PROXY_ID,		PROXY_ID_TP,	CLR_CD,			
+			LANG_EN,	FULL_NM_EN, 	DISP_NM_EN,		LANG_ZH,		
+			FULL_NM_ZH,	DISP_NM_ZH, 	CUS_ID,			CUS_TP,			
+			SUP_OP_CD,	DFLT,			PURP_CD		
+		)
+		VALUES (
+			#{txJnl.jnlNo, jdbcType=VARCHAR},	#{AdrReqId, jdbcType=VARCHAR},  
+			#{MsgType, jdbcType=VARCHAR},		#{ProxyId, jdbcType=VARCHAR},	#{ProxyIdTp, jdbcType=VARCHAR},	#{ClrCd, jdbcType=VARCHAR},		
+			#{LangEn, jdbcType=VARCHAR},  		#{FullNmEn, jdbcType=VARCHAR},  #{DispNmEn, jdbcType=VARCHAR},	#{LangZh, jdbcType=VARCHAR},	
+			#{FullNmZh, jdbcType=VARCHAR},    	#{DispNmZh, jdbcType=VARCHAR}, 	#{CusId, jdbcType=VARCHAR},		#{CusTp, jdbcType=VARCHAR},		
+			#{SupOpCd, jdbcType=VARCHAR},		#{Dflt, jdbcType=VARCHAR}, 		#{PurpCd, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY UPDATE
+			PROXY_ID=#{ProxyId, jdbcType=VARCHAR}
+	</sql>
+	
+	<update id="dUpdateA100">
+		<include refid="INSERT_UPDATE_A100DAT"/>
+	</update>
+	
+	<select id="inqueryJbA100ByJnlNo" resultType="com.forms.ffp.persistents.bean.addressing.FFPJbA100">
+		SELECT
+			*
+		FROM
+			tb_tx_a100dat
+		WHERE
+			JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	<!-- about table tb_tx_a110dat   END -->
+		
+	
+	<!-- about table tb_dt_addressing   START -->
+	<insert id="INSERT_UPDATE_TB_DT_ADDRESSING">
+		<include refid="INSERT_UPDATE_ADDRESSING"></include>
+	</insert>
+	
+	<sql id="INSERT_UPDATE_ADDRESSING">
+		INSERT INTO tb_dt_addressing(
+			CUS_ID,			CUS_TP,			PROXY_ID,		PROXY_ID_TP,									
+			DFLT,			CLR_CD,			FULL_NM_EN, 	
+			DISP_NM_EN,		FULL_NM_ZH,		DISP_NM_ZH,		
+			SUP_OP_CD,		PURP_CD,		LSTUP_JNL	
+		)
+		VALUES (
+			#{CusId, jdbcType=VARCHAR},		#{CusTp, jdbcType=VARCHAR},			#{ProxyId, jdbcType=VARCHAR},		#{ProxyIdTp, jdbcType=VARCHAR},	
+			#{Dflt, jdbcType=VARCHAR},		#{ClrCd, jdbcType=VARCHAR},			#{FullNmEn, jdbcType=VARCHAR},  
+			#{DispNmEn, jdbcType=VARCHAR},	#{FullNmZh, jdbcType=VARCHAR},    	#{DispNmZh, jdbcType=VARCHAR},
+			#{SupOpCd, jdbcType=VARCHAR},	#{PurpCd, jdbcType=VARCHAR},		#{txJnl.jnlNo, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY UPDATE
+			CUS_TP=#{CusTp, jdbcType=VARCHAR},
+			DFLT=#{Dflt, jdbcType=VARCHAR},
+			CLR_CD=#{ClrCd, jdbcType=VARCHAR},
+			FULL_NM_EN=#{FullNmEn, jdbcType=VARCHAR},  
+			DISP_NM_EN=#{DispNmEn, jdbcType=VARCHAR},
+			FULL_NM_ZH=#{FullNmZh, jdbcType=VARCHAR},    	
+			DISP_NM_ZH=#{DispNmZh, jdbcType=VARCHAR},
+			SUP_OP_CD=#{SupOpCd, jdbcType=VARCHAR},	
+			PURP_CD=#{PurpCd, jdbcType=VARCHAR},
+			LSTUP_JNL=#{txJnl.jnlNo, jdbcType=VARCHAR}
+	</sql>
+	
+	<sql id="DETELE_ADDRESSING">
+		DELETE FROM
+			tb_dt_addressing
+		WHERE 
+			CUS_ID = #{CusId, jdbcType=VARCHAR}
+		AND
+			PROXY_ID_TP = #{ProxyIdTp, jdbcType=VARCHAR}
+		AND
+			PROXY_ID=#{ProxyId, jdbcType=VARCHAR}
+	</sql>
+	
+	<update id="dUpdateDflt">
+		<include refid="INSERT_UPDATE_ADDRESSING"/>
+	</update>
+	
+	<select id="inqueryAdrs" resultType="com.forms.ffp.persistents.bean.addressing.FFPJbA100">
+		SELECT
+			*
+		FROM
+			tb_dt_addressing
+		WHERE
+			CUS_ID = #{0}
+		AND
+			PROXY_ID = #{1}
+		AND
+			PROXY_ID_TP = #{2}
+	</select>
+	<!-- about table tb_dt_addressing   END -->
+	
+</mapper>

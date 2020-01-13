@@ -1,0 +1,198 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.util.Date;
+
+
+import com.forms.ffp.adaptor.jaxb.participant.request.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+
+public class FFPMsgBaseParticipantMessage{
+	
+	private Date createDate;
+	
+	//for sub class
+	protected String direction;
+	protected String msgType;
+	protected String reqRefNo;
+	protected String resRefNo;
+	protected String requestID;
+	protected String responseID;
+	
+	public FFPMsgBaseParticipantMessage(){
+		this.createDate = new Date();
+	}
+
+	public HEAD marshalMsgReqHead(){
+		HEAD head = new HEAD();
+//		RequestID
+//		TransactionDate
+//		TransactionTime
+//		RequestRefno
+//		ResponseID
+//		MessageType
+		
+		//optional
+//		SystemRefno
+//		AccountingDate
+		head.setRequestID(this.requestID);
+		head.setResponseID(this.responseID);
+		head.setRequestRefno(this.reqRefNo);
+		head.setTransactionDate(FFPDateUtils.getDateStr(this.createDate, FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(this.createDate), FFPDateUtils.INT_TIME_FORMAT));
+		head.setMessageType(this.msgType);
+		
+		return head;
+	}
+	
+	public com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD marshalMsgResHead(){
+		com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = new com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD();
+//		RequestID
+//		TransactionDate
+//		TransactionTime
+//		RequestRefno
+//		ResponseID
+//		MessageType
+//		SystemRefno2
+//		ResponseRefno
+//		ResponseStatus
+//		FinalNode
+		
+		//optional
+//		AccountingDate
+//		SystemBeginTIme
+//		SystemEndTIme
+//		ResponseBeginTime
+//		ResponseEndTime
+//		SystemMessageCode
+//		ResponseMessageCode
+//		ResponseMessage
+
+		head.setRequestID(this.requestID);
+		head.setResponseID(this.responseID);
+		head.setTransactionDate(FFPDateUtils.getDateStr(createDate, FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(createDate), FFPDateUtils.INT_TIME_FORMAT));
+		head.setRequestRefno(this.reqRefNo);
+		head.setResponseRefno(this.resRefNo);
+		head.setMessageType(this.msgType);
+		//TODO 
+		head.setFinalNode("2");
+		
+		return head;
+	}
+	
+	public BODY marshalMsgReqBody() {    
+		return null;
+	}
+	
+	public com.forms.ffp.adaptor.jaxb.participant.response.BODY marshalMsgResBody(){
+		return null;
+	}
+	
+	public String parseParticipantMessage() throws Exception{
+		String message = null;
+		Object obj = this.marshalMsgRoot();
+		if("req".equals(this.direction)){
+			ROOT root = (ROOT)obj;
+			message = FFPParticipantMessageConverter.packageRequestObject2Xml(root);
+		}else if("res".equals(this.direction)){
+			com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = (com.forms.ffp.adaptor.jaxb.participant.response.ROOT)obj;
+			message = FFPParticipantMessageConverter.packageReponseObject2Xml(root);
+		}
+		
+		return message;
+	}
+	
+	private Object marshalMsgRoot() {
+		Object o = null;
+		
+		if("req".equals(this.direction)){
+			ROOT root = new ROOT();
+			HEAD reqHead = this.marshalMsgReqHead();
+			BODY reqBody = this.marshalMsgReqBody();
+			root.setHEAD(reqHead);
+			root.setBODY(reqBody);
+			o = root;
+		}else if("res".equals(this.direction)){
+			com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = new com.forms.ffp.adaptor.jaxb.participant.response.ROOT();
+			com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD resHead = this.marshalMsgResHead();
+			com.forms.ffp.adaptor.jaxb.participant.response.BODY resBody = this.marshalMsgResBody();
+			root.setHEAD(resHead);
+			root.setBODY(resBody);
+			o = root;
+		}
+		return o;
+	}
+
+	public String getReqRefNo() {
+		return this.reqRefNo == null?FFPIDUtils.getRefno():this.reqRefNo;
+	}
+
+
+	public void setReqRefNo(String reqRefNo) {
+		this.reqRefNo = reqRefNo;
+	}
+
+
+	public String getResRefNo() {
+		return this.resRefNo == null?FFPIDUtils.getRefno():this.resRefNo;
+	}
+
+
+	public void setResRefNo(String resRefNo) {
+		this.resRefNo = resRefNo;
+	}
+
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
+	}
+
+
+
+
+	public Date getCreateDate() {
+		return createDate;
+	}
+
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+
+	public String getDirection() {
+		return direction;
+	}
+
+
+	public void setDirection(String direction) {
+		this.direction = direction;
+	}
+
+	public String getRequestID() {
+		return requestID;
+	}
+
+	public void setRequestID(String requestID) {
+		this.requestID = requestID;
+	}
+
+	public String getResponseID() {
+		return responseID;
+	}
+
+	public void setResponseID(String responseID) {
+		this.responseID = responseID;
+	}
+	
+	
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY_OUTGO A
+			WHERE EXISTS
+			(
+				SELECT	1
+				FROM #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP B
+				WHERE A.OREF_NO = B.OREF_NO
+			)
+		</sql>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_OUTGO
+			SELECT * 
+			FROM #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			DELETE FROM #{schema}.D_OVERSEAS_PAY_SUB A
+			WHERE EXISTS
+			(
+				SELECT	1
+				FROM #{schema}.D_OVERSEAS_PAY_SUB_TEMP B
+				WHERE A.OREF_NO = B.OREF_NO
+			)
+		</sql>
+		<sql>
+			INSERT INTO #{schema}.D_OVERSEAS_PAY_SUB
+			SELECT *
+			FROM #{schema}.D_OVERSEAS_PAY_SUB_TEMP
+		</sql>
+	</transaction>
+</job-sql-configs>

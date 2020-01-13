@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="UpperCaseNumericText_Exact1">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[AFI]{1}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact2">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{2}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact3">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{3}" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="UpperCaseNumericText_Exact4">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{4}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact5">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{4}" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="UpperCaseNumericText_Exact6">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{6}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact11">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{11}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact15">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{15}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:simpleType name="UpperCaseNumericText_Exact35">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-zA-Z0-9]{15}" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<!-- Restricted Length -->
+	<xs:simpleType name="RestrictedNZText_Max8">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z]{1,8}"/>
+            <xs:minLength value="1"/>
+            <xs:maxLength value="8"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+	<xs:simpleType name="RestrictedNZText_Max30">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z]{1,30}"/>
+            <xs:minLength value="1"/>
+            <xs:maxLength value="30"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

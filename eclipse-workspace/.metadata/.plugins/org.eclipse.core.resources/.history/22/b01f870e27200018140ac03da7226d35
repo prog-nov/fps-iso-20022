@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_Other.xsd"></xs:include>
+
+	<xs:complexType name="HEAD">
+		<xs:sequence>
+			<xs:element name="RequestID" type="Max2NumericText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="TransactionDate" type="DateTypeNoSplit" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="TransactionTime" type="TimeTypeNoSplit" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="RequestRefno" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="AccountingDate" type="DateTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseID" type="Max2NumericText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="MessageType" type="RestrictedNZText_Max8" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="SystemRefno" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="SystemBeginTIme" type="TimeTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="SystemEndTIme" type="TimeTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseRefno" type="RestrictedNZText_Max30" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseBeginTime" type="TimeTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseEndTime" type="TimeTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseStatus" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="FinalNode" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="SystemMessageCode" type="RestrictedNZText_Max8" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseMessageCode" type="RestrictedFINZText_Max20" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseMessage" type="RestrictedFINZText_Max1000" minOccurs="0" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
+	

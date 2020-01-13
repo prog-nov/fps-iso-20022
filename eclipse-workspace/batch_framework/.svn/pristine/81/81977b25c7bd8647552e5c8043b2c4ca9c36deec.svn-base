@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CIB Batch System Configuration　Files-->
+<system-config>
+	<isprint>Y</isprint>
+	<classpath>
+		<!-- MUST SETTING -->
+		<index name="BATCH_ROOT" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/BatchTest</index>
+		<index name="BATCH_DATA" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/ISB/CIB/WORKING</index>
+		<index name="BATCH_BACKUP" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/ISB/CIB/BACKUP</index>
+		<index name="BATCH_CONFINFO" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/BatchTest/conf</index>
+		<index name="BATCH_ISB" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/ISB/CIB/ISB</index>
+		<index name="BATCH_DBBACKUP_PATH" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/ISB/CIB/DB</index>
+		<index name="BATCH_BIN" isEnv="N">D:/User Data/zhou ting/workspace/svnworkspace/BatchTest/bin</index>
+		<!-- USER PRIVATE SETTING -->
+	</classpath>
+	<parameters>
+		<!-- MUST SETTING -->
+		<parameter name="acDate" isFunction="N">2012-09-04</parameter>
+		<parameter name="curAcDate" isFunction="N">2012-09-04</parameter>
+		<parameter name="upAcDate" isFunction="N">2012-08-19</parameter>
+		<!-- USER PRIVATE SETTING -->
+	</parameters>
+</system-config>

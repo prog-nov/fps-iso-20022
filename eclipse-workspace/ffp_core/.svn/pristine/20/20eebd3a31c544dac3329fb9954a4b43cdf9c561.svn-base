@@ -1,0 +1,168 @@
+package com.forms.ffp.core.msg.participant;
+
+import java.io.StringWriter;
+import java.util.Date;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.ValidationEvent;
+import javax.xml.bind.ValidationEventHandler;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.ObjectFactory;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+/**
+ * 
+ * @author yrd
+ *
+ */
+public class FFPParticipantMessageAckConverter {
+
+	private static Logger _logger = LoggerFactory.getLogger(FFPParticipantMessageAckConverter.class);
+	//拼装应答报文,并转成String类型
+	//参数：
+	public static String parseAck2FFPAgent(Object obj){
+		String message = null;
+		ROOT root = new ROOT();
+		
+		HEAD head = new HEAD();
+		//
+		head.setRequestID("03");
+		head.setTransactionDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		head.setTransactionTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setRequestRefno("111");
+		head.setAccountingDate(FFPDateUtils.getDateStr(new Date(), FFPDateUtils.INT_DATE_FORMAT));
+		//
+		head.setResponseID("04");
+		//
+		head.setMessageType("FFPCTO01");
+		head.setSystemRefno("222");
+		head.setSystemBeginTIme(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setResponseRefno("333");
+		head.setResponseBeginTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		head.setResponseEndTime(FFPDateUtils.getTimeStr(FFPDateUtils.getTime(new Date()), FFPDateUtils.INT_TIME_FORMAT));
+		//
+		head.setResponseStatus("N");
+		//
+		head.setFinalNode("2");
+		head.setSystemMessageCode("000000");
+		head.setResponseMessageCode("444");
+		head.setResponseMessage("555");
+		root.setHEAD(head);
+		
+		FFPCTI01 body = new FFPCTI01();
+		body.setSrcRefNm("04");
+		body.setEndToEndId(FFPIDUtils.getTransactionId());
+		body.setRsltCd("S");
+//		body.setRejCd(value);
+//		body.setRejMsg(value);
+		root.setBODY(body);
+		//解析Root报文
+		
+		
+		try {
+			message = packageXml(root);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return message;
+	}
+	
+	public static String packageXml(ROOT root) throws Exception{
+		
+		return packageXml(root, new ValidationEventHandler()
+		{
+			public boolean handleEvent(ValidationEvent event)
+			{
+				if (event.getMessage().contains("http://www.w3.org/2000/09/xmldsig#"))
+				{
+					return true;
+				}
+				throw new RuntimeException(String.format("Marshal XML Error: %s (Object: %s)",
+						new Object[] { event.getMessage(), (event.getLocator() != null) && (event.getLocator().getObject() != null) ? event.getLocator().getObject().getClass() : "null" }));
+			}
+		});
+	}
+
+	public static String packageXml(ROOT root, ValidationEventHandler handler) throws Exception {
+		
+		String xml = null;
+		StringBuilder sb = null;
+		try {
+			
+			sb = new StringBuilder();
+			HEAD head = root.getHEAD();
+			Object obj = root.getBODY();
+			if(!(obj instanceof FFPCTI01)){
+				return null;
+			}
+			FFPCTI01 cti01 = (FFPCTI01)root.getBODY();
+			//head
+			xml = packageDivideXml(head,handler);
+			sb.append(xml);
+			//body
+			xml = packageDivideXml(cti01,handler);
+			sb.append(xml);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
+	
+	public static String packageDivideXml(Object obj, ValidationEventHandler handler) throws Exception{
+		Marshaller marshaller = null;
+		StringWriter sw = new StringWriter();
+		JAXBContext context = null;
+		StringBuilder sb = new StringBuilder();
+		
+		if(obj instanceof HEAD){
+			context = JAXBContext.newInstance(HEAD.class);
+			marshaller = context.createMarshaller();
+			HEAD head = (HEAD)obj;
+			JAXBElement<HEAD> headEle = (new ObjectFactory()).createHEAD(head);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(headEle, sw);
+			
+			//对报文进行进一步修正
+			String msg = sw.toString();
+			String msgHead = msg.substring(0, msg.indexOf("?>")+2);
+			msg = msg.substring(msg.indexOf("?>")+2, msg.indexOf("</HEAD>")+7);
+			sb.append(msgHead);
+			sb.append('\n');
+			sb.append("<ROOT>");
+			sb.append(msg);
+			
+		}else if(obj instanceof FFPCTI01){
+			context = JAXBContext.newInstance(FFPCTI01.class);
+			marshaller = context.createMarshaller();
+			FFPCTI01 cti01 = (FFPCTI01)obj;
+			JAXBElement<FFPCTI01> bodyEle = (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.ObjectFactory()).createBODY(cti01);
+			setMarshallerProperty(marshaller,handler);
+			marshaller.marshal(bodyEle, sw);
+			
+			//对报文进行进一步修正
+			String msg = sw.toString();
+			msg = msg.substring(msg.indexOf("?>")+2);
+			sb.append(msg);
+			sb.append("</ROOT>");
+		}
+		
+		return sb.toString();
+	}
+	
+	public static void setMarshallerProperty(Marshaller marshaller, ValidationEventHandler handler) throws Exception{
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);// 格式化输出
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");// 设置输出编码,默认为UTF-8
+		marshaller.setEventHandler(handler); 
+	}
+	
+}

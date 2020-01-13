@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.ss.FFPIDao_Cutoff">
+	
+	<!-- 系统表查询 -->
+	<select id="inquiry" resultType="com.forms.ffp.persistents.bean.ss.FFPSsCutoff">
+		SELECT * FROM TB_SS_CUTOFF A
+		WHERE A.CUTOFF_TYPE = #{cutoffType}
+	</select>
+	
+	<select id="inqueryAllCutoffType" resultType="com.forms.ffp.persistents.bean.ss.FFPSsCutoff">
+		SELECT *
+		FROM TB_SS_CUTOFF T
+	</select>
+	
+	<select id="update" resultType="com.forms.ffp.persistents.bean.ss.FFPSsCutoff">
+		SELECT * FROM TB_SS_CUTOFF A
+		WHERE A.CUTOFF_TYPE = #{cutoffType}
+	</select>
+	<update id="sUpdate">
+		UPDATE TB_SS_CUTOFF A
+		SET A.WORKDAY_START = #{workdayStart, jdbcType=TIME},
+			A.WORKDAY_END = #{workdayEnd, jdbcType=TIME},
+			A.SAT_START = #{satStart, jdbcType=TIME},
+			A.SAT_END = #{satEnd, jdbcType=TIME},
+			A.HOLIDAY_START = #{holidayStart, jdbcType=TIME},
+			A.HOLIDAY_END = #{holidayEnd, jdbcType=TIME}
+		WHERE A.CUTOFF_TYPE = #{cutoffType}
+	</update>
+</mapper>

@@ -1,0 +1,7 @@
+#Warning:This is the account to DB whose privilege is only 'select'.
+binPath=C:/Program Files/MySQL/MySQL Server 5.7/bin
+host=172.21.21.198
+databaseName=ffp
+username=zt
+password=123456
+schema=ffp

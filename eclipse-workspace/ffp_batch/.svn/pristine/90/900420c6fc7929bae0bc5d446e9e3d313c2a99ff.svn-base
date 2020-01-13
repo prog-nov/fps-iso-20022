@@ -1,0 +1,13 @@
+package com.forms.batch.job.unit.iclfps.payment.certificate;
+
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+
+public class FPSRevokeCertificateFileReader extends BatchBaseJob
+{
+	@Override
+	public boolean execute() throws BatchJobException 
+	{
+		return false;
+	}
+}

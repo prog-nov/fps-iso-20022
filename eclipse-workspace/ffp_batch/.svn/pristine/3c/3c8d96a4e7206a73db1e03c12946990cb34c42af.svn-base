@@ -1,0 +1,13 @@
+package com.forms.batch;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class MainAppTestServer
+{
+	public static void main(String[] args) throws Exception
+	{
+		ServerSocket ss = new ServerSocket(5209);
+	}
+}

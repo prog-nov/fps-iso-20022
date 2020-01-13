@@ -1,0 +1,12 @@
+package com.forms.ffp.persistents.service.m101;
+
+import com.forms.ffp.persistents.bean.m101.FFPJbM101;
+
+public interface FFPIDaoService_M101
+{
+	int sInsert(FFPJbM101 form) throws Exception;
+
+	public FFPJbM101 inquiryM101ByJnlNoOrMsgId(String jnlNo, String msgId);
+
+	int update(FFPJbM101 form);
+}

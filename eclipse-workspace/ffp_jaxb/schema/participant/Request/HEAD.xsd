@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+
+	<xs:element name="HEAD" type="HEAD"></xs:element>
+	<xs:complexType name="HEAD">
+		<xs:sequence>
+			<xs:element name="RequestID" type="Max2NumericText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="TransactionDate" type="DateTypeNoSplit" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="TransactionTime" type="TimeTypeNoSplit" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="RequestRefno" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="AccountingDate" type="DateTypeNoSplit" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="SystemRefno" type="RestrictedNZText_Max30" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element name="ResponseID" type="Max2NumericText" minOccurs="1" maxOccurs="1"></xs:element>
+			<xs:element name="MessageType" type="RestrictedNZText_Max8" minOccurs="1" maxOccurs="1"></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>
+	

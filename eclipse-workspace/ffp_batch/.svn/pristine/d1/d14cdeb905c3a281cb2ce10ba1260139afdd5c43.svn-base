@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch Job Configuration Files -->
+<!-- 
+	updateDate:2012-10-19
+	ModifiedBy:ZT
+	ModifiedReason:ADD JOB RISDQ1
+	updateVersion:12 month
+ -->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISDQ1</job-id>
+		<run-frequency>D</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>RISDQ1-COPY FILE 0100006D.dq1 TO WORKING AND BACKUP</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.FtpDownloadJob</processor>
+			<parameters>
+				<parameter>
+					<name>transfer-name</name>
+					<value>isb</value>
+				</parameter>
+				<file>
+					<remote-path>RIS/IN/</remote-path>
+					<remote-file-name>0100006D.dq1.gz.#{noSplitAcDate}1</remote-file-name>	
+					<local-path>RIS/IN/</local-path>
+					<local-file-name>0100006D.dq1.gz</local-file-name>
+					<backup-file-path>RIS/IN/</backup-file-path>
+					<keep-file-days>$__FILE_KEEP_DAYS</keep-file-days>
+				</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>RISDQ1-X FILE 0100006D.dq1 TO WORKING AND CHECK DATE</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.XGzipFileJob</processor>
+			<current-system>$__EXECUTE_SYSTEM</current-system>
+			<parameters>
+				<file>
+					<input-file-path>RIS/IN/</input-file-path>
+					<input-file-name>0100006D.dq1.gz</input-file-name>
+				</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>RISDQ1-CHECK FILE 0100006D.dq1</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.CheckFileJob</processor>
+			<check-list>
+				<check filepath="WORKING" file="RIS/IN/0100006D.dq1" encoding="GBK">
+					<class>com.forms.batch.job.ris.CheckFileUtil</class>
+					<method>checkFileDate</method>
+					<check-file-para>DataEndDate</check-file-para>
+					<check-file-para>BATCHACDATE</check-file-para>
+				</check>
+			</check-list>
+		</action>
+		
+		<action>
+			<action-name>RISDQ1-DELETE TABLE D_OVERSEAS_PAY_MSGDATA_TEMP</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.framework.job.common.sqlservice.SqlJobService</processor>
+			<parameters>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_PAY_MSGDATA_SUB_TEMP WHERE APPG_DATE=REPLACE('#{acDate}','-','')</parameter>
+				<parameter isSql = "Y">DELETE FROM #{schema}.D_OVERSEAS_PAY_MSGDATA_TEMP  WHERE APPG_DATE=REPLACE('#{acDate}','-','')</parameter>
+			</parameters>
+		</action>
+		<action>
+			<action-name>RISDQ1-READ 0100006D.dq1 IN D_OVERSEAS_PAY_MSGDATA_TEMP</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/risdq1/0100006D.dq1/ris-in-pipe-config.xml</config-file>
+			<input-file-path>RIS/IN/</input-file-path>
+			<output-file-path>RIS/OUT/</output-file-path>
+		</action>
+	</action-flow>
+</job-config>

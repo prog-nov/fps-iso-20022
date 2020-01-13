@@ -1,0 +1,189 @@
+package com.forms.batch.job.unit.transactioncheck;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpchk01.FFPCHK01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+
+public class BatchTransactionCheckProcessor extends BatchBaseJob {
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static String MESSAGE_TYPE = "FFPCHK01";
+	private static int BUFFER_SIZE = 1024;
+
+	public static void main(String[] args) throws BatchJobException {
+		// TODO Auto-generated method stub
+		BatchTransactionCheckProcessor btcp = new BatchTransactionCheckProcessor();
+		btcp.init();
+		btcp.execute();
+	}
+
+	public void init() throws BatchJobException {
+
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		String address = this.actionElement.element("parameters").element("parameter").elementText("address");
+		int port = Integer.parseInt(this.actionElement.element("parameters").element("parameter").elementText("port"));
+		try {
+			ArrayList<HashMap<String,String>> resList = getFileFromAgent(address, port);
+
+			return true;
+			 } catch (UnknownHostException e) {
+			 // TODO Auto-generated catch block
+			 this.batchLogger.error(e.getMessage());
+			 return false;
+			 } catch (IOException e) {
+			 // TODO Auto-generated catch block
+			 this.batchLogger.error(e.getMessage());
+			 return false;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return false;
+		}
+	}
+
+	// tcp socket
+	private ArrayList<HashMap<String,String>> getFileFromAgent(String address, int port) throws Exception {
+		Socket socket = null;
+		BufferedWriter bw = null;
+
+		String msg = generateReqMessage();
+
+		socket = new Socket(address, port);
+		bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), CHARACTER_ENCODING));
+		bw.write(msg);
+		bw.flush();
+		this.batchLogger.info(String.format("Send A Message, address = %s, port = %s", address, port));
+		socket.shutdownOutput();
+
+		if (bw != null) {
+			bw.close();
+		}
+
+		BufferedReader br = null;
+
+		socket = new Socket(address, port);
+		br = new BufferedReader(new InputStreamReader(socket.getInputStream(), CHARACTER_ENCODING));
+		StringBuffer resMsg = new StringBuffer();
+		char[] mesBuffer = new char[BUFFER_SIZE];
+		int count = 0;
+		while ((count = br.read(mesBuffer)) != -1) {
+			resMsg.append(new String(mesBuffer, 0, count));
+		}
+
+		if (br != null) {
+			br.close();
+		}
+
+		if (socket != null) {
+			socket.close();
+		}
+
+		return getFileContent(resMsg.toString());
+
+	}
+
+	// generate ffpchk01 request message
+	private String generateReqMessage() throws Exception {
+		String msg = "";
+
+		this.batchLogger.info("Begin To Generate FFPCHK01 Request Message");
+		ROOT root = new ROOT();
+		HEAD head = new HEAD();
+		FFPCHK01 body = new FFPCHK01();
+		Date date = new Date();
+		SimpleDateFormat ymd = new SimpleDateFormat("YYYYMMDD");
+		SimpleDateFormat hms = new SimpleDateFormat("hhmmss");
+		head.setRequestID(FFPConstants.MSG_CODE_FFP);
+		head.setTransactionDate(ymd.format(date));
+		head.setTransactionTime(hms.format(date));
+		head.setRequestRefno(FFPIDUtils.getRefno());
+		head.setResponseID(FFPConstants.MSG_CODE_AGENT);
+		head.setMessageType(MESSAGE_TYPE);
+
+		body.setTransactionType("F");
+		body.setTransactionDate(ymd.format(date));
+		body.setTransactionStartTime("000000");
+		body.setTransactionEndTime("240000");
+
+		root.setHEAD(head);
+		root.setBODY(body);
+
+		msg = FFPParticipantMessageConverter.packageRequestObject2Xml(root);
+		this.batchLogger.info("Finishing Generating FFPCHK01 Request Message");
+		System.out.println(msg);
+		return msg;
+
+	}
+
+	// get the file path from ffpchk01 response message
+	private ArrayList<HashMap<String,String>> getFileContent(String message) throws Exception {
+		com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = FFPParticipantMessageConverter
+				.parseXml2ReponseObject(message);
+		com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01 body = (com.forms.ffp.adaptor.jaxb.participant.response.ffpchk01.FFPCHK01) root
+				.getBODY();
+		
+		String filePath = body.getFilePath() + body.getFileName();
+		int dataRecordNum = Integer.parseInt(body.getRecordCount());
+		ArrayList<HashMap<String,String>> resList = readLineFromXMLFile(filePath, dataRecordNum);
+		
+		return resList;
+	}
+
+	private ArrayList<HashMap<String,String>> readLineFromXMLFile(String filePath, int dataRecordNum) throws Exception {
+		this.batchLogger.info(String.format("Start To Read File: %s", filePath));
+		BufferedReader br = null;
+		ArrayList<HashMap<String,String>> resList = new ArrayList<>();
+
+		br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), CHARACTER_ENCODING));
+		String content = "";
+		String[] titleArr = null;
+		int lineCount = 0;
+		while ((content = br.readLine()) != null) {
+			lineCount++;
+			HashMap<String, String> checkDateMap = new HashMap<>();
+			if(lineCount == 1){
+				titleArr = content.split("\t");
+			}else if(lineCount > 1 && titleArr != null){
+				String[] dataArr = (content+"\tend").split("\t");
+				for(int i=0;i<titleArr.length;i++){
+					checkDateMap.put(titleArr[i], dataArr[i]);
+				}
+				resList.add(checkDateMap);
+			}
+		}
+		if(lineCount > dataRecordNum){
+			throw new Exception("The Count Of Data Is Out Of Index!");
+		}
+		
+		for(int i=0;i<resList.size();i++){
+			System.out.println(resList.get(i));
+		}
+		
+		this.batchLogger.info(String.format("Finish Reading File: %s", filePath));
+		
+		return resList;
+	}
+
+}

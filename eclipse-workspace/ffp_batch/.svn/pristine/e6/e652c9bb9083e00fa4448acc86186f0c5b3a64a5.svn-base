@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.RECV_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+       								WHERE BANK_NO = CAST(LEFT(RTRIM(RECV_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+       								FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+       							,RECV_BKNM)
+			WHERE A.RECV_BKNO IS NOT NULL 
+				AND RTRIM(A.RECV_BKNO) <> '' 
+				AND ((A.RECV_BKNM IS NOT NULL AND LEFT(A.RECV_BKNM,1) <> '/' ) OR A.RECV_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.SEND_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+	       							WHERE BANK_NO = CAST(LEFT(RTRIM(SEND_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+									FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+								,SEND_BKNM)
+			WHERE SEND_BKNO IS NOT NULL 
+				AND RTRIM(SEND_BKNO) <> ''
+				AND ((SEND_BKNM IS NOT NULL AND LEFT(SEND_BKNM,1) <> '/' ) OR SEND_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.ORG_RECV_BKNM = COALESCE(
+									CAST(
+										(SELECT BANK_NAME 
+										FROM #{schema}.B_BANK_OVERSEAS 
+	       								WHERE BANK_NO = CAST(LEFT(RTRIM(ORG_RECV_BANK) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+	       								FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+	       							,ORG_RECV_BKNM)
+			WHERE ORG_RECV_BANK IS NOT NULL 
+				AND RTRIM(ORG_RECV_BANK) <> '' 
+				AND ((ORG_RECV_BKNM IS NOT NULL AND LEFT(ORG_RECV_BKNM,1) <> '/' ) OR ORG_RECV_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.ORG_SEND_BKNM = COALESCE(
+									CAST(
+										(SELECT BANK_NAME 
+										FROM #{schema}.B_BANK_OVERSEAS 
+										WHERE BANK_NO = CAST(LEFT(RTRIM(ORG_SEND_BANK) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+										FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+									,ORG_SEND_BKNM)
+			WHERE ORG_SEND_BANK IS NOT NULL 
+				AND RTRIM(ORG_SEND_BANK) <> ''  
+				AND ((ORG_SEND_BKNM IS NOT NULL AND LEFT(ORG_SEND_BKNM,1) <> '/' ) OR ORG_SEND_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.REMIT_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									from #{schema}.B_BANK_OVERSEAS 
+       								WHERE BANK_NO = CAST(LEFT(RTRIM(REMIT_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+									FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+								,REMIT_BKNM)
+			WHERE REMIT_BKNO IS NOT NULL 
+				AND RTRIM(REMIT_BKNO) <> ''  
+				AND ((REMIT_BKNM IS NOT NULL AND LEFT(REMIT_BKNM,1) <> '/' ) OR REMIT_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.AG_SEND_BKNM = COALESCE(
+									CAST(
+										(SELECT BANK_NAME 
+										FROM #{schema}.B_BANK_OVERSEAS 
+										WHERE BANK_NO = CAST(LEFT(RTRIM(AG_SEND_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+										FETCH FIRST ROWS ONLY) AS VARCHAR(150)),AG_SEND_BKNM)
+			WHERE AG_SEND_BKNO IS NOT NULL 
+				AND RTRIM(AG_SEND_BKNO) <> ''   
+				AND ((AG_SEND_BKNM IS NOT NULL AND LEFT(AG_SEND_BKNM,1) <> '/' ) OR AG_SEND_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.AG_RECV_BKNM = COALESCE(
+									CAST(
+										(SELECT BANK_NAME 
+										FROM #{schema}.B_BANK_OVERSEAS 
+										WHERE BANK_NO = CAST(LEFT(RTRIM(AG_RECV_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+										FETCH FIRST ROWS ONLY) AS VARCHAR(150)),AG_RECV_BKNM)
+			WHERE AG_RECV_BKNO IS NOT NULL 
+				AND RTRIM(AG_RECV_BKNO) <> ''  
+				AND ((AG_RECV_BKNM IS NOT NULL AND LEFT(AG_RECV_BKNM,1) <> '/' ) OR AG_RECV_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.LIQUIDATE_BKNM = COALESCE(
+									CAST(
+										(SELECT BANK_NAME 
+										FROM #{schema}.B_BANK_OVERSEAS 
+										WHERE BANK_NO = CAST(LEFT(RTRIM(LIQUI_BIC) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+										FETCH FIRST ROWS ONLY) AS VARCHAR(150)),LIQUIDATE_BKNM)
+			WHERE LIQUI_BIC IS NOT NULL 
+				AND RTRIM(LIQUI_BIC) <> ''  
+				AND ((LIQUIDATE_BKNM IS NOT NULL AND LEFT(LIQUIDATE_BKNM,1) <> '/' ) OR LIQUIDATE_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.MID_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+									WHERE BANK_NO = CAST(LEFT(RTRIM(MID_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+									FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+								,MID_BKNM)
+			WHERE MID_BKNO IS NOT NULL 
+				AND RTRIM(MID_BKNO) <> ''  
+				AND ((MID_BKNM IS NOT NULL AND LEFT(MID_BKNM,1) <> '/' ) OR MID_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.ACT_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+									WHERE BANK_NO = CAST(LEFT(RTRIM(ACT_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+									FETCH FIRST ROWS ONLY) AS VARCHAR(150)),ACT_BKNM)
+			WHERE ACT_BKNO IS NOT NULL 
+				AND RTRIM(ACT_BKNO) <> ''  
+				AND ((ACT_BKNM IS NOT NULL AND LEFT(ACT_BKNM,1) <> '/' ) OR ACT_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.GATHERING_BKNM = COALESCE(
+								CAST(
+									(SELECT BANK_NAME 
+									FROM #{schema}.B_BANK_OVERSEAS 
+									WHERE BANK_NO = CAST(LEFT(RTRIM(GATHERING_BKNO) || REPEAT('X', 11),11) AS VARCHAR(11)) 
+									FETCH FIRST ROWS ONLY) AS VARCHAR(150))
+								,GATHERING_BKNM)
+			WHERE GATHERING_BKNO IS NOT NULL 
+				AND RTRIM(GATHERING_BKNO) <> '' 
+				AND ((GATHERING_BKNM IS NOT NULL AND LEFT(GATHERING_BKNM,1) <> '/' ) OR GATHERING_BKNM IS NULL)
+			]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+			UPDATE #{schema}.D_OVERSEAS_PAY_OUTGO_TEMP A
+			SET A.BENEFICIARY = RIGHT(BENEFICIARY,LENGTH(BENEFICIARY) - LENGTH(RTRIM(BENEFIT_ACT)) -1)
+			WHERE LEFT(BENEFICIARY,1) = '/'
+			]]>
+		</sql>
+	</transaction>
+
+</job-sql-configs>

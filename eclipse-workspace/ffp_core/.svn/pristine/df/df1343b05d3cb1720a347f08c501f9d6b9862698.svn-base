@@ -1,0 +1,6 @@
+package com.forms.ffp.core.msg.participant;
+
+public class FFPMsgBaseParticipantMessage
+{
+
+}

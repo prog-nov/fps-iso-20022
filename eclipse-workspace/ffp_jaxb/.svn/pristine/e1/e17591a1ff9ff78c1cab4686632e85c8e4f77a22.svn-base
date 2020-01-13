@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPADRI1"></xs:element>
+	<xs:complexType name="FFPADRI1">
+		<xs:sequence>
+			<xs:element name="AdrReqId" type="RestrictedFINZText_Max35"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>dbtest</databaseName>
+	<flush-rows>1000</flush-rows>
+	<field-definition>
+		<field name="cbsAc"           data-type="StringType" 	/>
+        <field name="hldAc"           data-type="StringType" 	/>
+        <field name="convFlag"        data-type="StringType" 	const-value = 'Y'/>
+        <field name="acDate"          data-type="DateType" 	/>
+        <field name="bankNo"          data-type="StringType" 	/>
+        <field name="import_amount1"  data-type="StringType" 	/>
+        <field name="import_auth_1"   data-type="StringType" 	/>
+        <field name="import_amount2"  data-type="StringType" 	/>
+        <field name="import_auth_2"   data-type="StringType" 	/>
+        <field name="import_amount3"  data-type="StringType" 	/>
+        <field name="import_auth_3"   data-type="StringType" 	/>
+        <field name="import_amount4"  data-type="StringType" 	/>
+        <field name="import_auth_4"   data-type="StringType" 	/>
+        <field name="import_amount5"  data-type="StringType" 	/>
+        <field name="import_auth_5"   data-type="StringType" 	/>
+        <field name="export_amount1"  data-type="StringType" 	/>
+        <field name="export_auth_1"   data-type="StringType" 	/>
+        <field name="export_amount2"  data-type="StringType" 	/>
+        <field name="export_auth_2"   data-type="StringType" 	/>
+        <field name="export_amount3"  data-type="StringType" 	/>
+        <field name="export_auth_3"   data-type="StringType" 	/>
+        <field name="export_amount4"  data-type="StringType" 	/>
+        <field name="export_auth_4"   data-type="StringType" 	/>
+        <field name="export_amount5"  data-type="StringType" 	/>
+        <field name="export_auth_5"   data-type="StringType" 	/>
+        <field name="guarantee_amount1"  data-type="StringType" 	/>
+        <field name="guarantee_auth_1"   data-type="StringType" 	/>
+        <field name="guarantee_amount2"  data-type="StringType" 	/>
+        <field name="guarantee_auth_2"   data-type="StringType" 	/>
+        <field name="guarantee_amount3"  data-type="StringType" 	/>
+        <field name="guarantee_auth_3"   data-type="StringType" 	/>
+        <field name="guarantee_amount4"  data-type="StringType" 	/>
+        <field name="guarantee_auth_4"   data-type="StringType" 	/>
+        <field name="guarantee_amount5"  data-type="StringType" 	/>
+        <field name="guarantee_auth_5"   data-type="StringType" 	/>
+        <field name="repayment_auth"     data-type="StringType" 	/>
+
+	</field-definition>
+	
+	<update-sql>
+		       INSERT INTO #{schema}.TB_BH_TFI_BILLSAC
+				(
+				CBS_AC,
+				HLD_AC,
+				AC_DATE,
+				CONV_FLAG,
+				BANK_CODE,
+				IMPORT_AMOUNT1,
+				IMPORT_AUTH_1,
+				IMPORT_AMOUNT2,
+				IMPORT_AUTH_2,
+				IMPORT_AMOUNT3,
+				IMPORT_AUTH_3,
+				IMPORT_AMOUNT4,
+				IMPORT_AUTH_4,
+				IMPORT_AMOUNT5,
+				IMPORT_AUTH_5,
+				EXPORT_AMOUNT1,
+				EXPORT_AUTH_1,
+				EXPORT_AMOUNT2,
+				EXPORT_AUTH_2,
+				EXPORT_AMOUNT3,
+				EXPORT_AUTH_3,
+				EXPORT_AMOUNT4,
+				EXPORT_AUTH_4,
+				EXPORT_AMOUNT5,
+				EXPORT_AUTH_5,
+				GUARANTEE_AMOUNT1,
+				GUARANTEE_AUTH_1,
+				GUARANTEE_AMOUNT2,
+				GUARANTEE_AUTH_2,
+				GUARANTEE_AMOUNT3,
+				GUARANTEE_AUTH_3,
+				GUARANTEE_AMOUNT4,
+				GUARANTEE_AUTH_4,
+				GUARANTEE_AMOUNT5,
+				GUARANTEE_AUTH_5,
+				REPAYMENT_AUTH
+				)
+			VALUES 
+				(
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?,
+				?
+				)
+
+	</update-sql> 
+	<sql-parameters>    
+		<sql-parameter index="1"   field="cbsAc"              />       
+		<sql-parameter index="2"   field="hldAc"              />   
+		<sql-parameter index="3"   field="acDate"              />   
+		<sql-parameter index="4"   field="convFlag"              />   
+		<sql-parameter index="5"   field="bankNo"              />   
+		<sql-parameter index="6"   field="import_amount1"     />    
+		<sql-parameter index="7"   field="import_auth_1"      />      
+		<sql-parameter index="8"   field="import_amount2"     />        
+		<sql-parameter index="9"   field="import_auth_2"      />       
+		<sql-parameter index="10"   field="import_amount3"     />    
+		<sql-parameter index="11"   field="import_auth_3"      />
+		<sql-parameter index="12"   field="import_amount4"     /> 
+		<sql-parameter index="13"  field="import_auth_4"      />    
+		<sql-parameter index="14"  field="import_amount5"     />    
+		<sql-parameter index="15"  field="import_auth_5"      /> 
+		<sql-parameter index="16"  field="export_amount1"     />    
+		<sql-parameter index="17"  field="export_auth_1"      />  
+		<sql-parameter index="18"  field="export_amount2"     />
+		<sql-parameter index="19"  field="export_auth_2"      />
+		<sql-parameter index="20"  field="export_amount3"     />
+		<sql-parameter index="21"  field="export_auth_3"      />
+		<sql-parameter index="22"  field="export_amount4"     />
+		<sql-parameter index="23"  field="export_auth_4"      />
+		<sql-parameter index="24"  field="export_amount5"     />
+		<sql-parameter index="25"  field="export_auth_5"      />
+		<sql-parameter index="26"  field="guarantee_amount1"  />
+		<sql-parameter index="27"  field="guarantee_auth_1"   />
+		<sql-parameter index="28"  field="guarantee_amount2"  />
+		<sql-parameter index="29"  field="guarantee_auth_2"   />
+		<sql-parameter index="30"  field="guarantee_amount3"  />
+		<sql-parameter index="31"  field="guarantee_auth_3"   />
+		<sql-parameter index="32"  field="guarantee_amount4"  />
+		<sql-parameter index="33"  field="guarantee_auth_4"   />
+		<sql-parameter index="34"  field="guarantee_amount5"  />
+		<sql-parameter index="35"  field="guarantee_auth_5"   />
+		<sql-parameter index="36"  field="repayment_auth"     />
+	</sql-parameters>
+</database-output-config>

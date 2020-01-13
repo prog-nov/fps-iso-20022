@@ -1,0 +1,36 @@
+package com.forms.batch.job.unit.participant.message.ffpcto01;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.participant.response.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.msg.participant.FFPMsgBaseResponseParticipantMessage;
+
+public class FFPBatch_RES_CTO01 extends FFPMsgBaseResponseParticipantMessage{
+
+	private FFPCTO01 ffpcto01 = null;
+	
+	public FFPBatch_RES_CTO01(String reqRefNo, String resRefNo, FFPCTO01 ffpcto01) {
+		super();
+		this.msgType = FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTO01;
+		this.reqRefNo = reqRefNo;
+		this.requestID = FFPConstants.MSG_CODE_AGENT;
+		this.responseID = FFPConstants.MSG_CODE_FFP;
+		this.resRefNo = resRefNo;
+		this.ffpcto01 = ffpcto01;
+	}
+
+	@Override
+	public BODY marshalMsgResBody() {
+		// TODO Auto-generated method stub
+		return ffpcto01;
+	}
+
+	@Override
+	public void unmarshalResponseMsg(String ip_responseMsg) {
+		// TODO Auto-generated method stub
+		super.unmarshalResponseMsg(ip_responseMsg);
+	}
+	
+	
+}

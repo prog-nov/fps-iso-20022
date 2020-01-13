@@ -1,0 +1,61 @@
+00002105<?xml version="1.0" encoding="utf-8"?>
+<ROOT>
+	<HEAD>
+		<RequestID>30</RequestID>
+		<TransactionDate>20180206</TransactionDate>
+		<TransactionTime>140203</TransactionTime>
+		<RequestRefno>AGENTMSG000001</RequestRefno>
+		<AccountingDate>20180206</AccountingDate>
+		<SystemRefno></SystemRefno>
+		<ResponseID>29</ResponseID>
+		<MessageType>FFPCTO01</MessageType>
+	</HEAD>
+	<BODY>
+		<SrcRefNm>000001</SrcRefNm>
+		<SrvcMode>C1</SrvcMode>
+		<PymtCatPrps>CXPSNL</PymtCatPrps>
+		<AcctVerf>PERFORM_PYE_VRF</AcctVerf>
+		<SettlDate>20180206</SettlDate>
+		<SettlAmt>10000.00</SettlAmt>
+		<SettlCcy>HKD</SettlCcy>
+		<InstrAmt>10000.00</InstrAmt>
+		<InstrCcy>HKD</InstrCcy>
+		<ChrgrsAgent>
+			<BICCODE>XXXXXXXXXXX</BICCODE>
+			<ID>345</ID>
+		</ChrgrsAgent>
+		<ChrgrsAmt>1.00</ChrgrsAmt>
+		<ChrgrsCcy>HKD</ChrgrsCcy>
+		<DbtrNm>DEBIT NAME</DbtrNm>
+		<DbtrAcTp>MOBN</DbtrAcTp>
+		<DbtrAcNo>+86-15989403978</DbtrAcNo>
+		<DbtrOrgIdAnyBIC></DbtrOrgIdAnyBIC>
+		<DbtrOrgIdOthrId></DbtrOrgIdOthrId>
+		<DbtrOrgIdOthrIdSchmeNm></DbtrOrgIdOthrIdSchmeNm>
+		<DbtrOrgIdOthrIssr></DbtrOrgIdOthrIssr>
+		<DbtrPrvtIdOthrId>1234567890</DbtrPrvtIdOthrId>
+		<DbtrPrvtIdOthrIdSchmeNm>CUST</DbtrPrvtIdOthrIdSchmeNm>
+		<DbtrPrvtIdOthrIssr>TEST</DbtrPrvtIdOthrIssr>
+		<DbtrContPhone>85265555275</DbtrContPhone>
+		<DbtrContEmailAddr>DEBIT@TEST.COM</DbtrContEmailAddr>
+		<CdtrAgent>
+			<BICCODE></BICCODE>
+			<ID>012</ID>
+		</CdtrAgent>
+		<CdtrNm>CREDIT NAME</CdtrNm>
+		<CdtrAcTp>BBAN</CdtrAcTp>
+		<CdtrAcNo>28880623000022</CdtrAcNo>
+		<CdtrOrgIdAnyBIC>XXXXXXXXXX</CdtrOrgIdAnyBIC>
+		<CdtrOrgIdOthrId>123456789</CdtrOrgIdOthrId>
+		<CdtrOrgIdOthrIdSchmeNm>CUST</CdtrOrgIdOthrIdSchmeNm>
+		<CdtrOrgIdOthrIssr>TEST</CdtrOrgIdOthrIssr>
+		<CdtrPrvtIdOthrId></CdtrPrvtIdOthrId>
+		<CdtrPrvtIdOthrIdSchmeNm></CdtrPrvtIdOthrIdSchmeNm>
+		<CdtrPrvtIdOthrIssr></CdtrPrvtIdOthrIssr>
+		<CdtrContPhone>85265555276</CdtrContPhone>
+		<CdtrContEmailAddr>CREDIT@TEST.COM</CdtrContEmailAddr>
+		<PytPurpType>OTHER</PytPurpType>
+		<PytPurp>SPECIFIED TEST</PytPurp>
+		<RemInfo>TEST MSG</RemInfo>
+	</BODY>
+</ROOT>

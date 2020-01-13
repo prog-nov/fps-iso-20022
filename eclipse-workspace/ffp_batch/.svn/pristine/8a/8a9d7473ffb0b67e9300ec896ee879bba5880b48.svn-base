@@ -1,0 +1,403 @@
+package com.forms.batch.job.unit.iclfps.payment.directdebit;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.xml.bind.JAXBElement;
+
+import com.forms.batch.util.FileUtils;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.BusinessApplicationHeaderV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.PaymentTransaction801;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpddo01.FFPDDO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPStatus;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.framework.util.ResourceUtil;
+
+public class DirectDebitOutwardBatchResponseFileProcessor extends BatchBaseJob {
+	private static String ADMI_002_MESSAGE_IDENTIFIER = "admi.002.001.01";
+	private static String PACS_002_MESSAGE_IDENTIFIER = "pacs.002.001.08";
+	private static Connection conn = null;
+	private static String SQL_QUERY_TB_TX_JNL = "SELECT JNL_NO FROM tb_tx_jnl WHERE TRANSACTION_ID  = ? AND END_TO_END_ID = ? ";
+	private static String SQL_UPDATE_TB_TX_JNL = "UPDATE tb_tx_jnl SET TX_STAT = ?, LAST_UPDATE_TS = ? WHERE TRANSACTION_ID  = ? AND END_TO_END_ID = ? ";
+	private static String SQL_QUERY_TB_TX_JNLACTION = "SELECT * FROM tb_tx_jnlaction WHERE JNL_NO = ? ORDER BY SEQ_NO DESC LIMIT 1 ";
+	private static String SQL_INSERT_TB_TX_JNLACTION = "INSERT INTO tb_tx_jnlaction(JNL_NO, SEQ_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static String SQL_UPDATE_TB_TX_P200DAT = "UPDATE tb_tx_p200dat SET STATUS = ? , REJ_CODE = ? , REJ_REASON = ? WHERE JNL_NO = ? ";
+	private static String SQL_QUERY_TB_TX_JNL_JOIN_JNLACT_JOIN_P200DAT = "SELECT " + "tb_tx_jnl.JNL_NO,"
+			+ "tb_tx_jnlaction.MSG_ID," + "tb_tx_p200dat.SRC_REF_NM," + "tb_tx_p200dat.`STATUS`,"
+			+ "tb_tx_p200dat.REJ_CODE," + "tb_tx_p200dat.REJ_REASON" + " FROM tb_tx_jnl "
+			+ "INNER JOIN tb_tx_jnlaction ON tb_tx_jnl.JNL_NO = tb_tx_jnlaction.JNL_NO "
+			+ "INNER JOIN tb_tx_p200dat ON tb_tx_jnl.JNL_NO = tb_tx_p200dat.JNL_NO "
+			+ "WHERE tb_tx_jnl.JNL_NO = ? AND tb_tx_jnlaction.SEQ_NO = 1";
+	private static String CHARACTER_ENCODING = "UTF-8";
+	private static String DIRECT_DEBIT_BATCH = "DirectDebitInwardBatchResponse";
+	private static String MESSAGE_TYPE = "FFPDBO01";
+	private static Properties DDBprop = null;
+
+	public static void main(String[] args) {
+		DirectDebitOutwardBatchResponseFileProcessor ddbrfp = new DirectDebitOutwardBatchResponseFileProcessor();
+		try {
+			ddbrfp.execute();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void init() throws BatchJobException {
+		
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		try {
+			DDBprop = (Properties) ResourceUtil.getInstance().getResource(DIRECT_DEBIT_BATCH + "Property",
+					ResourceUtil.RESOURCE_PROPERTIES_TYPE);
+			this.batchLogger.info(String.format("Read Properties From file %s.properties", DIRECT_DEBIT_BATCH));
+
+			String xmlPath = DDBprop.getProperty("xmlPath");
+			String address = DDBprop.getProperty("address");
+			int port = Integer.valueOf(DDBprop.getProperty("port"));
+
+			ArrayList<String> xmlContentArr = parseXmlFile2Obj(xmlPath);
+
+			ArrayList<String> resultList = new ArrayList<>();// 记录成功写进数据库的报文
+			conn = ConnectionManager.getInstance().getConnection();
+			this.batchLogger.info(String.format("Connect To Databse"));
+
+			for (int i = 0; i < xmlContentArr.size(); i++) {
+
+				FpsMessageEnvelope fpsMsg = FFPHkiclMessageConverter.parseObject(xmlContentArr.get(i));
+				List<JAXBElement<?>> jaxbElems = fpsMsg.getFpsPylds().getBizData().get(0).getContent();
+				BusinessApplicationHeaderV01 header = (BusinessApplicationHeaderV01) jaxbElems.get(0).getValue();
+				Object document = jaxbElems.get(1).getValue();
+				if (ADMI_002_MESSAGE_IDENTIFIER.equals(header.getMsgDefIdr().toLowerCase())) {
+
+					admi002Handler(document);
+
+				} else if (PACS_002_MESSAGE_IDENTIFIER.equals(header.getMsgDefIdr().toLowerCase())) {
+					String jnlNo = pacs002Handler(document);
+					if (jnlNo != null) {
+						resultList.add(jnlNo);
+					}
+				}
+
+			}
+			if (resultList != null) {
+				for (int i = 0; i < resultList.size(); i++) {
+					String resRefno = FFPIDUtils.getRefno();
+					String message = packageResponseMessage(resultList.get(i), resRefno);
+					if (sendResponseMessage(message, address, port)) {
+						updateSentMessageInfo(resultList.get(i), resRefno);
+					} else {
+						this.batchLogger.error(String.format("Message Send Error, jnlNo = %s", resultList.get(i)));
+					}
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+					this.batchLogger.error(String.format("Close The Databse"));
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					this.batchLogger.error(e.getMessage());
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private ArrayList<String> parseXmlFile2Obj(String dirPath) {
+		ArrayList<String> xmlContentArr = new ArrayList<>();
+
+		ArrayList<String> resFiles = FileUtils.getDirectoryFile(dirPath);
+		for (int i = 0; i < resFiles.size(); i++) {
+			String absolutePath = resFiles.get(i);
+			String[] realPathArr = absolutePath.split("\\\\");
+			if (realPathArr[realPathArr.length - 1].matches("^FPS(ERRI|PDDR)[0-9]{19}\\.xml$")) {
+				String content = FileUtils.readLineFromFile(absolutePath);
+				xmlContentArr.add(content);
+			}
+		}
+
+		return xmlContentArr;
+	}
+
+	private void admi002Handler(Object document) {
+		this.batchLogger.info("An Admi.002 Message Is Found");
+	}
+
+	private String pacs002Handler(Object document) {
+		this.batchLogger.info("A Pacs.002 Message Is Found");
+		PaymentTransaction801 pt801 = ((com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document) document)
+				.getFIToFIPmtStsRpt().getTxInfAndSts().get(0);
+		String orgnlEndToEndId = pt801.getOrgnlEndToEndId();
+		String orgnlTxId = pt801.getOrgnlTxId();
+		String txSts = pt801.getTxSts().value();
+		Timestamp lastUpdateTs = new Timestamp(new Date().getTime());
+		String jnlNo = null;
+
+		try {
+			conn.setAutoCommit(false);
+			this.batchLogger.info("Database Transaction Open");
+			// query Jnl from TB_TX_JNL
+			this.batchLogger.info(String.format("Query JNL_NO From tb_tx_jnl, orgnlTxId = %s, orgnlEndToEndId = %s", orgnlTxId,
+					orgnlEndToEndId));
+			ArrayList<Object> Jnl_query_list = new ArrayList<>();
+			Jnl_query_list.add(orgnlTxId);
+			Jnl_query_list.add(orgnlEndToEndId);
+			Map<String, Object> queryMap = EntityManager.queryMap(conn, SQL_QUERY_TB_TX_JNL, Jnl_query_list.toArray());
+			if (queryMap == null) {
+				throw new Exception(
+						String.format("Data Form Database Is No found, orgnlTxId = %s, orgnlEndToEndId = %s", orgnlTxId,
+								orgnlEndToEndId));
+
+			} else {
+				jnlNo = (String) (queryMap.get("JNL_NO"));
+
+				// update TB_TX_JNL
+				this.batchLogger.info(String.format("Update tb_tx_jnl, JNL_NO = %s", jnlNo));
+				ArrayList<Object> Jnl_update_list = new ArrayList<>();
+				if (("ACSC").equals(txSts) || ("RJCT").equals(txSts)) {
+					Jnl_update_list.add(FFPConstantsTxJnl.TX_STAT_COMPL);
+				} else {
+					String msgId = ((com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document) document)
+							.getFIToFIPmtStsRpt().getGrpHdr().getMsgId();
+					throw new Exception(String.format(
+							"Message Format Error : The Value Of TxSts Is No Found, msgId = %s, orgnlTxId = %s, orgnlEndToEndId = %s",
+							msgId, orgnlTxId, orgnlEndToEndId));
+				}
+				Jnl_update_list.add(lastUpdateTs);
+				Jnl_update_list.add(orgnlTxId);
+				Jnl_update_list.add(orgnlEndToEndId);
+				EntityManager.update(conn, SQL_UPDATE_TB_TX_JNL, Jnl_update_list.toArray());
+
+				// update TB_TX_P200DAT
+				this.batchLogger.info(String.format("Update tb_tx_p200dat, JNL_NO = %s", jnlNo));
+				ArrayList<Object> p200dat_update_list = new ArrayList<>();
+				if (("ACSC").equals(txSts)) {
+					p200dat_update_list.add(FFPStatus.P100_STATUS.SUCESS.getCode());
+					p200dat_update_list.add("");
+				} else if (("RJCT").equals(txSts)) {
+					p200dat_update_list.add(FFPStatus.P100_STATUS.REJECT.getCode());
+					p200dat_update_list.add(pt801.getStsRsnInf().getRsn().getPrtry());
+				} else {
+					String msgId = ((com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document) document)
+							.getFIToFIPmtStsRpt().getGrpHdr().getMsgId();
+					throw new Exception(String.format(
+							"Message Format Error : The Value Of TxSts Is Wrong, msgId = %s, orgnlTxId = %s, orgnlEndToEndId = %s",
+							msgId, orgnlTxId, orgnlEndToEndId));
+				}
+				StringBuilder addtlInfStr = new StringBuilder();
+				addtlInfStr.append("");
+				if (pt801.getStsRsnInf() != null && pt801.getStsRsnInf().getAddtlInf() != null) {
+					List<String> addtlInfArr = pt801.getStsRsnInf().getAddtlInf();
+					for (int i = 0; i < addtlInfArr.size(); i++) {
+						addtlInfStr.append(addtlInfArr.get(i));
+					}
+				}
+				p200dat_update_list.add(addtlInfStr.toString());
+
+				p200dat_update_list.add(jnlNo);
+				EntityManager.update(conn, SQL_UPDATE_TB_TX_P200DAT, p200dat_update_list.toArray());
+
+			}
+			conn.commit();
+			this.batchLogger.info("Database Transaction Commit");
+			return jnlNo;
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e1.getMessage());
+			}
+			return null;
+		}
+
+	}
+
+	private String packageResponseMessage(String jnlNo, String resRefno) {
+		Map<String, Object> queryContentMap = querySentMessageContent(jnlNo);
+
+		String message = null;
+		try {
+			this.batchLogger.info("Begin To Package FFPDBI01 Message");
+			ROOT root = new ROOT();
+			HEAD head = new HEAD();
+			FFPDDO01 body = new FFPDDO01();
+			Date date = new Date();
+			SimpleDateFormat ymd = new SimpleDateFormat("YYYYMMDD");
+			SimpleDateFormat hms = new SimpleDateFormat("hhmmss");
+			head.setRequestID(FFPConstants.MSG_CODE_FFP);
+			head.setTransactionDate(ymd.format(date));
+			head.setTransactionTime(hms.format(date));
+			head.setRequestRefno((String) queryContentMap.get("MSG_ID"));
+			head.setResponseID(FFPConstants.MSG_CODE_AGENT);
+			head.setMessageType(MESSAGE_TYPE);
+			head.setResponseRefno(resRefno);
+			head.setResponseStatus("E");
+			head.setFinalNode("2");
+
+			body.setSrcRefNm((String) queryContentMap.get("SRC_REF_NM"));
+			body.setFFPTransactionId((String) queryContentMap.get("TRANSACTION_ID"));
+			body.setRsltCd((String) queryContentMap.get("STATUS"));
+
+			if (((String) queryContentMap.get("STATUS")).equals("S")) {
+
+			} else if (((String) queryContentMap.get("STATUS")).equals("R")) {
+				body.setRejCd((String) queryContentMap.get("REJ_CODE"));
+				body.setRejMsg((String) queryContentMap.get("REJ_REASON"));
+			} else {
+
+				throw new Exception("Field(STATUS) Format is Error");
+
+			}
+
+			root.setHEAD(head);
+			root.setBODY(body);
+
+			message = FFPParticipantMessageConverter.packageReponseObject2Xml(root);
+			this.batchLogger.info("Finishing Packaging FFPDBI01 Message");
+			return message;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return null;
+		}
+	}
+
+	private boolean sendResponseMessage(String msg, String address, int port) {
+		Socket socket = null;
+		BufferedWriter bw = null;
+		try {
+			if (msg == null) {
+				throw new Exception("Message Is Null");
+			}
+			socket = new Socket(address, port);
+			bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), CHARACTER_ENCODING));
+			bw.write(msg);
+			bw.flush();
+			this.batchLogger.info(String.format("Send A Message, address = %s, port = %s", address, port));
+			socket.shutdownOutput();
+			return true;
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+			return false;
+		} finally {
+			try {
+				if (bw != null) {
+					bw.close();
+				}
+				if (socket != null) {
+					socket.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e.getMessage());
+				return false;
+			}
+		}
+	}
+
+	private Map<String, Object> querySentMessageContent(String jnlNo) {
+		// query from TB_TX_JNL_JOIN_P200DAT
+		this.batchLogger.info(String.format("Query From tb_tx_jnl_join_p200dat, jnlNo = %s", jnlNo));
+		Map<String, Object> queryJNLJOINJNLACTMap = new HashMap<>();
+		try {
+			ArrayList<Object> jnl_join_jnlaction_query_list = new ArrayList<>();
+			jnl_join_jnlaction_query_list.add(jnlNo);
+			queryJNLJOINJNLACTMap = EntityManager.queryMap(conn, SQL_QUERY_TB_TX_JNL_JOIN_JNLACT_JOIN_P200DAT,
+					jnl_join_jnlaction_query_list.toArray());
+			if (queryJNLJOINJNLACTMap == null) {
+				throw new Exception(String.format(
+						"Data No Found, Database = tb_tx_jnljnlaction INNER JOIN tb_tx_p200dat, Field(JNL_NO = %s)",
+						jnlNo));
+			}
+			return queryJNLJOINJNLACTMap;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			this.batchLogger.error(e.getMessage());
+			return null;
+		}
+
+	}
+
+	private void updateSentMessageInfo(String jnlNo, String resRefno) {
+		try {
+			conn.setAutoCommit(false);
+			this.batchLogger.info("Database Transaction Open");
+			Timestamp lastUpdateTs = new Timestamp(new Date().getTime());
+
+			// query * from TB_TX_JNLACTION
+			this.batchLogger.info(String.format("Query From tb_tx_jnlaction, JNL_NO = %s", jnlNo));
+			ArrayList<Object> jnlaction_query_list = new ArrayList<>();
+			jnlaction_query_list.add(jnlNo);
+			Map<String, Object> queryJNLACTMap = EntityManager.queryMap(conn, SQL_QUERY_TB_TX_JNLACTION,
+					jnlaction_query_list.toArray());
+
+			if (queryJNLACTMap == null) {
+				throw new Exception(
+						String.format("Data No Found, Database = TB_TX_JNLJNLACTION, Field(JNL_NO = %s)", jnlNo));
+			}
+
+			// insert TB_TX_JNLACTION
+			this.batchLogger.info(String.format("INSERT INTO tb_tx_jnlaction, JNL_NO = %s", jnlNo));
+			ArrayList<Object> jnlaction_insert_list = new ArrayList<>();
+			jnlaction_insert_list.add((String) queryJNLACTMap.get("JNL_NO"));
+			jnlaction_insert_list.add((int) (queryJNLACTMap.get("SEQ_NO")) + 1);
+			jnlaction_insert_list.add(resRefno);
+			jnlaction_insert_list.add(FFPConstants.MSG_TYPE_FFP);
+			jnlaction_insert_list.add(FFPConstants.MSG_CODE_FFP);
+			jnlaction_insert_list.add(FFPConstants.MSG_TYPE_AGENT);
+			jnlaction_insert_list.add(FFPConstants.MSG_CODE_AGENT);
+			jnlaction_insert_list.add(MESSAGE_TYPE);
+			jnlaction_insert_list.add(FFPConstantsTxJnl.MSG_STAT_COMPL);
+			jnlaction_insert_list.add(lastUpdateTs);
+			jnlaction_insert_list.add(lastUpdateTs);
+			jnlaction_insert_list.add(lastUpdateTs);
+			EntityManager.update(conn, SQL_INSERT_TB_TX_JNLACTION, jnlaction_insert_list.toArray());
+			conn.commit();
+			this.batchLogger.info("Database Transaction Commit");
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				this.batchLogger.error(e1.getMessage());
+			}
+		}
+	}
+
+}

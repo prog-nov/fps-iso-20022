@@ -1,0 +1,5 @@
+url = jdbc:db2://10.102.247.130:50002/cibdb2
+driverClassName = com.ibm.db2.jcc.DB2Driver
+username = cibusr2
+password = 74F68BC0B28C1BCE
+defaultSchema = CIB

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<job-id>DirectDebitOutward</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>isbDownload</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.commom.FFPDownloadJob</processor>
+			<parameters>
+					<parameter>
+						<name>transfer-name</name>
+						<value>isb</value>
+					</parameter>
+					<file>
+						<remote-path>/ICLFPS/IN/</remote-path>
+						<local-path>/ICLFPS/IN/</local-path>
+						<backup-file-path>/ICLFPS/IN/#{YYYYMMDD}/</backup-file-path>
+						<remote-file-name>FPSPDDR#{clearingcode}(\d){16}.xml</remote-file-name>		
+					</file>
+			</parameters>
+		</action>
+		<action>
+			<action-name>response_FPSPDDR_reader</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.batch.job.unit.participant.directdebit.FileFPSPDDRReader</processor>
+			<parameters>
+				<local-file-path>/ICLFPS/IN/</local-file-path>
+				<filename-pattern>FPSPDDR#{clearingcode}(\d){16}.xml</filename-pattern>
+			</parameters>
+		</action>
+	 </action-flow>
+</job-config>

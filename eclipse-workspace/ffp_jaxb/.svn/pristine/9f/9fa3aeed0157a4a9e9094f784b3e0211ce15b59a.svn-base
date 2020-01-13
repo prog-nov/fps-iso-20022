@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	
+	<!-- registration amendment -->
+	
+	<xs:element name="BODY" type="FFPADR01"></xs:element>
+	<xs:complexType name="FFPADR01">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedFINZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="MsgType" type="UpperCaseNumericText_Exact4" minOccurs="1" maxOccurs="1" />
+			<xs:element name="AdrSchme" type="ADDRESSINGSCHEMETYPE" minOccurs="1" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="ADDRESSINGSCHEMETYPE">
+        <xs:sequence>
+			<xs:element name="ClrCd"  type="ClrCdType" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="ProxyId" type="RestrictedFINZText_Max34" minOccurs="0" maxOccurs="1" />
+			<xs:element name="ProxyIdTp" type="UpperCaseNumericText_Exact4" minOccurs="1" maxOccurs="1" />
+			<xs:element name="CusNm" type="CUSTOMERNAMETYPE" minOccurs="0" maxOccurs="2" />
+			<xs:element name="CusId" type="RestrictedFINZText_Max34"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="CusTp" type="UpperCaseNumericText_Exact3"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="SupOpCd" type="UpperCaseNumericText_Exact4"  minOccurs="0" maxOccurs="2"/>
+			<xs:element name="Dflt" type="DefaultInd"  minOccurs="0" maxOccurs="1"/>
+			<xs:element name="PurpCd" type="UpperCaseNumericText_Exact4"  minOccurs="0" maxOccurs="1"/>
+  			<xs:element name="AcctInfo" type="AcctInfoType"  minOccurs="1" maxOccurs="5000"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="CUSTOMERNAMETYPE">
+    	<xs:sequence>
+			<xs:element name="Lang" type="LangType" minOccurs="1" maxOccurs="1" />
+			<xs:element name="FullNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1"/>
+			<xs:element name="DispNm" type="RestrictedUnicodeTextMax140"  minOccurs="1" maxOccurs="1"/>
+    	</xs:sequence>
+    </xs:complexType>
+    
+	<xs:complexType name="AcctInfoType">
+        <xs:sequence>
+            <xs:element name="AcctNum" type="Max14NumericText"  minOccurs="1" maxOccurs="1"/>
+  			<xs:element name="AcctTp" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1"/>
+  			<xs:element name="AcctCur" type="UpperCaseNumericText_Exact3"  minOccurs="1" maxOccurs="1"/>
+  			<xs:element name="SrvcTp" type="ServiceType"  minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+	<xs:simpleType name="DefaultInd">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Yes"/>
+            <xs:enumeration value="No"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+	<xs:simpleType name="ServiceType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CR"/>
+            <xs:enumeration value="DB"/>
+            <xs:enumeration value="OR"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:simpleType name="LangType">
+		<xs:restriction base="xs:string">
+            <xs:enumeration value="EN"/>
+            <xs:enumeration value="ZH"/>
+        </xs:restriction>
+	</xs:simpleType>
+</xs:schema>

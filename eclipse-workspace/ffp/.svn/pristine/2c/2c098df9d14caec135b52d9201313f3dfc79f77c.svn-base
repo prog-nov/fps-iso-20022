@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	<!-- 平台配置 -->
+	<bean id="beneform4jConfig" class="com.forms.beneform4j.webapp.common.AppConfig" p:appName="beneform4j-webapp">
+<!-- 		<property name="totalRecordsParamName"></property> -->
+<!-- 		<property name="currentPageParamName"></property> -->
+		<property name="pageSizeParamName" value="rows"/>
+		<property name="timeFormat" value="HHmmss"/>
+		<property name="datetimeFormat" value="yyyyMMdd HHmmss"/>
+		<property name="initScanPackage" value="com.forms.ffp"/>
+		<!-- 语言解析器 -->
+		<property name="localeResolver" ref="localeResolver"/>
+		<!-- 参数服务类 -->
+		<property name="pathResolver">
+			<bean class="com.forms.beneform4j.webapp.common.web.WebPathResolver"/>
+		</property>
+	
+		<property name="viewMappings">
+			<list>
+				<!-- 根据mime参数指定的逻辑视图 -->
+				<bean class="com.forms.beneform4j.web.view.impl.MimeParamViewMapping">
+					<property name="mimeParamName" value="mime"/>
+					<property name="mimeMapping">
+						<map>
+							<entry key="json" value="JsonView"/>
+							<entry key="testjson" value="TextJsonView"/>
+						</map>
+					</property>
+				</bean>
+				<!-- 根据请求url指定的逻辑视图 -->
+				<bean class="com.forms.beneform4j.web.view.impl.RequestUrlViewMapping">
+					<property name="urlMapping">
+						<map>
+							<entry key="**/search{suffix}" value="**/list{suffix}"/>
+							<entry key="**/update" value="success"/>
+							<entry key="**/insert" value="success"/>
+							<entry key="**/delete" value="success"/>
+<!-- 							<entry key="demo/**" value="demo/**"/> -->
+						</map>
+					</property>
+				</bean>
+			</list>
+		</property>
+		
+		<!-- 异常处理器 -->
+		<property name="exceptionHandlers">
+			<list>
+				<ref bean="DetailExceptionHandler"/>			
+			</list>
+		</property>
+		
+		<!-- 请求日志 -->
+		<property name="requestLogs">
+			<list>
+				<bean class="com.forms.beneform4j.web.request.log.impl.SimpleRequestLog"/>
+				<bean class="com.forms.beneform4j.webapp.authority.access.log.VisitLog"/>
+			</list>
+		</property>
+		<!-- 请求日志参数转换器 -->
+		<property name="paramConvert">
+			<bean class="com.forms.beneform4j.web.request.log.impl.SensitivesParamConvert">
+				<property name="sensitiveNames">
+					<set>
+						<value>password</value>
+						<value>userPwd</value>
+					</set>
+				</property>
+			</bean>
+		</property>
+		
+		<!-- Mybatis打印的日志类型 -->
+		<property name="mybatisLogTypeMapping">
+			<map>
+				<entry key="==>  Preparing:" value="mybatis.preparing"/>
+				<entry key="==> Parameters:" value="mybatis.parameters"/>
+				<entry key="&lt;==      Total:" value="mybatis.total"/>
+			</map>
+		</property>
+		
+		<!--不参与超时时间更新的URL请求（正则）-->
+		<property name="unUpdateSessionUrlPatterns">
+			<list>
+				<value>/**/news/checkMsgNum</value>
+				<value>/**/portal/center/queryTaskNum</value>
+			</list>
+		</property>
+	</bean>
+</beans>

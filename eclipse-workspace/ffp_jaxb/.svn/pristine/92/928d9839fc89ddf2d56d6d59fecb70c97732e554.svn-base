@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_Other.xsd"></xs:include>
+    <xs:element name="BODY" type="FFPDDI02"></xs:element>
+	<xs:complexType name="FFPDDI02">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="TransactionId" type="UpperCaseNumericText_Exact35" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RsltCd" type="Exact1UpperCaseText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RejCd" type="RestrictedFINZText_Max20" minOccurs="0" maxOccurs="1" />
+			<xs:element name="RejMsg" type="RestrictedFINZText_Max1000"  minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

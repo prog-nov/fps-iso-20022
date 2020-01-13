@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<!-- 
+	updateDate:2012-04-26
+	ModifiedBy:hch
+	ModifiedReason:CKP0840JOB
+	updateVersion:7 month
+ -->
+<fixedfile-output-config>
+	<file-name>#{outputFilePath}/BATCH_DETAIL_FILE_TEST</file-name>
+	<encoding>IBM937</encoding>
+	<flush-rows>1000</flush-rows>
+	<header-handle-class>com.forms.datapipe.headfoot.HeaderHandler4Detail</header-handle-class>
+	<footer-handle-class>com.forms.datapipe.headfoot.FooterHandler4Detail</footer-handle-class>
+	<line-feed>none</line-feed> 
+	<field-definition>        
+	    <field name="controlFlag"       			 data-type="StringType" 		control-flag = "A"/>
+		<field name="recInd"   			bytes="1"    data-type="CharTypeLJ"  		control-flag = "A" const-value="1"/>
+        <field name="NO"   		    bytes="14"	 data-type="CharTypeLJ"  		control-flag = "A"/>
+        <field name="STAT1"   		    bytes="10"	 data-type="CharTypeLJ"  		control-flag = "A"/>
+        <field name="STAT2"       bytes="10"    data-type="OutDateType" 	control-flag = "A"/> 
+        <field name="filler"		bytes="50"	 data-type="CharTypeLJ"  		control-flag = "A"/>
+        
+        <field name="recInd"   			bytes="1"    data-type="CharTypeLJ"  		control-flag = "B" const-value="3"/>
+        <field name="NO"   		    bytes="14"	 data-type="CharTypeLJ"  		control-flag = "B"/>
+        <field name="STAT1"   		    bytes="10"	 data-type="CharTypeLJ"  		control-flag = "B"/>
+        <field name="STAT2"       bytes="10"    data-type="OutDateType" 	control-flag = "B"/> 
+                <field name="filler"		bytes="50"	 data-type="CharTypeLJ"  		control-flag = "B"/>
+	</field-definition>
+</fixedfile-output-config>

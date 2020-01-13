@@ -1,0 +1,310 @@
+package com.forms.batch.job.unit.participant.receivefile;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.forms.ffp.adaptor.jaxb.participant.request.BODY;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpddo01.FFPDDO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.framework.util.CommonAPI;
+
+public class FFPReceiveFileServerThread implements Runnable
+{
+	private BatchLogger _logger = BatchLogger.getLogger("BATCH_LISTENER_SESSION", String.valueOf(Thread.currentThread().getId()), FFPReceiveFileServerThread.class);
+	private int SO_TIME_OUT = 60000;
+	private String jnlNo;
+	private String transactionId;
+	private String end2endId;
+	private Timestamp createTs;
+	Socket socket = null;//  this thread socket
+
+	//String outputPath = null;
+
+	public FFPReceiveFileServerThread(Socket socket)
+	{
+		this.socket = socket;
+	}
+
+	@Override
+	public void run()
+	{
+		init();
+
+		ROOT root = null;
+		try
+		{
+			// communication with the client,
+			// get the InputStream,
+			// read the information provied by the client.
+			socket.setSoTimeout(SO_TIME_OUT);
+			BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int length = 0;
+			while ((length = bis.read(buffer)) != -1)
+			{
+				// loop read
+				bo.write(buffer, 0, length);
+			}
+			byte[] databytes = bo.toByteArray();
+			bo.close();
+
+			String receiveStr = new String(databytes, CommonAPI.ENCODING_UTF_8);
+			_logger.info("Requst msg:" + receiveStr);
+
+			socket.shutdownInput();
+			String xml = "";
+			try
+			{
+				root = FFPParticipantMessageConverter.parseXml2RequestObject(receiveStr.toString());
+				xml = executeMessage(root);
+				sendSyncMessage(xml);
+			}
+			catch(Exception ex)
+			{
+				_logger.error("Error on processing FFP Agent request message", ex);
+				sendSyncMessage("NACK");
+				throw new Exception("Error on processing FFP Agent request message", ex);
+			}
+			socket.close();
+		} 
+		catch (Exception e)
+		{
+			_logger.error(e);
+		}
+		finally
+		{
+			try
+			{
+				if (socket != null)
+					socket.close();
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void init()
+	{
+		jnlNo = FFPIDUtils.getJnlNo();
+		transactionId = FFPIDUtils.getTransactionId();
+		end2endId = FFPIDUtils.getEndToEndId();
+		createTs = FFPDateUtils.getTimestamp(new Date());
+		// seqNo = FFPIDUtils.getSeq();
+	}
+
+	public void sendSyncMessage(String str)
+	{
+		try
+		{
+			OutputStream os = socket.getOutputStream();
+			os.write(str.getBytes(CommonAPI.ENCODING_UTF_8));
+			os.flush();
+			socket.shutdownOutput();
+		} catch (Exception ip_e)
+		{
+			_logger.error(ip_e);
+		}
+	}
+
+	public void save(ROOT root) throws Exception
+	{
+		HEAD head = root.getHEAD();
+		BODY body = root.getBODY();
+		
+		String txState = FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus();
+		String txCode = "";
+		String txMode = "BTCH";
+		String txSrc = FFPConstants.MSG_TYPE_AGENT;
+		Timestamp lastUpdateTs = createTs;
+		String msgFrom = head.getRequestID();
+		String msgType = head.getMessageType();
+		String msgStatus = FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus();
+		Timestamp msgCreateData = createTs;
+		Timestamp msgProceDate = null;
+		Timestamp msgComplDate = null;
+
+		Connection loc_conn = null;
+		String sql_jnl = "insert into tb_tx_jnl " +
+						 "(JNL_NO, SRC_REF_NM, TX_STAT, TX_CODE, TX_SRC, "+
+						 " TX_MODE, TRANSACTION_ID, END_TO_END_ID, CREATE_TS, LAST_UPDATE_TS) "+
+						 " value (?,?,?,?,?, " +
+						 "        ?,?,?,?,?) ";
+		String sql_action = "insert into tb_tx_jnlaction " +
+							"( JNL_NO, MSG_ID, MSG_DIRECTION, MSG_SYSTEMID, MSG_TYPE, " +
+							"  MSG_STATUS, MSG_CODE, MSG_RESULT, MSG_CREAT_TS, MSG_PROCE_DATE, " +
+							"  MSG_COMPL_DATE) " +
+							" value (?,?,?,?,?, "+
+							"        ?,?,?,?,?,"+
+							"        ?)";
+		try
+		{
+			if(body instanceof FFPCTO01)
+			{
+				FFPCTO01 ffpcto01 = (FFPCTO01) body;
+				String servcMode = ffpcto01.getSrvcMode();
+				txState = FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus();
+				txCode = FFPConstantsTxJnl.TX_CODE.TX_CODE_P100.getCode();
+				
+				List<Object> prams = new ArrayList<Object>();
+				
+				loc_conn = ConnectionManager.getInstance().getConnection();
+				loc_conn.setAutoCommit(false);
+				EntityManager.update(loc_conn, sql_jnl,
+							jnlNo, ffpcto01.getSrcRefNm(), txState, txCode, txSrc,
+							txMode, transactionId, end2endId, createTs, lastUpdateTs);
+				EntityManager.update(loc_conn, sql_action,
+							jnlNo, head.getRequestRefno(), FFPConstants.MSG_DIRECTION_INWARD, msgFrom, msgType,
+							msgStatus, null, null, msgCreateData, msgProceDate,
+							msgComplDate);
+				String sql_p100dat = "insert into tb_tx_p100dat (JNL_NO,CATEGORY_PURPOSE,ACCT_VERF,SETTLEMENT_CUR,SETTLEMENT_AMT,SETTLEMENT_DATE," +
+						"INSTRUCTED_CUR,INSTRUCTED_AMT,CHG_AGT_ID,CHG_AGT_BIC,CHG_CUR,CHG_AMT,DEBTOR_NAME," +
+						"DEBTOR_ACCTNO,DEBTOR_ACCTNO_TYPE,DEBTOR_AGT_ID,DEBTOR_AGT_BIC," +
+						"CREDITOR_NAME,CREDITOR_ACCTNO,CREDITOR_ACCTNO_TYPE,CREDITOR_AGT_ID,CREDITOR_AGT_BIC,PURPOSE_TYPE,PURPOSE_CODE,PURPOSE_OTHER,REMIT_INFO,BUSI_SERVICE_MODE)" +
+						"value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				EntityManager.update(loc_conn, sql_p100dat, jnlNo, ffpcto01.getPymtCatPrps(), ffpcto01.getAcctVerf(), ffpcto01.getSettlCcy(), ffpcto01.getSettlAmt(), ffpcto01.getSettlDate(),
+						ffpcto01.getInstrCcy(), ffpcto01.getInstrAmt(), ffpcto01.getChrgrsAgent().getID(), ffpcto01.getChrgrsAgent().getBICCODE(), ffpcto01.getChrgrsCcy(), ffpcto01.getChrgrsAmt(), ffpcto01.getDbtrNm(),
+						ffpcto01.getDbtrAcNo(), ffpcto01.getDbtrAcTp(), "", // DEBTOR_AGT_ID
+						"", // DEBTOR_AGT_BIC
+						ffpcto01.getCdtrNm(), ffpcto01.getCdtrAcNo(), ffpcto01.getCdtrAcTp(), ffpcto01.getCdtrAgent().getID(), ffpcto01.getCdtrAgent().getBICCODE(), "", /// purpose_type
+						"", /// purpose_code
+						"", /// purpose_other
+						"", servcMode);
+			}
+			if(body instanceof FFPDDO01)
+			{
+				FFPDDO01 ffpddo01 = (FFPDDO01) body;
+				String servcMode = ffpddo01.getSrvcMode();
+				txState = FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus();
+				txCode = FFPConstantsTxJnl.TX_CODE.TX_CODE_P210.getCode();
+				
+				loc_conn = ConnectionManager.getInstance().getConnection();
+				loc_conn.setAutoCommit(false);
+				EntityManager.update(loc_conn, sql_jnl,
+						jnlNo, ffpddo01.getSrcRefNm(), txState, txCode, txSrc,
+						txMode, transactionId, end2endId, createTs, lastUpdateTs);
+				EntityManager.update(loc_conn, sql_action,
+						jnlNo, head.getRequestRefno(), FFPConstants.MSG_DIRECTION_INWARD, msgFrom, msgType,
+						msgStatus, null, null, msgCreateData, msgProceDate,
+						msgComplDate);
+				
+				String sql_p200dat = "insert into tb_tx_p210dat() value(JNL_NO,CATEGORY_PURPOSE,SETTLEMENT_CUR,SETTLEMENT_AMT,SETTLEMENT_DATE," +
+						"INSTRUCTED_CUR,INSTRUCTED_AMT,CHG_AGT_ID,CHG_AGT_BIC,CHG_CUR,CHG_AMT," +
+						"DEBTOR_ACCTNO,DEBTOR_NAME,DEBTOR_ACCTNO_TYPE,DEBTOR_AGT_ID,DEBTOR_AGT_BIC,DEBTOR_RLT_ID," +
+						"CREDITOR_NAME,CREDITOR_ACCTNO,CREDITOR_ACCTNO_TYPE,CREDITOR_AGT_ID,CREDITOR_AGT_BIC,PURPOSE_TYPE,PURPOSE_CODE,PURPOSE_OTHER,REMIT_INFO,SRVC_MODE) " +
+						"value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				EntityManager.update(loc_conn, sql_p200dat, jnlNo, ffpddo01.getPymtCatPrps(), ffpddo01.getSettlCcy(), ffpddo01.getSettlAmt(), ffpddo01.getSettlDate(),
+						ffpddo01.getInstrCcy(), ffpddo01.getInstrAmt(), "", "", ffpddo01.getChrgrsCcy(), ffpddo01.getChrgrsAmt(), ffpddo01.getDbtrAcNo(),
+						ffpddo01.getDbtrNm(), ffpddo01.getDbtrAcTp(), "", // DEBTOR_AGT_ID
+						"", // DEBTOR_AGT_BIC, 
+						ffpddo01.getDbtrRltId(),
+						ffpddo01.getCdtrNm(), ffpddo01.getCdtrAcNo(), ffpddo01.getCdtrAcTp(), ffpddo01.getCdtrAgent().getID(), ffpddo01.getCdtrAgent().getBICCODE(), "", /// purpose_type
+						"", /// purpose_code
+						"", /// purpose_other
+						"", servcMode);
+			}
+			loc_conn.commit();
+			loc_conn.setAutoCommit(true);
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			if(loc_conn != null)
+				loc_conn.rollback();
+		} finally
+		{
+			try
+			{
+				if (loc_conn != null)
+					loc_conn.close();
+			} catch (SQLException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	// execute xmlMessage
+	public String executeMessage(ROOT reqRoot) throws Exception
+	{
+		String xml = "NACK";
+		HEAD reqHead = reqRoot.getHEAD();
+		BODY reqbody = reqRoot.getBODY();
+		if (reqbody instanceof FFPCTO01)
+		{
+			FFPCTO01 ffpcto01 = (FFPCTO01) reqbody;
+			String servcMode = ffpcto01.getSrvcMode();
+			switch (servcMode)
+			{
+			case "C1":
+				com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = new com.forms.ffp.adaptor.jaxb.participant.response.ROOT();
+				com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = new com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD();
+				com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01 body = new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01();
+				head.setRequestID(reqHead.getRequestID());
+				head.setTransactionDate(reqHead.getTransactionDate());
+				head.setTransactionTime(reqHead.getTransactionTime());
+				head.setRequestRefno(reqHead.getRequestRefno());
+				head.setAccountingDate("");
+				head.setResponseID(FFPConstants.MSG_CODE_FFP);
+				head.setMessageType(reqHead.getMessageType());
+				head.setSystemRefno("");
+				head.setSystemBeginTIme("");
+				head.setSystemEndTIme("");
+				head.setResponseRefno(FFPIDUtils.getRefno());
+				head.setResponseBeginTime("");
+				head.setResponseEndTime("");
+				head.setResponseStatus("N");
+				head.setFinalNode("2");
+				head.setSystemMessageCode("");
+				head.setResponseMessageCode("");
+				head.setResponseMessage("");
+				body.setSrcRefNm(ffpcto01.getSrcRefNm());
+				body.setFFPTransactionId(transactionId);
+				body.setRsltCd("R");
+				body.setRejCd("FFPCTO01001");
+				body.setRejMsg("servcMode C1 not support in batch mode");
+				root.setHEAD(head);
+				root.setBODY(body);
+				xml = FFPParticipantMessageConverter.packageReponseObject2Xml(root);
+				break;
+			case "C2":
+				save(reqRoot);
+				xml = "ACK";
+				break;
+			case "C3":
+				save(reqRoot);
+				xml = "ACK";
+				break;
+			default:
+				xml = "NACK";
+				break;
+			}
+		}
+		if (reqbody instanceof FFPDDO01) {
+			save(reqRoot);
+			xml = "ACK";
+		}
+		return xml;
+	}
+}

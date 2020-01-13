@@ -1,0 +1,110 @@
+package com.forms.ffp.bussiness.iclfps.fpsadrs004;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.GroupHeader;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.MessageRoot;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.UnderlyingMaintenanceDetails;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.bussiness.iclfps.fpsadrs004.FFPVOFpsadrs004.UndrlygDtls;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.addressing.FFPIDaoService_A100;
+
+@Component("com.forms.ffp.bussiness.iclfps.fpsadrs004.FFPTxFpsadrs004")
+@Scope("prototype")
+public class FFPTxFpsadrs004 extends FFPTxBase {
+
+	@Resource(name = "FFPDaoService_A100")
+	private FFPIDaoService_A100 a100Service;
+
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+
+	@Override
+	public void perform() throws Exception {
+		Date locDate = new Date();
+		
+		FFPVOFpsadrs004 locVo = (FFPVOFpsadrs004) txVo;
+		UndrlygDtls dtl = locVo.getDtls().get(0);
+
+		String jnlNo = a100Service.inqueryJnlNoByMsgId(locVo.getMsgId());
+		Object obj = txJnlService.inquiryByJnlNo(jnlNo);
+
+		if (obj instanceof FFPJbA100) {
+			FFPJbA100 a100Db = (FFPJbA100) obj;
+			
+			List<FFPTxJnlAction> actionList = new ArrayList<>();
+//			actionList.add(FFPJnlUtils.getInstance().newJnlAction(a100Db.getTxJnl().getJnlNo(), locVo.getMsgId(),
+//					locVo.getFromClrSysMmbId() != null ? FFPConstants.MSG_TYPE_FPS_CLRSYSMMBID
+//							: FFPConstants.MSG_TYPE_FPS_BICFI,
+//					locVo.getFromClrSysMmbId() != null ? locVo.getFromClrSysMmbId() : locVo.getFromBic(),
+//					FFPConstants.MSG_TYPE_FFP,
+//					locVo.getToClrSysMmbId() != null ? locVo.getToClrSysMmbId() : locVo.getToBic(),
+//					locVo.getMsgDefIdr(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(),
+//					locVo.getCreateDate(), locDate, locDate, dtl.getCd(), null));
+
+			a100Db.setJnlActionList(actionList);
+			if ("ACCT".equals(dtl.getSts())) {
+				a100Db.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+			} else if ("RJCT".equals(dtl.getSts())) {
+				a100Db.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus());
+			}
+			//update a100 stat
+			a100Db.setStat("Y");
+			a100Service.updateA100Stat(a100Db);
+			//update txjnl  jnlaction
+			a100Service.updateJnlStat(a100Db);
+		}
+
+	}
+
+	@Override
+	public void validate() throws Exception {
+
+	}
+
+	@Override
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+		if ("ICL.fps.adrs.004.001.01".equals(this.serviceName)) {
+			parseISO20022BizDataHead(bizData);
+
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			MessageRoot mr = doc.getAdrRpt();
+
+			txVo = new FFPVOFpsadrs004();
+			FFPVOFpsadrs004 locVo = (FFPVOFpsadrs004) txVo;
+
+			GroupHeader hdr = mr.getGrpHdr();
+			locVo.setMsgId(hdr.getMsgId());
+			locVo.setCreDtTm(hdr.getCreDtTm().toGregorianCalendar().getTime());
+
+			List<UndrlygDtls> dtls = new ArrayList<>();
+			UnderlyingMaintenanceDetails dtl = mr.getUndrlygDtls().get(0);
+
+			FFPVOFpsadrs004.UndrlygDtls adr004Ud = new FFPVOFpsadrs004().new UndrlygDtls();
+			adr004Ud.setAdrReqId(dtl.getAdrReqId());
+			adr004Ud.setCd(dtl.getStsRsnInf().getRsn().getCd());
+			adr004Ud.setId(dtl.getId());
+			adr004Ud.setMmbId(dtl.getAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+			adr004Ud.setSts(dtl.getSts().name());
+			adr004Ud.setTp(dtl.getTp().name());
+			
+			dtls.add(adr004Ud);
+			locVo.setDtls(dtls);
+		}
+	}
+}

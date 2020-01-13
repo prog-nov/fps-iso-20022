@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CIB Batch Job Configuration　Files　-->
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to TB_BH_JOB_JNL and LOG　-->
+		<job-id>DATAPIPETEST</job-id>
+		<run-frequency>D</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	
+	<action-flow>
+		<action>
+			<action-name>DATAPIPETEST-TABLE TO TABLE</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/simple/datapipetest/tabletotable/tbTotb-pipe-config.xml</config-file>
+			<input-file-path>TEST/IN/</input-file-path>
+			<output-file-path>TEST/OUT</output-file-path>
+		</action>
+		
+		<action>
+			<action-name>DATAPIPETEST-TABLE TO DETAIL FILE</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/simple/datapipetest/tableTodetailfile/detail-file-pipe-config.xml</config-file>
+			<input-file-path>TEST/IN/</input-file-path>
+			<output-file-path>TEST/OUT</output-file-path>
+		</action>
+		
+		<action>
+			<action-name>DATAPIPETEST-TABLE TO DAT FILE</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/simple/datapipetest/tableToDatFile/dat-file-pipe-config.xml</config-file>
+			<compare-config-file>job/simple/datapipetest/tableToDatFile/dat-file-data-compare-config.xml</compare-config-file>
+			<input-file-path>TEST/IN/</input-file-path>
+			<output-file-path>TEST/OUT</output-file-path>
+		</action>
+		
+		<action>
+			<action-name>isbUpload</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.boc.cib.batch.util.IsbUploadFileJob</processor>
+			<parameters>
+					<parameter>
+						<name>transfer-name</name>
+						<value>cibisb</value>
+					</parameter>
+					<file>
+					    <remote-path>TEST/OUT/</remote-path>
+						<local-path>TEST/OUT/</local-path>
+						<local-file-name>BATCH_DETAIL_FILE_TEST</local-file-name>
+						<backup-file-path>TEST/OUT/</backup-file-path>
+						<local-file-id>TEST10000</local-file-id>		
+					</file>
+					<file>
+					    <remote-path>TEST/OUT/</remote-path>
+						<local-path>TEST/OUT/</local-path>
+						<local-file-name>BATCH_DAT_FILE</local-file-name>
+						<backup-file-path>TEST/OUT/</backup-file-path>
+						<local-file-id>TEST10001</local-file-id>		
+					</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>isbDownload</action-name>
+			<action-type>JavaSysCall</action-type>						
+			<processor>com.forms.framework.job.FtpDownloadJob</processor>
+			<parameters>
+					<parameter>
+						<name>transfer-name</name>
+						<value>cibisb</value>
+					</parameter>
+					<file>
+						<remote-path>/TEST/IN/</remote-path>
+						<local-path>TEST/IN/</local-path>
+						<remote-file-name>FILE_TO_TABLE</remote-file-name>		
+						<backup-file-path>TEST/IN/</backup-file-path>
+					</file>
+			</parameters>
+		</action>
+		
+		<action>
+			<action-name>DATAPIPETEST-FILE TO TABLE</action-name>
+			<action-type>DataPip</action-type>
+			<config-file>job/simple/datapipetest/fileToTable/filetotable-pipe-config.xml</config-file>
+			<input-file-path>TFI/IN/</input-file-path>
+			<output-file-path>TFI/OUT</output-file-path>
+		</action>
+	</action-flow>
+</job-config>

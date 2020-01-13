@@ -1,0 +1,47 @@
+00001374<?xml version="1.0" encoding="utf-8"?>
+<ROOT>
+	<HEAD>
+		<RequestID>04</RequestID>
+		<TransactionDate>20180206</TransactionDate>
+		<TransactionTime>140203</TransactionTime>
+		<RequestRefno>000001</RequestRefno>
+		<AccountingDate>20180206</AccountingDate>
+		<SystemRefno></SystemRefno>
+		<ResponseID>00</ResponseID>
+		<MessageType>FFPCTO01</MessageType>
+	</HEAD>
+	<BODY>
+		<SrcRefNm>000001</SrcRefNm>
+		<SrvcMode>C1</SrvcMode>
+		<PymtCatPrps>CXPSNL</PymtCatPrps>
+		<AcctVerf>PERFORM_PYE_VRF</AcctVerf>
+		<SettlDate>20180206</SettlDate>
+		<SettlAmt>10000.00</SettlAmt>
+		<SettlCcy>HKD</SettlCcy>
+		<InstrAmt></InstrAmt>
+		<InstrCcy></InstrCcy>
+		<ChrgrsAgent>
+			<BICCODE></BICCODE>
+			<ID></ID>
+		</ChrgrsAgent>
+		<ChrgrsAmt></ChrgrsAmt>
+		<ChrgrsCcy></ChrgrsCcy>
+		<DbtrNm>DEBIT NAME</DbtrNm>
+		<DbtrAcTp>BBAN</DbtrAcTp>
+		<DbtrAcNo>28880623000011</DbtrAcNo>
+		<DbtrContPhone>85265555275</DbtrContPhone>
+		<DbtrContEmailAddr>DEBIT@TEST.COM</DbtrContEmailAddr>
+		<CdtrAgent>
+			<BICCODE></BICCODE>
+			<ID>012</ID>
+		</CdtrAgent>
+		<CdtrNm>CREDIT NAME</CdtrNm>
+		<CdtrAcTp>BBAN</CdtrAcTp>
+		<CdtrAcNo>28880623000022</CdtrAcNo>
+		<CdtrContPhone>85265555276</CdtrContPhone>
+		<CdtrContEmailAddr></CdtrContEmailAddr>
+		<PytPurpType>OTHER</PytPurpType>
+		<PytPurp>SPECIFIED TEST</PytPurp>
+		<RemInfo>TEST MSG</RemInfo>
+	</BODY>
+</ROOT>

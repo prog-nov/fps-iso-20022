@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<datatype-config>
+	<datatypes>
+		<!-- StringType,Input trim,output not fill space -->
+		<datatype name="StringType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printString" />
+		<datatype name="StringTypeNotNull"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isNotNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printString" />
+		<!-- StringType,Input right trim,output not fill space -->
+		<datatype name="StringTypeRT"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.rightTrim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printString" />
+		<datatype name="StringTypeEmpty"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printStringEmpty" />			
+		
+		<!-- StringType,Input not trim,output not fill space -->
+		<datatype name="OriStringType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.doNoting"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printString" />
+			
+		<!-- NumberType,Input trim,output not fill space,input null error,output null return 0 -->
+		<datatype name="NumberType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isNumber"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printNumber" /> 
+
+		<!-- CharWideTypeLJ, Input trim,output right fill space by UTF-8-->
+		<datatype name="CharWideTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight4WS" />
+			
+		<!-- CharWideTypeLJ, Input trim,output right fill space by IBM937-->
+		<datatype name="CharWideTypeLJ4IBM937"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight4WSIBM937" />
+			
+		<!-- CharWideTypeLJ, Input trim,output left fill space by UTF-8-->
+		<datatype name="CharWideTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft4WS" />
+
+		<!-- CharTypeLJ, Input trim,right fill space, not support chinese, this type will abandon
+		<datatype name="CharTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isBjChar"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+		-->
+		<!-- CharTypeRJ, Input trim,left fill space, not support chinese, this type will abandon
+		<datatype name="CharTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isBjChar"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft" />
+		-->
+		
+		<!-- CharTypeLJ, Input trim,right fill space, support chinese-->
+		<datatype name="CharTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight4WS" />
+		
+		<!-- CharTypeLJ, Input trim,left fill space, support chinese-->
+		<datatype name="CharTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft4WS" />
+		
+		<!-- WideStringLJ,right fill space-->
+		<datatype name="WideStringTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isWideString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight4WS" />
+			
+		<!-- WideStringRJ,left fill space -->
+		<datatype name="WideStringTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isWideString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft4WS" />
+			
+		<!-- SpeStringTypeLJ,right fill space-->
+		<datatype name="SpeStringTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight4Spe" />
+
+		<!-- FixedNumberTypeRJ,left fill 0 -->
+		<datatype name="FixedNumberTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseZeroLeft"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printZeroLeft" />
+			
+		<!-- SpaceNumberTypeRJ,left fill space -->
+		<datatype name="SpaceNumberTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isNumberWithSpace"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceLeft"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft" />
+			
+		<!-- SpaceNumberTypeLJ,right fill space -->
+		<datatype name="SpaceNumberTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isNumberWithSpace"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceRight"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+		
+		<!-- FixedAmtTypeRJ,must import point,must 2 decimal after point,left fill 0 -->
+		<datatype name="FixedAmtTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseZeroLeft4Amt"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printZeroLeft" />
+			
+		<!-- SpaceAmtTypeRJ,must import point,must 2 decimal after point,left fill space -->
+		<datatype name="SpaceAmtTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceLeft"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft" />
+			
+		<!-- SpaceAmtTypeLJ,must import point,must 2 decimal after point,right fill space -->
+		<datatype name="SpaceAmtTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceRight"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+			
+		<!-- irregular UnformatAmtTypeLJ,have point,mutl decimal ,right fill space -->
+		<datatype name="UnformatAmtTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isUnFormatAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceRight"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+		<!-- irregular UnformatAmtTypeLJ,have point,mutl decimal ,right fill space,null to 0 -->
+		<datatype name="UnformatNumberLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isUnFormatNumber"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+		<!-- irregular UnformatAmtTypeLJ,have point,mutl decimal ,left fill space,null to 0 -->
+		<datatype name="UnformatNumberRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isUnFormatNumber"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft" />
+		<!--TimeStampType,format is yyyy-MM-dd HH:mm:ss,output space is null -->
+		<!-- OUTPUT DB -->
+		<datatype name="TimeStampType4Null"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseTimestamp"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printTimeStamp4Null" />
+		<!-- OUTPUT FILE -->
+		<datatype name="TimeStampType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseTimestamp"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printTimeStamp" />
+		<datatype name="TimeType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printTime" />
+		<!--DateType,format is yyyy-MM-dd ,output space is null -->
+		<datatype name="DateType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseDt"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printDate4Null" />
+		<datatype name="DateTypeEmpty"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseDtEmpty"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printDate4Empty" />
+		<!--DateType,format is yyyy/MM/dd ,output space is null -->
+		<datatype name="OutDateType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseOutDt"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printDateDefault" />	
+		<datatype name="DateTypeNoSplit"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseDtNoSplit"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printDateNoNull" />			
+		<!-- rate type,must have point and 5 decimal,input right trim,output right fill space-->	
+		<datatype name="IntRateTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isIntRate"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceRight"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+		<!-- rate type,must have point and 5 decimal,input left trim,output left fill space-->	
+		<datatype name="IntRateTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isIntRate"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseSpaceLeft"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceLeft" />
+		
+		<!-- YddfAmtTypeLJ,have point,mutl decimal ,right fill space -->
+		<datatype name="YddfAmtTypeLJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parse4Yddf"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printSpaceRight" />
+			
+		<!-- SignAmtTypeRJ,must import point,2 decimal after point,left fill 0 -->
+		<datatype name="SignAmtTypeRJ"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isSignAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseZeroLeft4Amt"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printZeroLeft" />
+			
+		<!-- PackedDecimalType,not fill 0 -->
+		<datatype name="PackedDecimalType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parsePackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimalSub" />
+
+		<!-- PackedDecimalV99Type,left fill 0,output add point,2 decimal-->
+		<datatype name="PackedDecimalV99Type"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parsePackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99" />
+			
+		<datatype name="PackedDecimalV9999999Type"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parsePackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV9999999" />
+		
+		<datatype name="PackedDecimalV999999Type"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parsePackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV999999" />
+		
+		<!-- number type ,input trim,output not fill space,input null is error,output value null return 0,output add point,2 decimal -->
+		<datatype name="NumberV99Type"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isNumber"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99" />
+		
+			
+		<!-- PKG_RecType,1 or 2,2 is detial,1 is count -->
+		<datatype name="PKG_RecType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isPkgRecType"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printString" />
+		<!-- number type ,input trim,output left fill 0,input null is error,output value null return 0,output 2 decimal,not point -->
+		<datatype name="NumberV99NotPointType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99NotPoint" />
+			
+		<datatype name="NumberV99NotPointTypeParse"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.printV99NotPoint"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99NotPoint" />
+		<datatype name="NumberV9999999NotPointType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV9999999NotPoint" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 7 decimal,point,+-sign -->	
+		<datatype name="NumberV9999999PointSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV9999999PointSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 5 decimal,point,+-sign -->	
+		<datatype name="NumberV99999PointSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99999PointSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 2 decimal,point,+-sign -->	
+		<datatype name="NumberV99PointSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99PointSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 3 decimal,point,+-sign -->	
+		<datatype name="NumberV999PointSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV999PointSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 2 decimal,point,No sign -->	
+		<datatype name="NumberV99PointNoSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99PointNoSign" />
+		<!-- number type ,input null or "",output left fill space,input decimal,output 2 decimal,point,No sign -->	
+		<datatype name="NumberV99NotPointTypeSpecial"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmt"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.doNoting"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99PointNoSignSpecial" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 3 decimal,point,No sign -->	
+		<datatype name="NumberV999PointNoSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV999PointNoSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 5 decimal,point,No sign -->	
+		<datatype name="NumberV99999PointNoSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99999PointNoSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 7 decimal,point,No sign -->	
+		<datatype name="NumberV9999999PointNoSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV9999999PointNoSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 2 decimal,point,-sign -->	
+		<datatype name="NumberV99PointNegSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV99PointNegSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 3 decimal,point,-sign -->	
+		<datatype name="NumberV999PointNegSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV999PointNegSign" />
+		<!-- number type ,input trim,output left fill 0,output value null return 0,output 7 decimal,point,-sign -->	
+		<datatype name="NumberV9999999PointNegSignType"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseNumber4Null"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printV9999999PointNegSign" />
+		<!-- number type ,input trim,input null is 0,output  null is null -->		
+		<datatype name="NumberDoNothing"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.parseStringDoNothing"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printStringDoNothing" />	
+		
+		<!-- PackedDecimalV99,if not point add .00,output fill 0 -->
+		<datatype name="PackedDecimalV99"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPDV99"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalV99Out"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPDV99"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalV9999999Out"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPDV9999999"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalV999999Out"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPDV999999"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalV999"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPDV999"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimal"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isYddfAmtNull"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalOut"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.toPackedDecimal"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printPackedDecimal"/>
+		<datatype name="PackedDecimalHexToChar"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.printStringDoNothing"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printStringDoNothing"/>
+		<datatype name="StringTypeNothingToNull"
+			validate-method="com.forms.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.forms.datapipe.datatype.DataTypeConverter.printStringDoNothing"
+			print-method="com.forms.datapipe.datatype.DataTypeConverter.printStringDoNothing" />
+	</datatypes>
+</datatype-config>

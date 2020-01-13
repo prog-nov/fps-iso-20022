@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.portal.memo.dao.IMemoDao">
+
+	<select id="dGetMemoList" resultType="com.forms.beneform4j.webapp.portal.memo.bean.MemoBean">
+		select t.* from(
+		select a.id,b.id as log_id,
+         case when b.user_id is null then a.user_id else b.user_id end as user_id,
+         case when b.memo_title is null then a.memo_title else b.memo_title end as memo_title,
+         case when b.memo_content is null then a.memo_content else b.memo_content end as memo_content,
+         case when b.memo_date is null then a.memo_date else b.memo_date end as memo_date,
+         case when b.memo_time is null then a.memo_time else b.memo_time end as memo_time,
+         case when b.id is null then '0' else '1' end as status,
+         b.op_date,
+         b.op_time
+         from {{BF}}_memo_def a left join {{BF}}_memo_log b on a.id = b.memo_id) t
+		 <where>
+			<if test="null != userId and '' != userId">
+				and t.user_id = #{userId, jdbcType=VARCHAR}
+			</if>
+			<if test="null != date and '' != date">
+				and t.memo_date like  #{date, jdbcType=VARCHAR}||'%'
+			</if>
+		</where>
+		order by t.memo_date
+	</select>
+	
+	<select id="dGetMemoById" resultType="com.forms.beneform4j.webapp.portal.memo.bean.MemoBean">
+		select t.* from(
+		select a.id,b.id as log_id,
+			    case when b.user_id is null then a.user_id else b.user_id end as user_id,
+         		case when b.memo_title is null then a.memo_title else b.memo_title end as memo_title,
+         		case when b.memo_content is null then a.memo_content else b.memo_content end as memo_content,
+         		case when b.memo_date is null then a.memo_date else b.memo_date end as memo_date,
+         		case when b.memo_time is null then a.memo_time else b.memo_time end as memo_time,
+         		case when b.id is null then '0' else '1' end as status,
+			   b.op_date,
+			   b.op_time
+			   from {{BF}}_memo_def a left join {{BF}}_memo_log b on a.id = b.memo_id) t
+			  <where>
+				<if test="null != id and '' != id">
+					and t.id = #{id, jdbcType=VARCHAR}
+				</if>
+			</where>
+	</select>
+
+	
+	<insert id="dAddMemoDef">
+		insert into bf_memo_def
+		  (id, user_id, memo_title, memo_content, memo_date, is_remind, memo_time)
+		values
+		  (#{id,jdbcType=VARCHAR}, 
+		  #{userId,jdbcType=VARCHAR},
+		  #{memoTitle,jdbcType=VARCHAR},
+		  #{memoContent,jdbcType=VARCHAR},
+		  #{memoDate,jdbcType=VARCHAR},
+		  #{isRemind,jdbcType=VARCHAR},
+		  #{memoTime,jdbcType=VARCHAR})
+	</insert>
+	
+	<update id="dUpdateMemoDef">
+		update bf_memo_def set
+			memo_title = #{memoTitle,jdbcType=VARCHAR}, 
+			memo_content = #{memoContent,jdbcType=VARCHAR}, 
+			memo_date = #{memoDate,jdbcType=VARCHAR}, 
+			memo_time = #{memoTime,jdbcType=VARCHAR},
+			is_remind = #{isRemind,jdbcType=INTEGER} 
+		where id = #{id,jdbcType=VARCHAR} 
+	</update>
+	
+	<delete id="dDeleteMemoDef">
+		delete from  bf_memo_def where id=#{id,jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="dAddMemoLog">
+		insert into bf_memo_log
+		  		  (id, user_id, memo_title, memo_content, memo_date, memo_time,memo_id,op_date,op_time)
+		values
+		  (#{logId,jdbcType=VARCHAR}, 
+		  #{userId,jdbcType=VARCHAR},
+		  #{memoTitle,jdbcType=VARCHAR},
+		  #{memoContent,jdbcType=VARCHAR},
+		  #{memoDate,jdbcType=VARCHAR},
+		  #{memoTime,jdbcType=VARCHAR},
+		  #{id,jdbcType=VARCHAR},
+		  #{opDate,jdbcType=VARCHAR},
+		  #{opTime,jdbcType=VARCHAR}
+		  )
+	</insert>
+	
+	<delete id="dDeleteMemoLog">
+		delete from bf_memo_log where memo_id = #{id,jdbcType=VARCHAR}
+	</delete>
+
+</mapper>

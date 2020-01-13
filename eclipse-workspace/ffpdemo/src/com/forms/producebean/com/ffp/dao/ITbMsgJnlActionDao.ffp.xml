@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ffp.dao.ITbMsgJnlActionDao" >
+  <resultMap id="BaseResultMap" type="com.ffp.dao.TbMsgJnlAction" >
+    <id column="MSG_JNL" property="msgJnl" jdbcType="INTEGER" />
+    <result column="MSG_TRAN_ID" property="msgTranId" jdbcType="VARCHAR" />
+    <result column="MSG_ID" property="msgId" jdbcType="VARCHAR" />
+    <result column="ACTION_TYPE" property="actionType" jdbcType="VARCHAR" />
+    <result column="END_TO_END_ID" property="endToEndId" jdbcType="VARCHAR" />
+    <result column="ACTION_TRANS_STATUS" property="actionTransStatus" jdbcType="VARCHAR" />
+    <result column="MSG_ACCE_DATE" property="msgAcceDate" jdbcType="TIMESTAMP" />
+    <result column="MSG_INST_DATE" property="msgInstDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    MSG_JNL, MSG_TRAN_ID, MSG_ID, ACTION_TYPE, END_TO_END_ID, ACTION_TRANS_STATUS, MSG_ACCE_DATE, 
+    MSG_INST_DATE
+  </sql>
+  <select id="dList" resultMap="BaseResultMap" parameterType="int" >
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from tb_msg_jnl_action
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </select>
+  <delete id="dDelete" parameterType="int" >
+    delete from tb_msg_jnl_action
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </delete>
+  <insert id="dInsert" parameterType="com.ffp.dao.TbMsgJnlAction" >
+    insert into tb_msg_jnl_action (MSG_JNL, MSG_TRAN_ID, MSG_ID, 
+      ACTION_TYPE, END_TO_END_ID, ACTION_TRANS_STATUS, 
+      MSG_ACCE_DATE, MSG_INST_DATE)
+    values (#{msgJnl,jdbcType=INTEGER}, #{msgTranId,jdbcType=VARCHAR}, #{msgId,jdbcType=VARCHAR}, 
+      #{actionType,jdbcType=VARCHAR}, #{endToEndId,jdbcType=VARCHAR}, #{actionTransStatus,jdbcType=VARCHAR}, 
+      #{msgAcceDate,jdbcType=TIMESTAMP}, #{msgInstDate,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="dUpdate" parameterType="com.ffp.dao.TbMsgJnlAction" >
+    update tb_msg_jnl_action
+    set MSG_TRAN_ID = #{msgTranId,jdbcType=VARCHAR},
+      MSG_ID = #{msgId,jdbcType=VARCHAR},
+      ACTION_TYPE = #{actionType,jdbcType=VARCHAR},
+      END_TO_END_ID = #{endToEndId,jdbcType=VARCHAR},
+      ACTION_TRANS_STATUS = #{actionTransStatus,jdbcType=VARCHAR},
+      MSG_ACCE_DATE = #{msgAcceDate,jdbcType=TIMESTAMP},
+      MSG_INST_DATE = #{msgInstDate,jdbcType=TIMESTAMP}
+    where MSG_JNL = #{msgJnl,jdbcType=INTEGER}
+  </update>
+</mapper>

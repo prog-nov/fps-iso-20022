@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<datatype-config>
+	<datatypes>
+		<!-- 基本类型 -->
+		<datatype name="StringType"
+			validate-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.printString" />
+		<datatype name="NumberType"
+			validate-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.isNumber"
+			parse-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.parseNumber"
+			print-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.printNumber" />
+
+		<!-- 定长字符类型CharType, 右补空格 -->
+		<datatype name="CharType"
+			validate-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.isString"
+			parse-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.trim"
+			print-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.printChar" />
+
+		<!-- 定长数字类型FixedNumberType，左补0 -->
+		<datatype name="FixedNumberType"
+			validate-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.isNumber"
+			parse-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.parseFixedNumber"
+			print-method="com.szboc.databps.datapipe.datatype.DataTypeConverter.printFixedNumber" />
+
+		<!--
+			字段说明：
+			validate-method : 执行校验的方法，参数要求：boolean validate(String value, int length);
+			parse-method    : 执行输入解析的方法，参数要求：String parse(String value, int length);
+			print-method    : 执行输出打印的方法，参数要求：String print(String value, int length);
+			以上3个方法都必须为public static方法
+			
+			参数说明：
+			value ：读取的字段值
+			length：input/output配置文件定义的字段长度(bytes字段)，如果未定义就是0
+		-->
+	</datatypes>
+</datatype-config>

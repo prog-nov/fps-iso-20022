@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	<!-- ffp project -->
+	<bean id="com.forms.ffp.bussiness.iclfps.camt060.FFPTxCamt060" class="com.forms.ffp.bussiness.iclfps.camt060.FFPTxCamt060"/> 
+	<bean id="com.forms.ffp.bussiness.iclfps.pacs003.FFPTxPacs003" class="com.forms.ffp.bussiness.iclfps.pacs003.FFPTxPacs003" /> 
+	<bean id="com.forms.ffp.bussiness.participant.cti01.FFPTxCti01" class="com.forms.ffp.bussiness.participant.cti01.FFPTxCti01" /> 
+	<bean id="com.forms.ffp.bussiness.iclfps.pacs004.FFPTxPacs004" class="com.forms.ffp.bussiness.iclfps.pacs004.FFPTxPacs004" scope="prototype" /> 
+	<bean class="com.forms.ffp.framework.pacs004.service.FFPIPacs004Service" scope="prototype" />
+
+</beans>

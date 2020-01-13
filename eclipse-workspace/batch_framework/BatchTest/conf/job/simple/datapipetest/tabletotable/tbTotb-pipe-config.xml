@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipe-config>
+	<pipe-data></pipe-data>
+	
+	<inputs>
+		<input name="databaseInput"
+			class="com.forms.datapipe.input.DatabaseInput" to-valve="import">
+			<config-file>job/simple/datapipetest/tabletotable/tbTotb-database-input-config.xml</config-file>
+		</input>
+		<!--mutil export,but one export mapping one export valve-->
+	</inputs>
+	<outputs>
+		<output name="dateBaseOutput"
+            class="com.forms.datapipe.output.DatabaseOutput" from-valve="export">
+            <config-file>job/simple/datapipetest/tabletotable/tbTotb-database-output-config.xml</config-file>
+        </output>
+		<output name="errorOutput"
+			class="com.forms.datapipe.output.FixedFileOutput" from-valve="error-export">
+			<config-file>job/simple/datapipetest/tabletotable/tbTotb-csvfile-output-config-error.xml</config-file>
+		</output>
+		<!--mutil export,but one export mapping one export valve-->
+	</outputs>
+
+	<global-forwards>
+		<forward name="error" next-valve="error-handler" />
+	</global-forwards>
+
+	<valves>
+		<valve name="import" class="com.forms.datapipe.valve.ImportValve">
+			<forwards>
+				<forward name="success" next-valve="data-process" />
+			</forwards>
+		</valve>
+		
+        <valve name="data-process" class="com.boc.cib.batch.batchjob.unit.cibtfi01.tfibillsac.CibTfibillsacStep1DataProcessValve">
+            <forwards>
+                <forward name="success" next-valve="export" />
+            </forwards>
+        </valve>
+		
+		<valve name="export" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+		
+		<valve name="error-handler" class="com.forms.datapipe.errorhandler.ErrorHandlerValve">
+			<forwards>
+				<forward name="success" next-valve="error-export" />
+			</forwards>
+		</valve>
+		
+		<valve name="error-export" class="com.forms.datapipe.valve.ExportValve">
+		</valve>
+	</valves>
+</pipe-config>

@@ -1,0 +1,113 @@
+package com.forms.ffp.core.connector.sender.tcp;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.forms.ffp.core.config.tcp.FFPTcpConfig;
+import com.forms.ffp.core.connector.sender.FFPSenderAgentInterface;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.exception.FFPErrorLevel;
+import com.forms.ffp.core.exception.FFPSystemException;
+import com.forms.ffp.core.exception.FFPTeErrorMsg;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+
+public class FFPTcpSenderAgent implements FFPSenderAgentInterface
+{
+	public static final Class<FFPTcpSenderAgent> CLASS_NAME = FFPTcpSenderAgent.class;
+	public static final String ERROR_CODE = FFPTeErrorMsg.getErrorCode(CLASS_NAME, 0);
+	private static Logger logger = LoggerFactory.getLogger(CLASS_NAME);
+
+	protected FFPTcpConfig config;
+
+	public FFPTcpSenderAgent(FFPTcpConfig config)
+	{
+		this.config = config;
+		init();
+	}
+
+	public void init()
+	{
+
+	}
+
+	// send to FFPAGENT
+	public FFPSendTcpMessageResp send(String message) throws FFPSystemException
+	{
+		final String METHOD_NAME = "send()";
+		String messageReturn = null;
+		Socket socket = null;
+		FFPSendTcpMessageResp messageResp = new FFPSendTcpMessageResp();
+
+		try
+		{
+			String sendHost = config.getSendhost();
+			int sendPort = config.getSendport();
+			socket = new Socket(sendHost, sendPort);
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), FFPConstants.ENCODING_UTF8));
+			pw.write(message);
+			pw.flush();
+			socket.shutdownOutput();
+
+			// return
+			BufferedInputStream bufIn = new BufferedInputStream(socket.getInputStream());
+			int timeOut = config.getReceiveTimeOut();
+			socket.setSoTimeout(timeOut * 1000);
+
+			messageResp.setTimeOut(false);
+
+			byte[] resultArr = new byte[] {};
+			byte[] mesBuffer = new byte[1024];
+			int count = 0;
+			while ((count = bufIn.read(mesBuffer)) != -1)
+			{
+				byte[] tempArr = new byte[resultArr.length];
+				System.arraycopy(resultArr, 0, tempArr, 0, resultArr.length);
+				resultArr = new byte[tempArr.length + count];
+				System.arraycopy(tempArr, 0, resultArr, 0, tempArr.length);
+				System.arraycopy(mesBuffer, 0, resultArr, tempArr.length, count);
+
+			}
+			messageReturn = new String(resultArr, "UTF-8");
+			messageResp.setRespMessage(messageReturn);
+
+		} catch (SocketTimeoutException e)
+		{
+			messageResp.setTimeOut(true);
+			logger.error("Send Message To FFP Agent had error", e);
+		} catch (Exception ex)
+		{
+			logger.error("Send Message To FFP Agent had error", ex);
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(), FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		} finally
+		{
+			if (socket != null)
+			{
+				try
+				{
+					socket.close();
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		return messageResp;
+	}
+
+	public FFPTcpConfig getConfig()
+	{
+		return config;
+	}
+
+	public void setConfig(FFPTcpConfig config)
+	{
+		this.config = config;
+	}
+}

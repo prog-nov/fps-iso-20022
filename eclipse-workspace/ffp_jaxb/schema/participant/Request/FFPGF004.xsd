@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_Complex.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Date.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_Number.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_CHINESE.xsd"></xs:include>
+	<xs:include schemaLocation="../Common/MsgDataType_String_SYMBOL.xsd"></xs:include>
+
+	<xs:element name="BODY" type="FFPGF004"></xs:element>
+	<xs:complexType name="FFPGF004">
+		<xs:sequence>
+			<xs:element name="TotalRecords" type="Max5NumericText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="Records" type="Record" minOccurs="1" maxOccurs="5000" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Record">
+		<xs:sequence>
+			<xs:element name="SrcRefNm" type="RestrictedNZText_Max30" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RsnPrtry" type="UpperCaseNumericText_Exact1" minOccurs="1" maxOccurs="1" />
+			<xs:element name="RsnPrtryDesc" type="RestrictedFINZText_Max200" minOccurs="1" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+	
+</xs:schema>

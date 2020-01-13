@@ -1,0 +1,19 @@
+package com.forms.batch;
+
+import com.forms.framework.RunBatchJob;
+
+public class MainApp
+{
+	public static void main(String[] args) throws Exception
+	{
+		try
+		{
+			RunBatchJob test = RunBatchJob.getInstance();
+			test.execute(args);
+		}catch(Exception e)
+		{
+			throw e;
+		}
+	}
+}
+

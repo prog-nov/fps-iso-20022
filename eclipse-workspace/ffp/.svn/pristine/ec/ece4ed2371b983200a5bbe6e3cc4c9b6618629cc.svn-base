@@ -1,0 +1,927 @@
+/*
+ * Copy Right Information : Forms Syntron 
+ * Project : 四方精创 Java EE 开发平台 
+ * Description : 主框架布局样式，只有主框架用到（含首页）
+ * Author : Leo Yang 
+ * Version : 1.0.0 
+ * Since : 1.0.0 
+ * Date : 2016-5-13
+ */
+ /****主框架布局样式***/
+.main-north-div {
+	overflow: hidden;
+	height: 70px;
+	border: false;
+}
+.main-south-div {
+	height: 30px;
+	text-align: center;
+	border: false;
+}
+.west-menu-tile B {
+	margin-left: 20px;
+}
+.west-menu {
+	padding: 5px;
+	margin-top: 0px;
+	position: relative;
+	top: -6px;
+}
+.main-center-div {
+	border: false;
+	margin:0;
+	padding-top:5px;
+}
+.collection-menu-open {
+	position: absolute;
+	top: 120px;
+	right: 65px;
+	width: 120px;
+	z-index: 10;
+	display: none;
+}
+.north-menu {
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	margin-bottom: 7px;
+	margin-right: 60px;
+}
+.md {
+	height: 16px;
+	line-height: 16px;
+	background-position: 2px center;
+	text-align: right;
+	font-weight: bold;
+	padding: 0 2px;
+}
+#cheat_form div{
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+#msg_list ul li{
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 15px;
+}
+
+/* #busi_status{
+	height:100%;
+	position: relative;
+	margin:0px;
+	padding:10px;
+}
+#busi_status div {
+	width:100px;
+	height:100px;
+	margin:10px 10px 10px 15px;
+	float: left;
+	cursor:pointer;
+	text-align:center;
+}
+#busi_status div i{
+	width:70px;
+	height:70px;
+	cursor:pointer;
+	float:left;
+	margin:5px 10px 0px 15px;
+}
+#busi_status div span{
+	clear:both;
+	display:inline-block;
+} */
+
+/******pointMenu*******/
+.pointMenu {
+    position:fixed;
+    bottom:50px;
+    left:50px;
+    height:50px;
+    width:50px;
+    z-index:5;
+}
+.pointStart {
+    position:absolute;
+    cursor:pointer;
+    bottom:10px;
+    outline:0 none;
+    left:0px;
+    height:40px;
+    width:40px;
+    border-radius:20px;
+    z-index:5;
+}
+.point-open {
+    border-radius:0px 0px 20px 20px;
+    border:0px;
+    width:40px;
+    height:42px;
+}
+.pointPanel {
+    position:absolute;
+    width:200px;
+    height:260px;
+    overflow:hidden;
+    bottom:50px;
+    border-radius:10px 10px 10px 0px;
+    filter:alpha(opacity=70);
+    opacity:0.7;
+    font-size:13px;
+    z-index:1;
+}
+.pointPanel .point-header {
+    height:30px;
+    width:100%;
+    line-height:30px;
+}
+.pointPanel .point-header .seticon {
+    float:right;
+    height:20px;
+    width:15px;
+    cursor:pointer;
+    margin:5px 5px 0px 0px;
+}
+.pointPanel .point-header .qieicon {
+    float:right;
+    height:20px;
+    width:15px;
+    cursor:pointer;
+    margin:5px 10px 0px 0px;
+}
+.pointPanel Ul {
+    width:100%;
+    padding:0px;
+    margin:0px auto;
+    text-align:center;
+    height:232px;             /*高度 44*5 + (2*5上下边框) = 230 +2 最多放5个 */    
+    overflow:hidden;
+}                           
+.pointPanel Ul li {
+    float:left;
+    height:44px;              /*高度 44 */   
+    width:180px;
+    list-style:none;
+    padding:0px;
+    margin:0px;
+    line-height:45px;
+    margin:0px 10px;
+    border-radius:8px;
+    text-align:left;
+    overflow:hidden;
+}
+.pointPanel Ul li a{
+    color:#FFFFFF;
+    text-decoration:none;
+    display:block;
+    width:100%;
+    height:44px;
+}
+.pointPanel Ul li i{
+    float:left;
+    width:32px;
+    height:32px;
+    margin:6px 20px 6px 10px;/*高度 12 + 32 =44 */
+}
+.pointMenu .pointPanel Ul li:hover {
+   filter:alpha(opacity=100);
+   cursor:pointer;
+}
+.pointMenu .bigPanel Ul{
+    padding:0px 20px;            /*宽度 90px * 80  + 40 （左右边距） = 760 最大一排放8个  */
+    height:370px; 
+    margin-top:10px; 
+    overflow:auto;
+}
+.pointMenu .bigPanel Ul li{
+    width:70px;                   /*宽度 70px + 20 = 90  一个格子的宽度 */ 
+    height:70px;
+    overflow:hidden;
+    padding:10px;
+    margin:0 auto;         
+}
+.pointMenu .bigPanel Ul li a{
+    text-decoration:none;
+    display:block;
+    width:70px;
+    height:70px;
+    margin:0 auto;
+    padding:0px;
+    text-align:center;
+    line-height:40px;
+    overflow:hidden;
+    border:0px;
+}
+.pointMenu .bigPanel Ul li a i{
+    display:block;
+    width:32px;
+    height:32px;
+    margin:4px 19px;
+    padding:0px;
+    text-align:center;
+}
+.pointMenu .bigPanel Ul li:hover{
+    cursor:pointer;
+}
+/****顶部区域*****/
+body {
+    font: 14px/20px "宋体","宋体",Arial,sans-serif,Verdana,Tahoma;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+/**总高度82**/
+.top-websit {
+    width:100%;
+    min-width:700px;/*最小宽度控制在1000内保证top不变性 中间自适应*/
+    height:80px;
+    overflow:hidden;
+    position:fixed;
+}
+.top-websit .left{
+    float:left;
+    height:60px;
+    width:400px;
+    z-index:2;
+    margin-top:10px;
+}
+.top-websit .right{
+    width:200px;
+    height:82px;
+    float:right;
+    z-index:0;
+}
+.top-websit .link-group{
+   margin-right:10px;
+}
+.top-websit .right .link-but{
+    float:right;
+    margin-right:7px;
+    margin-top:5px;
+    text-decoration:none;
+    cursor:pointer;
+}
+.top-websit .right .link-but a{
+    font-size:14px;
+    text-decoration:none;
+    cursor:pointer;
+}
+.top-websit .right .link-but a:hover{
+    font-size:14px;
+    text-decoration:none;
+    cursor:pointer;
+}
+.top-websit .right .link-but i {
+    float:left;
+    display:block;
+    height:15px;
+    width:15px;
+    margin:3px 2px 0px 2px;
+    cursor:pointer;
+}
+.top-websit .right .link-but .none {
+    width:0px;
+}
+.top-websit .center{  /*菜单区域宽度360*/
+    height:82px;
+    min-width:30px;
+    margin:0px 200px 0px 400px;
+    text-align:center;
+}
+.top-websit .center .topmenu {
+    padding:0px 0px 0px 0px;
+    height:45px;
+    margin:0 auto;
+    margin-left:20px;
+    margin-top:10px;
+    text-align:center;
+    float:left;
+    overflow:visible; 
+    /*超出div隐藏*/
+}
+.top-websit .messageSection{
+	width:65%;
+	margin-top:0px;
+	text-align:left;
+	font-size:12px;
+	font-family: "宋体";
+	height:20px;
+	line-height:20px;
+	position:fixed;
+    top:3px;
+    left:20%;
+    overflow:hidden;
+}
+.top-websit .messageSection ul{
+    list-style:none;
+    padding:0px;
+    margin:0px;
+}
+.top-websit .messageSection ul li{
+    list-style:none;
+    padding:0px;
+    margin:0px;
+    width:90%;
+    overflow:hidden;
+    height:20px;
+    text-overflow:ellipsis;
+}
+.top-websit .messageSection a{
+    text-decoration:none;
+    font-weight:800;
+}
+.top-websit .messageSection a:hover{
+    text-decoration:underline;
+}
+.top-websit .messageSection .laba{
+   float:left;
+   display:block;
+   height:13px;
+   width:12px;
+   margin:2px 5px 0px 0px;
+}
+.top-websit .messageSection .messageContent{
+	height:20px;	
+	float:left;
+	width:90%;
+}
+/*一级处理*/
+.top-websit .center .topmenu .onelevel{
+  list-style:none;
+  float:left;
+  height:25px;
+  line-height:25px;
+  margin-top:20px;
+}
+.top-websit .center .topmenu .onelevel a{
+    display:block;
+    height:25px;
+    text-decoration:none;
+    cursor:pointer;
+    padding:1px 1px 1px 1px;
+}
+.top-websit .center .topmenu .onelevel i {
+    float:left;
+    display:block;
+    height:15px;
+    width:15px;
+    margin:5px 5px 5px 10px;
+}
+.top-websit .center .topmenu .onelevel span {
+    float:left;
+}
+.top-websit .center .topmenu .onelevel .down {
+    float:left;
+    margin:5px;
+}
+.top-websit .center .topmenu .onelevel .none {
+    width:0px;
+    margin:0px 2px;
+}
+.top-websit .center .topmenu .onelevel .select {     
+    cursor:pointer;
+    height:28px;
+    padding:0px;
+}
+.top-websit .center .topmenu .onelevel .select-hasitem {   /*一级焦点*/
+    border-bottom:0;
+    height:31px;
+    cursor:pointer;
+    position:relative;
+    z-index:10;          /*标题要比下面的ul要大*/
+    padding:0px;
+}
+
+/*二级处理*/
+.top-websit .center .topmenu .onelevel .twolevel{
+  display:none;
+  position:fixed;
+  padding:0px;
+  margin:0px;
+  top:61px;
+  text-align:left;
+  padding:10px 0;
+  z-index:5;             /*ul要比上面的标题要小 实现无缝衔接效果*/
+  width:178px;
+}
+.top-websit .center .topmenu .onelevel .twolevel li{
+    list-style:none;
+    position:relative;
+    height:30px;
+    line-height:30px;
+    margin:5px 0px;
+}
+.top-websit .center .topmenu .onelevel .twolevel li i{
+    margin:8px 10px 5px 0px;
+}
+.top-websit .center .topmenu .onelevel .twolevel li a{
+    text-align:center;
+    padding:0px;
+    text-align:left;
+    list-style:none;
+    height:30px;
+    padding-left:10px;
+    line-height:30px;
+    border-radius:0px;
+    position:relative;
+}
+.top-websit .center .topmenu .onelevel .twolevel li .sicon-right{
+    float:right;
+}
+.top-websit .center .topmenu .onelevel .twolevel li .sicon-left{
+    float:right;
+}
+/*二级焦点*/
+.top-websit .center .topmenu .onelevel .twolevel li .select-hasitem2 .sicon-right{
+   float:right;
+}
+.top-websit .center .topmenu .onelevel .twolevel li .select-hasitem2 .sicon-left{
+    float:right;
+}
+
+/*三级及以下*/
+.top-websit .center .topmenu .onelevel .twolevel ul{
+  display:none;
+  position:absolute;
+  padding:0px;
+  margin:0px;
+  left:178px;
+  top:0;
+  text-align:left;
+  padding:10px 0;
+  width:178px;
+}
+.top-websit .center .topmenu .more-menu {
+    width:28px;
+}
+.top-websit .center .topmenu .more-menu .sicon-more {
+    margin-right:6px;
+    margin-top:6px;
+}
+.top-websit .center .topmenu .more-menu .root-hover .sicon-more {
+    margin-right:6px;
+    margin-top:10px;
+}
+.top-websit .center .topmenu .more-menu .down{
+    float:right;
+}
+.top-websit .center .topmenu .more-menu .select-hasitem2 .down{
+    float:right;
+}
+.top-websit .center .topmenu .more-menu .select2 .down{
+    float:right;
+ }
+.disable span{
+	font-weight:400;
+}
+
+/****左侧mini菜单****/
+.mini-tree{
+  list-style:none;
+  margin:0px;
+  padding:0px;
+}
+.mini-tree .onelevel{
+  list-style:none;
+  float:left;
+  height:36px;
+  line-height:36px;
+  margin:0px;
+  width:100%;
+}
+.mini-tree .onelevel a{
+  display:block;
+  text-decoration:none;
+  cursor:pointer;
+  margin:0px;
+  height:34px;
+  line-height:34px;
+}
+.mini-tree .onelevel i {
+    float:left;
+    display:block;
+    height:15px;
+    width:15px;
+    margin:9px 0px 8px 16px;
+}
+.mini-tree .onelevel .sicon-right {
+    margin:12px 0px 10px 0px;
+    float:right;
+}
+.mini-tree .onelevel .select-hasitem .sicon-right{
+    margin:12px 0px 10px 0px;
+    float:right;
+}
+.mini-tree .onelevel .none {
+    width:0px;
+    margin:0px 2px;
+    float:right;
+}
+.mini-tree .onelevel .select {         
+    cursor:pointer;
+    border-right:0;
+    border-left:0;
+    height:34px;
+}
+.mini-tree .onelevel .select-hasitem {   /*一级焦点*/
+    border-right:0;
+    border-left:0;
+    height:34px;
+    cursor:pointer;
+    position:relative;
+    z-index:10;          /*标题要比下面的ul要大*/
+}
+
+/*二级处理*/
+.mini-tree .onelevel .twolevel{
+ list-style:none;
+  display:none;
+  position:fixed;
+  padding:0px;
+  margin:0px;
+  text-align:left;
+  padding:10px 0;
+  z-index:5;             /*ul要比上面的标题要小 实现无缝衔接效果*/
+  width:178px;
+  left:56px;
+}
+.top-websit .center .topmenu .onelevel .twolevel li{
+    list-style:none;
+    position:relative;
+    height:30px;
+    line-height:30px;
+    margin:5px 0px;
+}
+.mini-tree .onelevel .twolevel li i{
+    margin:8px 10px 5px 0px;
+}
+.mini-tree .onelevel .twolevel li a{
+    text-align:center;
+    padding:0px;
+    text-align:left;
+    list-style:none;
+    height:30px;
+    padding-left:10px;
+    line-height:30px;
+    border-radius:0px;
+    position:relative;
+}
+.mini-tree .onelevel .twolevel li .sicon-right{
+   float:right;
+}
+.mini-tree .onelevel .twolevel li .sicon-left{
+    float:right;
+}
+
+/*二级焦点*/
+.mini-tree .onelevel .twolevel li .select-hasitem2 .sicon-right{
+    float:right;
+}
+.mini-tree .onelevel .twolevel li .select-hasitem2 .sicon-left{
+    float:right;
+}
+
+/*三级及以下*/
+.mini-tree .onelevel .twolevel ul{
+  display:none;
+  position:absolute;
+  padding:0px;
+  margin:0px;
+  left:178px;
+  top:0;
+  text-align:left;
+  padding:10px 0;
+  width:178px;
+}
+
+/****左侧区域*****/
+.user-info-div{
+	height: 50px;
+	width: 100%;
+	float: left;
+	margin: 0px;
+	padding: 0px;
+	padding-top: 15px;
+}
+.user-info-div .icon-user {
+	margin-top: 0px;
+	margin-left: 6px;
+	cursor: pointer;
+	height: 44px;
+	width: 44px;
+}
+.user-info-div .msg-info {
+	margin-top: -30px;
+	margin-left: 142px;
+	cursor: pointer;
+	height: 50px;
+	width: 27px;
+}
+.user-info-div .icon-num {
+	height: 12px;
+	padding:0px 3px;
+	text-align:center;
+	font-weight:600;
+	font-size:11px;
+	float:right;
+	line-height:12px;
+	border-radius:5px;
+}
+.user-info-div .icon-msg {
+	clear:both;
+	height: 20px;
+	width: 20px;
+}
+.user-info-div .user-name {
+	margin-top: -30px;
+	line-height: 18px;
+	margin-left: 64px;
+	font-size: 14px;
+	width: 70px;
+}
+.main-west-div {
+	padding: 0px;
+	width: 196px;
+	border: false;
+	border:0px;
+}
+.well {
+	padding: 0px;
+	margin-left: -1px;
+	margin-bottom: 20px;
+	border: 0px;
+} 
+#layout_west_tree .tree-node span{
+	font-size: 14px;
+	font-family: "宋体";
+}
+#layout_west_tree{
+   background-color:#FFFFFF;
+}
+#layout_west_tree li .tree-node{
+	height: 36px;
+	border-top:0px;
+}
+#layout_west_tree li .tree-icon{
+	margin-top:10px;
+	margin-right:6px;
+}
+#layout_west_tree li ul li .tree-node{
+	height: 35px;
+	line-height:35px;
+}
+#layout_west_tree li ul li .tree-node-selected{
+
+}
+#layout_west_tree li ul li .tree-icon{
+    margin-top:0px;
+}
+#layout_west_tree li .tree-node .tree-title{
+	padding-top: 10px;
+}
+#layout_west_tree li ul li .tree-node .tree-title{
+	padding-top: 10px;
+}
+#layout_west_tree li ul li ul li .tree-node{
+	height: 35px;
+	line-height:35px;
+	border-top:0px;
+	border-right:0px;
+}
+#layout_west_tree li ul li ul li .tree-icon{
+	padding-top: 2px;
+}
+#layout_west_tree li ul li ul li .tree-title{
+	padding-top: 10px;
+} 
+.menu-tree-collapsed{
+	margin-top: 15px;/**google识别**/
+	margin-top: 15px\0; /**ie识别**/
+	margin-bottom: 0px;
+	display: inline;
+	float:right;
+	margin-right : 10px;
+    height:15px;
+	width:15px;
+}
+.menu-tree-expended{
+	margin-top: 15px;/**google识别**/
+	margin-top: 15px\0; 
+	margin-bottom: 0px;
+	display: inline;
+	float: right;
+	margin-right : 10px;
+	height:15px;
+	width:15px;
+}
+#layout_west_tree li ul li .menu-tree-collapsed{
+	margin-top: 14px;/**google识别**/
+	margin-top: 15px\0;  /**ie识别**/
+}
+#layout_west_tree li ul li .menu-tree-expended{
+	margin-top: 14px;/**google识别**/
+	margin-top: 15px\0;  /**ie识别**/
+}
+/**火狐识别专属css**/
+@-moz-document url-prefix()
+{
+ .menu-tree-collapsed,.menu-tree-expended{margin-top: -16px;}
+ #layout_west_tree li ul li .menu-tree-collapsed,
+ #layout_west_tree li ul li .menu-tree-expended{margin-top: -22px;}
+}
+.dislpayArrow {
+	position:fixed;
+	top: 0;
+	bottom: 0;
+	left: 197px;
+	width: 0px;
+	height: 100%;
+	z-index: 1000;
+}
+.dislpayArrow a {
+	position:fixed;
+	display: block;
+	width: 17px;
+	height: 61px;
+	top: 50%;
+	margin-top: -30px;
+	outline: none;
+} 
+.dislpayArrow a.open {
+	background-position: 0 -61px
+}
+.dislpayArrow a:hover {
+	text-decoration: none;
+	background-position: right 0
+}
+.dislpayArrow a.open:hover {
+	background-position: right -61px
+}
+
+/***附加重构easyui ***/
+.tabs-icon  /**图标大小及位置重构**/
+{
+	height:15px;
+	width:15px;
+	margin-top:-9px;
+}
+.tabs-leftline /**tabs与左边菜单合并线条处理**/
+{
+	height:45px;
+	width:5px;
+	position:fixed;
+	top:82px;
+	left:195px;
+}
+.tabs-tool a{ /**tabs右边按钮栏位置处理**/
+	margin-top:8px;
+}
+.mini-tree div{
+	margin-top: 0px;
+	margin-left: 6px;
+	cursor: pointer;
+	height: 44px;
+	width: 44px;
+}
+
+.noteice-item{ /**公告信息样式**/
+	cursor: pointer;
+	color: blue;
+	line-height: 18px;
+	height: 18px;
+	vertical-align: middle;
+	overflow: hidden;
+	text-overflow: ellipsis; 
+}
+.noteice-item i{
+	margin: 0px;
+	padding:0px 9px;
+}
+
+/*首页面轮播样式*/
+.slider{ position:relative; width:660px; height:380px; background-color: #000; float: left;}  
+.slider img{ width: 660px; height: 380px;border-style: none;opacity: 1;} 
+.slider .shadow .title{width: 260px; height: 65px;padding-left: 30px;padding-top: 20px;}
+.slider .shadow .title a{ text-decoration:none; color:#fff; font-size:14px; font-weight:bolder; overflow:hidden; }
+.slider .btn{ position:absolute; bottom:34px; left:510px; overflow:hidden; zoom:1;} 
+.slider .btn a{position:relative; display:inline; width:13px; height:13px; border-radius:7px; margin:0 5px;color:#B0B0B0;font:12px/15px "\5B8B\4F53"; text-decoration:none; text-align:center; outline:0; float:left; background:#D9D9D9; }  
+.slider .btn a:hover,.slider .btn a.current{  cursor:pointer;background:#fc114a;}  
+.slider .fPic{ position:absolute; left:0px; top:0px; }  
+.slider .D1fBt{ overflow:hidden; zoom:1;  height:16px; z-index:10;  }  
+.slider .shadow {
+		width: 100%;
+		position: absolute;
+		bottom: 0;
+		left: 0px;
+		z-index: 10;
+		height: 50px;
+		line-height: 50px;
+		background: rgba(0,0,0,0.4);
+		filter: progid:DXImageTransform.Microsoft.gradient( GradientType = 0,startColorstr = '#80000000',endColorstr = '#80000000') \9;
+		display: block;
+		text-align: left;
+	}
+.slider .shadow a{ text-decoration:none; color:#fff; font-size:20px; overflow:hidden; margin-left:10px; font-family: "\5FAE\8F6F\96C5\9ED1";}  
+.slider .fcon{ position:relative; width:100%; float:left;  display:none; background:#000 ,MARGIN-RIGHT: auto;MARGIN-LEFT: auto; }  
+.slider .fcon img{ display:block; }  
+.slider .fbg{bottom:25px; right:40px; position:absolute; height:21px; text-align:center; z-index: 200; }  
+.slider .fbg div{margin:4px auto 0;overflow:hidden;zoom:1;height:14px}    
+.slider .D1fBt a{position:relative; display:inline; width:12px; height:12px; border-radius:7px; margin:0 5px;color:#B0B0B0;font:12px/15px "\5B8B\4F53"; text-decoration:none; text-align:center; outline:0; float:left; background:#D9D9D9; }    
+.slider .D1fBt .current,.slider .D1fBt a:hover{background:#fc114a;}    
+.slider .D1fBt img{display:none}    
+.slider .D1fBt i{display:none; font-style:normal; }    
+.slider .prev,.slider .next{position:absolute;width:40px;height:74px;background: url(./images/slider/focus_btn.png) no-repeat;}
+.slider .prev{top: 50%;margin-top: -37px; left: 0;background-position:0 -74px; cursor:pointer; }  
+.slider .next{top: 50%;margin-top: -37px; right: 0;  background-position:-40px -74px;  cursor:pointer;}  
+.slider .prev:hover{  background-position:0 0; }  
+.slider .next:hover{  background-position:-40px 0;} 
+
+/**处理待办任务功能**/
+#intro {
+    padding-bottom: 10px;
+}
+
+#sliderBox {
+    width: 640px;
+    margin: 0 auto;
+    position: relative;
+	border: 0;
+}
+
+.scroll {
+	overflow: hidden;
+	width: 640px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.scrollContainer {
+	position: relative;
+}
+
+.scrollContainer div.panel {
+    padding: 10px;
+    width: 82px;
+	height: 120px;
+}
+.inside {
+	padding: 10px;
+	border: 0;
+}
+
+.inside img {
+	display: block;
+	border: 0;
+	margin: 0 auto;
+	width: 75px;
+	text-align: center;
+}
+
+.inside h2 {
+	font-weight: normal;
+	color: #111;
+	font-size: 14px;
+	margin: 0 0 8px 0;
+	width: 75px;
+/* 	text-align: center; */
+}
+
+.inside p {
+	font-size: 11px;
+	color: #ccc;
+}
+
+#sliderBox a {
+	color: #999;
+	text-decoration: none;
+	border-bottom: 1px dotted #ccc;
+}
+
+.D1pic1 a{
+	text-decoration: none;
+}
+
+#sliderBox a:hover {
+	border-bottom: 1px solid #999;
+}
+
+.scrollButtons {
+    position: absolute;
+    top: 50px;
+    cursor: pointer;
+    text-decoration:none;
+}
+
+.scrollButtons.left {
+    left: 20px;
+    width: 20px;
+}
+
+.scrollButtons.right {
+	float:left;
+    width: 20px;
+}
+
+.hide {
+    display: none;
+}

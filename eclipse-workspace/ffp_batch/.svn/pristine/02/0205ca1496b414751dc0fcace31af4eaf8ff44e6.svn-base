@@ -1,0 +1,165 @@
+package com.forms.batch.job.unit.participant.directdebit;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.batch.job.unit.participant.message.ffpddo01.FFPMsgDDO01_Pacs003;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.directdebit.FFPJbP210;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class DirectDebitOutwardBatchFileProcessor extends BatchBaseJob {
+	private static int batSubSeqNum = 0;// 报文文件序列号nnnnnnnn
+	private static String batchSubmissionDirectoryPath;
+
+	@Override
+	public void init() {
+		try {
+			batchSubmissionDirectoryPath = this.batchData + this.actionElement.element("parameters")
+			.element("parameter").elementText("batchSubmissionDirectoryPath");
+			this.batchLogger.info(String.format(
+					"batchSubmissionDirectoryPath=%s, clearingCode=%s",
+					batchSubmissionDirectoryPath, this.clearingCode));
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		}
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		getPacs003Dat();
+		return true;
+	}
+
+	private List<Map<String, Object>> getQueryResult() {
+		Connection loc_conn = null;
+		this.batchLogger.info("Database is connected");
+
+		List<Map<String, Object>> listResult = null;
+		try {
+			loc_conn = ConnectionManager.getInstance().getConnection();
+			String sql = "SELECT A.TRANSACTION_ID,A.END_TO_END_ID,B.* "
+					+ "FROM tb_tx_jnl A LEFT JOIN tb_tx_p210dat B ON A.JNL_NO = B.JNL_NO " + "WHERE "
+					+ "A.TX_STAT = ? AND " + "A.TX_CODE = ? AND " + "A.TX_SRC = ? AND " + "A.TX_MODE = ?";
+			ArrayList<String> list = new ArrayList<>();
+			list.add(FFPConstantsTxJnl.TX_STATUS.TX_STAT_CREAT.getStatus());
+			list.add(FFPConstantsTxJnl.TX_CODE.TX_CODE_P210.getCode());
+			list.add(FFPConstants.TX_SOURCE_AGENT);
+			list.add("B");
+			listResult = EntityManager.queryMapList(loc_conn, sql, list.toArray());
+		} catch (Exception e) {
+			this.batchLogger.error(e.getMessage());
+		} finally {
+			try {
+				if (loc_conn != null)
+					loc_conn.close();
+			} catch (SQLException e) {
+					this.batchLogger.error(e.getMessage());
+			}
+		}
+		
+		this.batchLogger.info("Database is closed");
+		return listResult;
+	}
+
+	private void getPacs003Dat() {
+		List<Map<String, Object>> queryResult = getQueryResult();
+		if (queryResult == null) {
+			this.batchLogger.error("No Data Is Found");
+			throw new RuntimeException("No Data Is Found");
+		}
+		for (Map<String, Object> object : queryResult) {
+
+			FFPJbP210 fb = new FFPJbP210();
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setEndToEndId((String) object.get("END_TO_END_ID"));
+			txJnl.setTransactionId((String) object.get("TRANSACTION_ID"));
+			fb.setTxJnl(txJnl);
+			fb.setCdtrContEmailAddr("");
+			fb.setCdtrContPhone("");
+			fb.setPymtCatPrps((String) object.get("CATEGORY_PURPOSE"));
+			fb.setSettlementDate((Timestamp) object.get("SETTLEMENT_DATE"));
+			fb.setSettlementCurrency((String) object.get("SETTLEMENT_CUR"));
+			if (object.get("SETTLEMENT_AMT") != null) {
+				fb.setSettlementAmount(new BigDecimal((String) object.get("SETTLEMENT_AMT")));
+			}
+			fb.setSrcRefNm((String) object.get("SRC_REF_NM"));
+			fb.setSrvcMode((String) object.get("SRVC_MODE"));
+			fb.setInstructedCurrency((String) object.get("INSTRUCTED_CUR"));
+			fb.setInstructedAmount(new BigDecimal((String) object.get("INSTRUCTED_AMT")));
+			fb.setChargersAgentId((String) object.get("CHG_AGT_ID"));
+			fb.setChargersAgentBic((String) object.get("CHG_AGT_BIC"));
+			fb.setChargersCurrency((String) object.get("CHG_CUR"));
+			fb.setChargersAmount(new BigDecimal((String) object.get("CHG_AMT")));
+			fb.setDebtorName((String) object.get("DEBTOR_NAME"));
+			fb.setDebtorAccountNumber((String) object.get("DEBTOR_ACCTNO"));
+			fb.setDebtorAccountNumberType((String) object.get("DEBTOR_ACCTNO_TYPE"));
+			fb.setDebtorAgentId((String) object.get("DEBTOR_AGT_ID"));
+			fb.setDebtorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			fb.setDbtrContPhone("");
+			fb.setCreditorName((String) object.get("CREDITOR_NAME"));
+			fb.setCreditorAccountNumber((String) object.get("CREDITOR_ACCTNO"));
+			fb.setCreditorAccountNumberType((String) object.get("CREDITOR_ACCTNO_TYPE"));
+			fb.setDbtrContEmailAddr("");
+			fb.setDbtrRltId((String) object.get("DEBTOR_RLT_ID"));
+			fb.setCreditorAgentId((String) object.get("CREDITOR_AGT_ID"));
+			fb.setCreditorAgentBic((String) object.get("DEBTOR_AGT_BIC"));
+			fb.setPaymentPurposeType((String) object.get("PURPOSE_TYPE"));
+			fb.setPaymentPurposeCd((String) object.get("PURPOSE_CODE"));
+			fb.setPaymentPurposeProprietary((String) object.get("PURPOSE_OTHER"));
+			fb.setRemittanceInformation((String) object.get("REMIT_INFO"));
+
+			FFPMsgDDO01_Pacs003 ffpMsgDBO01_Pacs003 = new FFPMsgDDO01_Pacs003(fb);
+
+			BufferedWriter bw = null;
+			try {
+				String msg = ffpMsgDBO01_Pacs003.parseHkiclMessage();
+				this.batchLogger.info("Generate A PACS003_PAYD01 Message");
+				System.out.println("-----------------------"+msg);
+				SimpleDateFormat fileNameDateForm = new SimpleDateFormat("yyyyMMdd");
+				String fileName = "FPSPCRO" + clearingCode + fileNameDateForm.format(new Date())
+						+ String.format("%08d", DirectDebitOutwardBatchFileProcessor.getBatSubSeqNum()) + ".xml";
+				this.batchLogger.info(String.format("Start To Write PACS003_PAYD01 File %s",
+						batchSubmissionDirectoryPath + fileName));
+				bw = new BufferedWriter(new OutputStreamWriter(
+						new FileOutputStream(new File(batchSubmissionDirectoryPath + fileName)), "UTF-8"));
+				bw.write(msg);
+				bw.flush();
+				this.batchLogger.info(String.format("Finish Writing PACS003_PAYD01 File %s",
+						batchSubmissionDirectoryPath + fileName));
+			} catch (Exception e) {
+				this.batchLogger.error(e.getMessage());
+			} finally {
+				try {
+					if (bw != null) 
+						bw.close();
+				} catch (IOException e) {
+					this.batchLogger.error(e.getMessage());
+				}
+			}
+		}
+	}
+
+	public synchronized static int getBatSubSeqNum() {
+		batSubSeqNum++;
+		return batSubSeqNum;
+	}
+
+}

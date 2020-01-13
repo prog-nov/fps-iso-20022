@@ -1,0 +1,121 @@
+package com.forms.ffp.bussiness.common;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.TX_CODE;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.TX_STATUS;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.ss.FFPSsSystem;
+import com.forms.ffp.persistents.bean.tx.m100.FFPJbM100;
+import com.forms.ffp.persistents.dao.ss.FFPIDao_System;
+import com.forms.ffp.persistents.service.tx.m100.FFPDaoService_M100;
+
+@Component("WEB.FFPTxSwitchModeSevice")
+@Scope("prototype")
+public class FFPTxSwitchModeSevice
+{
+	private Logger _logger = LoggerFactory.getLogger(FFPTxSwitchModeSevice.class);
+
+	@Resource(name = "FFPDaoService_M100")
+	private FFPDaoService_M100 m100Service;
+	
+	@Resource(name = "FFPIDao_System")
+	private FFPIDao_System dao;
+	
+	private String rcptMd;
+	
+	private Date SwtchgTm;
+
+	public void init(String rcptMd, Date SwtchgTm)
+	{
+		this.rcptMd = rcptMd;
+		this.SwtchgTm = SwtchgTm;
+	}
+
+	public boolean perform()
+	{
+		if (FFPConstants.FPS_RECEIVE_MODE_REALTIME.equals(rcptMd) || FFPConstants.FPS_RECEIVE_MODE_BATCH.equals(rcptMd))
+		{
+			FFPSsSystem system = dao.inquiry();
+			if((FFPConstants.FPS_RECEIVE_MODE_REALTIME.equals(rcptMd) && !FFPConstants.FPS_RECEIVE_MODE_BATCH.equals(system.getFpsReceiveMode()))
+					|| (FFPConstants.FPS_RECEIVE_MODE_BATCH.equals(rcptMd) && !FFPConstants.FPS_RECEIVE_MODE_REALTIME.equals(system.getFpsReceiveMode())))
+			{
+					return false;
+			}
+			FFPJbM100 loc_jb = new FFPJbM100();
+			String jnlNo = FFPIDUtils.getJnlNo();
+			loc_jb.setJnlNo(jnlNo);
+			loc_jb.setRcptMd(rcptMd);
+			if(this.SwtchgTm == null)
+			{
+				Calendar cal = Calendar.getInstance();
+				cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) + 1);
+				this.SwtchgTm = cal.getTime();
+			}
+			loc_jb.setSwtchgTs(SwtchgTm);
+			
+			FFPTxJnl txJnl = new FFPTxJnl();
+			txJnl.setJnlNo(jnlNo);
+			txJnl.setTxStat(TX_STATUS.TX_STAT_APPST.getStatus());
+			txJnl.setTxCode(TX_CODE.TX_CODE_M100.getCode());
+			txJnl.setTxSrc(FFPConstants.TX_SOURCE_FFP);
+			txJnl.setTxMode(FFPConstants.RUNNING_MODE_REALTIME);
+			txJnl.setTransactionId(FFPIDUtils.getTransactionId());
+			txJnl.setEndToEndId(FFPIDUtils.getEndToEndId());
+			Date loc_date = new Date();
+			txJnl.setCreateTs(loc_date);
+			loc_jb.setTxJnl(txJnl);
+			
+			if(FFPConstants.FPS_RECEIVE_MODE_REALTIME.equals(rcptMd))
+			{
+				dao.updateFpsReceiveMode(FFPConstants.FPS_RECEIVE_MODE_REALTIME_PROCESSING);
+			}
+			else
+			{
+				dao.updateFpsReceiveMode(FFPConstants.FPS_RECEIVE_MODE_BATCH_PROCESSING);
+			}
+			FFPMsgSwitchMode_FpsAdmi001 fpsAdmi001 = new FFPMsgSwitchMode_FpsAdmi001(loc_jb);
+			FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(fpsAdmi001);
+			
+			loc_jb.setMsgId(fpsAdmi001.getMsgID());
+			FFPTxJnlAction jnlAction = FFPJnlUtils.getInstance().newJnlAction(jnlNo, fpsAdmi001.getMsgID(),
+								FFPConstants.MSG_DIRECTION_OUTWARD, FFPConstants.RELATION_SYSTEM_HKICL, fpsAdmi001.getMsgTypeName(),
+								response.getMessageStatus(), fpsAdmi001.getCreDt(), loc_date, loc_date, null);
+			
+			loc_jb.getJnlActionList().add(jnlAction);
+			m100Service.sInsert(loc_jb);
+			if(!FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus().equals(response.getMessageStatus()))
+			{
+				dao.updateFpsReceiveMode(system.getFpsReceiveMode());
+			}
+			
+			return true;
+		}
+		else
+		{
+			_logger.error("INVALID RCPTMD" + rcptMd);
+			return false;
+		}
+	}
+
+	public void validate() throws Exception
+	{
+		return;
+	}
+
+}

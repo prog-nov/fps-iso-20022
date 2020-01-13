@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch System Configuration Files-->
+<system-config>
+	<isprint>Y</isprint>
+	<classpath>
+		<!-- MUST SETTING -->
+		<index name="BATCH_ROOT" isEnv="N">C:/Users/qingzhizi/working/Project/FFP/Workspaces/FFPWorkspace1/ffp_batch</index>
+		<index name="BATCH_DATA" isEnv="N">C:/ffp/data/working</index>
+		<index name="BATCH_BACKUP" isEnv="N">C:/ffp/data/backup</index>
+		<index name="BATCH_CONFINFO" isEnv="N">C:/Users/qingzhizi/working/Project/FFP/Workspaces/FFPWorkspace1/ffp_batch/conf</index>
+		<index name="BATCH_ISB" isEnv="N">C:/ffp/data/remote</index>
+		<index name="BATCH_DBBACKUP_PATH" isEnv="N">C:/ffp/data/backup/DB</index>
+		<index name="BATCH_BIN" isEnv="N">C:/Users/qingzhizi/working/Project/FFP/Workspaces/FFPWorkspace1/ffp_batch/bin/windows</index>
+		<!-- <index name="BATCH_SPCIALPATH" isEnv="N">$__BATCH_SPCIALPATH</index> -->
+		<index name="CLEARINGCODE" isEnv="N">012</index>
+		<!-- USER PRIVATE SETTING -->
+		<index name="RECEIVE_FILE_SERVER_PORT" isEnv="N">8888</index>
+		<index name="STOP_PARTICIPANT_LISTENSER_TOEKN_FILE" isEnv="N">stoplistener.token</index>
+	</classpath>
+	<parameters>
+		<!-- MUST SETTING -->
+		<index name="BATCH_JOB_JNL_TABLE">TB_BH_JOB_JNL</index>
+		<parameter name="HOLIDAY_TABLE">BF_HOLIDAY</parameter>
+		<parameter name="acDate" isFunction="Y">com.forms.framework.util.DateUtil.getAcDate</parameter>
+		<!-- USER PRIVATE SETTING -->
+		<parameter name="DBTYPE">MYSQL</parameter>
+	</parameters>
+</system-config>

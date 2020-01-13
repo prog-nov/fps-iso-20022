@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.payment.credittransfer.FFPIDao_P100">
+
+	<!-- 新增交易开始 -->
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERTLIST_TB_TX_P1x0DAT">
+		INSERT INTO TB_TX_P100DAT
+		(JNL_NO,			CATEGORY_PURPOSE,	 ACCT_VERF,
+										SETTLEMENT_CUR,		SETTLEMENT_AMT,		SETTLEMENT_DATE,
+										INSTRUCTED_CUR,		INSTRUCTED_AMT,		CHG_AGT_ID,
+										CHG_AGT_BIC,		CHG_CUR,			CHG_AMT,
+										DEBTOR_NAME,		DEBTOR_ACCTNO,		DEBTOR_ACCTNO_TYPE,
+										DEBTOR_AGT_ID,		DEBTOR_AGT_BIC,		CREDITOR_NAME,
+										CREDITOR_ACCTNO,	CREDITOR_ACCTNO_TYPE,	CREDITOR_AGT_ID,
+										CREDITOR_AGT_BIC,	PURPOSE_TYPE, 		PURPOSE_CODE,
+										PURPOSE_OTHER,		REMIT_INFO)
+		VALUES (#{txJnl.jnlNo, jdbcType=VARCHAR},		
+				#{PymtCatPrps, jdbcType=VARCHAR},		#{accountVerification, jdbcType=VARCHAR},
+				#{settlementCurrency, jdbcType=VARCHAR},	#{settlementAmount, jdbcType=VARCHAR},	#{settlementDate, jdbcType=TIMESTAMP},
+				#{instructedCurrency, jdbcType=VARCHAR},	#{instructedAmount, jdbcType=VARCHAR},	#{chargersAgentId, jdbcType=TIMESTAMP},
+				#{chargersAgentBic, jdbcType=VARCHAR},	#{chargersCurrency, jdbcType=VARCHAR},	#{chargersAmount, jdbcType=TIMESTAMP},
+				#{debtorName, jdbcType=VARCHAR},	#{debtorAccountNumber, jdbcType=VARCHAR},	#{debtorAccountNumberType, jdbcType=TIMESTAMP},
+				#{debtorAgentId, jdbcType=VARCHAR},	#{debtorAgentBic, jdbcType=VARCHAR},	#{creditorName, jdbcType=TIMESTAMP},
+				#{creditorAccountNumber, jdbcType=VARCHAR},	#{creditorAccountNumberType, jdbcType=VARCHAR},	#{creditorAgentId, jdbcType=TIMESTAMP},
+				#{creditorAgentBic, jdbcType=VARCHAR},	#{paymentPurposeType, jdbcType=VARCHAR},	#{paymentPurposeCd, jdbcType=TIMESTAMP},
+				#{paymentPurposeProprietary, jdbcType=VARCHAR},	#{remittanceInformation, jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 新增交易结束 -->
+	
+	<!-- 更新交易状态开始 -->
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	<!-- 更新交易状态结束 -->
+	
+	<!-- 交易资料表查询 -->
+	<select id="inquiryByJnlNo" resultType="com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100">
+		SELECT 
+			A.CATEGORY_PURPOSE 		AS 	PymtCatPrps,
+		 	A.SETTLEMENT_CUR 		AS 	settlementCurrency,
+		 	A.SETTLEMENT_AMT 		AS 	settlementAmount,
+		 	A.SETTLEMENT_DATE 		AS	settlementDate,
+		 	A.INSTRUCTED_CUR 		AS 	instructedCurrency,
+		 	A.INSTRUCTED_AMT 		AS 	instructedAmount,
+		 	A.CHG_AGT_ID 			AS 	chargersAgentId,
+		 	A.CHG_AGT_BIC 			AS 	chargersAgentBic,
+		 	A.CHG_CUR 				AS 	chargersCurrency,
+		 	A.CHG_AMT 				AS 	chargersAmount,
+		 	A.DEBTOR_ACCTNO 		AS 	debtorAccountNumber,
+		 	A.DEBTOR_NAME 			AS 	debtorName,
+		 	A.DEBTOR_ACCTNO_TYPE 	AS 	debtorAccountNumberType,
+		 	A.DEBTOR_AGT_ID 		AS 	debtorAgentId,
+		 	A.DEBTOR_AGT_BIC 		AS 	debtorAgentBic,
+		 	A.DEBTOR_NAME 			AS 	creditorName,
+		 	A.CREDITOR_ACCTNO 		AS 	creditorAccountNumber,
+		 	A.CREDITOR_ACCTNO_TYPE 	AS 	creditorAccountNumberType,
+		 	A.CREDITOR_AGT_ID 		AS 	creditorAgentId,
+		 	A.CREDITOR_AGT_BIC 		AS 	creditorAgentBic,
+		 	A.PURPOSE_TYPE 			AS 	paymentPurposeType,
+		 	A.PURPOSE_CODE 			AS 	paymentPurposeCd,
+		 	A.PURPOSE_OTHER 		AS 	paymentPurposeProprietary,
+		 	A.REMIT_INFO 			AS 	remittanceInformation,
+		 	A.SRVC_MODE 			AS 	SrvcMode 
+		FROM 
+			TB_TX_P100DAT A 
+		WHERE 
+			A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- <update id="updateJbP100" parameterType="com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100">
+		UPDATE TB_TX_P100DAT A 
+		SET A.STATUS=#{status,jdbcType=VARCHAR},
+			A.REJ_CODE=#{rejCode,jdbcType=VARCHAR},
+			A.REJ_REASON=#{rejReason,jdbcType=VARCHAR}
+		WHERE 
+			A.JNL_NO=#{txJnl.jnlNo, jdbcType=VARCHAR}
+	</update> -->
+	
+	<!-- inquiry jnl_no by SrcRefNm -->
+	<select id="inquiryJnlNoBySrcRefNm" resultType="String">
+		SELECT
+			JNL_NO
+		FROM
+			TB_TX_P100DAT A
+		WHERE
+			A.SRC_REF_NM = #{SrcRefNm, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- inquiry jnl_no by MsgId -->
+	<select id="inquiryJnlNoByMsgId" resultType="String">
+		SELECT
+			A.JNL_NO
+		FROM
+			tb_tx_jnlaction A
+		WHERE
+			A.MSG_ID = #{MsgId, jdbcType=VARCHAR}
+	</select>
+</mapper>

@@ -1,0 +1,67 @@
+package com.forms.ffp.adaptor.jaxb.participant.response;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlRegistry;
+import javax.xml.namespace.QName;
+
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01.FFPADRI1;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.FFPCTI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02.FFPCTI02;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpddi01.FFPDDI01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpddi02.FFPDDI02;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpddo01.FFPDDO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffphc001.FFPHC001;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpms001.FFPMS001;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffprri01.FFPRRI01;
+
+
+@XmlRegistry
+public class ObjectFactory {
+
+    private final static QName _ROOT_QNAME = new QName("", "ROOT");
+
+    /**
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.forms.ffp.adaptor.jaxb.participant.request
+     * 
+     */
+    public ObjectFactory() {
+    }
+
+    public ROOT createROOT() {
+        return new ROOT();
+    }
+
+    @XmlElementDecl(namespace = "", name = "ROOT")
+    public JAXBElement<ROOT> createROOT(ROOT value) {
+        return new JAXBElement<ROOT>(_ROOT_QNAME, ROOT.class, null, value);
+    }
+    
+    @XmlElementDecl(namespace = "", name = "BODY")
+    public JAXBElement<?> createBODY(BODY value)
+    {
+    	if(value instanceof FFPCTI01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01.ObjectFactory()).createBODY((FFPCTI01)value);
+    	else if(value instanceof FFPCTI02)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02.ObjectFactory()).createBODY((FFPCTI02)value);
+    	else if(value instanceof FFPADRI1)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01.ObjectFactory()).createBODY((FFPADRI1)value);
+    	else if(value instanceof FFPCTO01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.ObjectFactory()).createBODY((FFPCTO01)value);
+    	else if(value instanceof FFPDDI01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpddi01.ObjectFactory()).createBODY((FFPDDI01)value);
+    	else if(value instanceof FFPDDI02)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpddi02.ObjectFactory()).createBODY((FFPDDI02)value);
+    	else if(value instanceof FFPDDO01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpddo01.ObjectFactory()).createBODY((FFPDDO01)value);
+    	else if(value instanceof FFPMS001)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffpms001.ObjectFactory()).createBODY((FFPMS001)value);
+    	else if(value instanceof FFPHC001)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffphc001.ObjectFactory()).createBODY((FFPHC001)value);
+    	else if(value instanceof FFPRRI01)
+    		return (new com.forms.ffp.adaptor.jaxb.participant.response.ffprri01.ObjectFactory()).createBODY((FFPRRI01)value);
+    	return null;
+    }
+    
+}

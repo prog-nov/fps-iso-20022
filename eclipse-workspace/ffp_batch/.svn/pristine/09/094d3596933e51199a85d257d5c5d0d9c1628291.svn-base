@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<!-- D_OVERSEAS_PAY_SUB MOVE IN HIS AND DELETE -->
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTO_RTS_SUB_2008
+			SELECT * FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2008'
+			)
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2008'
+			)
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTO_RTS_SUB_2009
+			SELECT * FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2009'
+			)
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2009'
+			)
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			INSERT INTO #{schema}.D_BMTO_RTS_SUB_2010
+			SELECT * FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2010'
+			)
+		</sql>
+		<sql>
+			DELETE FROM #{schema}.D_BMTO_RTS_SUB A
+			WHERE EXISTS
+			(
+			SELECT 1
+			FROM #{schema}.D_BMTO_RTS B
+			WHERE A.BMTO_OREF = B.BMTO_OREF
+				AND SUBSTR(B.SND_DATE,1,4) = '2010'
+			)
+		</sql>
+	</transaction>
+</job-sql-configs>

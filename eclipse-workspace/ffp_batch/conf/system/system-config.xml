@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RIS Batch System Configuration Files-->
+<system-config>
+	<globle>
+		<default-database>ffp</default-database>
+	</globle>
+	<database-list>
+		<database>
+			<database-name>ffp</database-name>
+			<property-resource>ffpdbProperty</property-resource>
+		</database>
+	</database-list>
+	<transfer-list>
+		<transfer>
+			<transfer-name comment="">130ftp</transfer-name>
+			<property-resource>ftpProperty</property-resource>
+		</transfer>
+		<transfer>
+			<transfer-name comment="">isb</transfer-name>
+			<property-resource>isbProperty</property-resource>
+		</transfer>
+	</transfer-list>
+</system-config>

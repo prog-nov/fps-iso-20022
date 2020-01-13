@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="../Common/MsgDataType_String_ALPHA.xsd"></xs:include>
+	<xs:complexType name="FPSPARTICIPANTID">
+		<xs:sequence>
+			<xs:element name="BICCODE" type="BICFIIdentifier" minOccurs="0" maxOccurs="1" />
+			<xs:element name="ID" type="UpperCaseNumericText_Exact3" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:simpleType name="BICFIIdentifier">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by ahnan (EMBRACE) -->
+<job-sql-configs>
+	<transaction>
+		<sql>
+		<![CDATA[
+			INSERT INTO #{schema}.T_OVERSEAS_ARCHIVES_#{agoYear}
+			SELECT *
+			FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT	1
+				FROM #{schema}.M_OVERSEAS_SEND B
+				WHERE A.RTL_NO = B.OREF_NO
+				AND B.QRY_DATE <= '#{yearAgo}'
+				AND A.TABLE_NAME = 'M_OVERSEAS_SEND'
+			)
+		]]>
+		</sql>
+		<sql>
+		<![CDATA[
+			DELETE FROM #{schema}.T_OVERSEAS_ARCHIVES A
+			WHERE EXISTS
+			(
+				SELECT	1
+				FROM #{schema}.M_OVERSEAS_SEND B
+				WHERE A.RTL_NO = B.OREF_NO
+				AND B.QRY_DATE <= '#{yearAgo}'
+				AND A.TABLE_NAME = 'M_OVERSEAS_SEND'
+			)
+		]]>
+		</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				INSERT INTO #{schema}.M_OVERSEAS_SEND_#{agoYear}
+				SELECT * FROM #{schema}.M_OVERSEAS_SEND A
+		      	WHERE A.QRY_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+	<transaction>
+		<sql>
+			<![CDATA[
+				DELETE FROM #{schema}.M_OVERSEAS_SEND A
+		      	WHERE A.QRY_DATE <= '#{yearAgo}'
+		  	]]>
+	  	</sql>
+	</transaction>
+</job-sql-configs>

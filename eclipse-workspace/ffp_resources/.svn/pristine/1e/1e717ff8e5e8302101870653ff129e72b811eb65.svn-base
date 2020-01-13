@@ -1,0 +1,14 @@
+<Config>
+	<KEYS>
+	</KEYS>
+	<REPLACE_MAP>
+		<Object>
+			<NAME>##OrgnlEndToEndId##</NAME>
+			<VALUE>doc.getFIToFICstmrDrctDbt.getDrctDbtTxInf.getPmtId.getEndToEndId</VALUE>
+		</Object>
+		<Object>
+			<NAME>##OrgnlTxId##</NAME>
+			<VALUE>doc.getFIToFICstmrDrctDbt.getDrctDbtTxInf.getPmtId.getEndToEndId</VALUE>
+		</Object>
+	</REPLACE_MAP>
+</Config>

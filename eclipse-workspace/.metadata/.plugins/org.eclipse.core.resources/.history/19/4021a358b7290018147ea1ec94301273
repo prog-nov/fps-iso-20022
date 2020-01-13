@@ -1,0 +1,595 @@
+package com.forms.batch.job.outward;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import com.forms.beneform4j.util.Tool;
+import com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.MessageRejectV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.FPSTransactionStatusCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.OriginalGroupHeader71;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.PaymentTransaction801;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.StatusReasonInformation91;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.StatusReasonInformation92;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.core.define.FFPStatus;
+import com.forms.ffp.core.exception.FFPErrorLevel;
+import com.forms.ffp.core.exception.FFPSystemException;
+import com.forms.ffp.core.exception.FFPTeErrorMsg;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPTcpParticipantMessageConverter;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.EntityManager;
+import com.forms.framework.util.ResourceUtil;
+
+public class CreditTransferOutwardBatchResponseFileProcessor extends BatchBaseJob 
+{
+	public static final Class<CreditTransferOutwardBatchResponseFileProcessor> CLASS_NAME = CreditTransferOutwardBatchResponseFileProcessor.class;
+	public static final String ERROR_CODE = FFPTeErrorMsg.getErrorCode(CLASS_NAME, 0);
+	private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName, CLASS_NAME);
+	private static SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+	
+	private static final String FILE_FOLDER_PATH = "FILE_FOLDER_PATH";
+	private static final String OUTWARD_BATCH_PRO_RESOURCE = "outwardFromICLFileFolderProperty";
+	private static final String ADMIN002_NO_REF = "NOREF";
+	
+	private static String filePath = null;
+	private Date _batchDate = null;
+	//private static String ip = null;
+	//private static String port = null;
+
+	//public static final String O_TO_IP = "TO_IP";
+	//public static final String O_TO_PORT = "TO_PORT";
+	//private Properties loc_prop;
+	public static final String FROM_FFP_O = "FFP";
+	public static final String TO_AGENT_O = "AGENT";
+	public static final String CTO01_O_RES = "CTO01";
+	public static final String ACCP_FROM_ICL_O = "ACCP";
+	public static final String ACSP_FROM_ICL_O = "ACSP";
+	public static final String PDNG_FROM_ICL_O = "PDNG";
+	public static final String RJCT_FROM_ICL_O = "RJCT";
+	public static Map<String, List<ISO20022BusinessDataV01>> map;
+	
+	public void initial() throws FFPSystemException 
+	{
+		final String METHOD_NAME = "initial()";
+		try 
+		{
+			_logger.info("init credit transfer outward response config started");
+			map = new HashMap<String, List<ISO20022BusinessDataV01>>();
+			Properties loc_prop = (Properties) ResourceUtil.getInstance().getResource(CreditTransferOutwardBatchResponseFileProcessor.OUTWARD_BATCH_PRO_RESOURCE, ResourceUtil.RESOURCE_PROPERTIES_TYPE);
+			filePath = loc_prop.getProperty(CreditTransferOutwardBatchResponseFileProcessor.FILE_FOLDER_PATH);
+			//ip = loc_prop.getProperty(CreditTransferOutwardBatchResponseFileProcessor.O_TO_IP);
+			//port = loc_prop.getProperty(CreditTransferOutwardBatchResponseFileProcessor.O_TO_PORT);
+
+			_logger.info(String.format("Outward batch file filePath[%s]", filePath));
+			//_logger.info(String.format("Outward batch file ip[%s]", ip));
+			//_logger.info(String.format("Outward batch file port[%s]", port));
+
+			_logger.info("init credit transfer outward response config started end");
+
+		} 
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			_logger.info("initial() error ,please check! ");
+
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		}
+	}
+
+	public String readFromFile(File file) throws FFPSystemException 
+	{
+		final String METHOD_NAME = "readFromFile()";
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = new BufferedReader(new FileReader(file));
+			StringBuilder stringBuilder = new StringBuilder();
+			String content;
+			while ((content = bufferedReader.readLine()) != null) {
+				stringBuilder.append(content);
+			}
+
+			return stringBuilder.toString();
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			_logger.info(String.format("Read file[%s] has error !", file.getName()));
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		} finally {
+			try {
+				bufferedReader.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				_logger.info("Error on closing bufferedReader Stream!");
+			}
+		}
+	}
+
+	public static void main(String[] args) throws FFPSystemException, BatchJobException 
+	{
+		/*CreditTransferOutwardBatchResponseFileProcessor processor = new CreditTransferOutwardBatchResponseFileProcessor();
+		processor.initial();
+		Connection conn = null;
+		try {
+			conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+			processor.dealXml(conn);
+			processor.sendXML(conn);
+			boolean delAllFile = processor.delAllFile(filePath);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			ConnectionManager.closeConn(conn);
+		}*/
+		
+		List<String> list = new ArrayList<String>();
+		list.add("1");
+		list.add("1");
+		list.add("1");
+		list.add("1");
+		System.out.println(list.size());
+		
+		list.remove(3);
+		
+		System.out.println(list.size());
+
+	}
+
+	public void process()
+	{
+		final String METHOD_NAME = "process()";
+		
+		_logger.info("Process credit transfer outward batch file start");
+		try
+		{
+			//1.read credit transfer outward batch file
+			List<File> readFiles = readfiles(filePath);
+			if (readFiles == null || readFiles.size() == 0) 
+			{
+				_logger.info("the file folder " + filePath + " is empty ");
+				return;
+			}
+			
+			for(File file : readFiles)
+			{
+				try
+				{
+					_logger.info(String.format("Credit Transfer outward batch file[fileName:%s]", file.getName()));
+					String fileString = readFromFile(file);
+					
+					//2.parse xml file
+					FpsMessageEnvelope fpsMsg = FFPHkiclMessageConverter.parseObject(fileString);
+					
+					List<ISO20022BusinessDataV01> bizData = fpsMsg.getFpsPylds().getBizData();
+					Object document = bizData.get(0).getContent().get(1).getValue();
+					if(document instanceof com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document)
+					{
+						//3.admin reject process
+						MessageRejectV01 admi00200101 = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document).getAdmi00200101();
+						String adminRef = admi00200101.getRltdRef().getRef();
+						String rejCode = admi00200101.getRsn().getRjctgPtyRsn();
+						String rejReason = admi00200101.getRsn().getRsnDesc();
+						String refFileName = admi00200101.getRsn().getAddtlData();//file name of the outward file
+						//a.adminRef = "NoRef"
+						if(ADMIN002_NO_REF.equals(adminRef))
+						{
+							_logger.info(String.format("The file[FileName:%s] had been reject by FPS with Reject Code[%s] and Reject Reason[%s]", refFileName, rejCode, rejReason));
+						}
+						else
+						{
+							//b.adminRef = "Original message id"
+							
+						}
+					}
+					else if(document instanceof com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document)
+					{
+						com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document doc = (com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document) document;
+						//4.invalid response file process
+						List<PaymentTransaction801> txInfAndSts = doc.getFIToFIPmtStsRpt().getTxInfAndSts();
+						
+						//4a.group status of transaction
+						OriginalGroupHeader71 rigGrpInf = doc.getFIToFIPmtStsRpt().getOrgnlGrpInfAndSts();
+						String grpSts = rigGrpInf.getGrpSts() != null ? rigGrpInf.getGrpSts().value() : null;
+						List<String> addInf = rigGrpInf.getStsRsnInf().getAddtlInf();
+						String grpRejCode = rigGrpInf.getStsRsnInf() != null && rigGrpInf.getStsRsnInf().getRsn() != null ? rigGrpInf.getStsRsnInf().getRsn().getPrtry() : null;
+						
+						if(grpSts != null)
+						{
+							if(FFPStatus.GROUP_STATUS.PARTIALLY_ACCEPTED.equals(grpSts))
+							{
+								//NOT check group status with all tx_status:PART
+								_logger.info(String.format("The credit transfer outward batch response file[%s] group status is : %s", file.getName(), grpSts));
+							}
+							else
+							{
+								//rule1: group status = "RJCT" ,then transaction status must be "RJCT"
+								//rule2: group status = "ACSC" ,then transaction status must be "ACSC"
+								if(!checkStatus(grpSts, txInfAndSts))
+								{
+									
+								}
+							}
+						}
+						
+						//4b.transaction process
+						
+					}
+					else
+					{
+						_logger.info(String.format("Error document type of file[FileName:%s]", file.getName()));
+						continue;
+					}
+				}
+				catch(Exception e)
+				{
+					
+				}
+			}
+			
+		}
+		catch(Exception ex)
+		{
+			
+		}
+	}
+	
+	private boolean checkStatus(String groupSts, List<PaymentTransaction801> txInfAndSts)
+	{
+		boolean allStsValid = true;
+		for(PaymentTransaction801 payTx : txInfAndSts)
+		{
+			if(payTx.getTxSts().value().compareTo(groupSts) != 0)
+			{
+				allStsValid = false;
+				break;
+			}
+		}
+		
+		return allStsValid;
+	}
+	
+	public void dealXml(Connection conn) throws Exception 
+	{
+		final String METHOD_NAME = "dealXml(Connection conn) ";
+		try {
+
+			_logger.info("dealXml(Connection conn) start");
+			List<File> readfiles = readfiles(filePath);
+			List list = null;
+			String updateTB_TX_JNL = null;
+			String updateTB_tX_JNL_ACTION = null;
+			String txsts = null;
+			String orgnlTxId = null;
+			String orgnlEndToEndId = null;
+			FpsMessageEnvelope fpsMsg = null;
+			if (readfiles.size() == 0 || readfiles == null) {
+				_logger.info("the file folder " + filePath + " is empty ");
+				return;
+			}
+			for (File file : readfiles) {
+				try {
+					_logger.info(file.getName() + "  to Object start ");
+
+					String fileString = new CreditTransferOutwardBatchResponseFileProcessor().readFromFile(file);
+					fpsMsg = FFPHkiclMessageConverter.parseObject(fileString);
+
+					_logger.info(file.getName() + "  to Object end ");
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					_logger.info(file.getName() + " fileString to Object error ");
+					continue;
+				}
+				try {
+					_logger.info(file.getName() + " List<ISO20022BusinessDataV01> bizData start ");
+					List<ISO20022BusinessDataV01> bizData = fpsMsg.getFpsPylds().getBizData();
+					Object document = bizData.get(0).getContent().get(1).getValue();
+					if (document instanceof com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) {
+						MessageRejectV01 admi00200101 = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+								.getAdmi00200101();
+						String rjctgPtyRsn = admi00200101.getRsn().getRjctgPtyRsn();
+						String ref = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+								.getAdmi00200101().getRltdRef().getRef();
+						if (ref.equals("NOREF")) {
+							_logger.info(file.getName() + " is on NOREF status");
+						} else {
+							_logger.info(file.getName() + " is on NORMAL status");
+						}
+					} else if (document instanceof Document) {
+						_logger.info(file.getName() + " is casting ");
+						List<PaymentTransaction801> txInfAndSts = ((Document) document).getFIToFIPmtStsRpt()
+								.getTxInfAndSts();
+						//if (!(txInfAndSts.size() + "").equals(fpsMsg.getNbOfMsgs())) {
+						//	_logger.info(file.getName() + " not correct format,please retry");
+						//	continue;
+						//}
+						map.put(file.getName(), bizData);
+						_logger.info(file.getName() + " txInfAndSts start  ");
+
+						for (PaymentTransaction801 tx : txInfAndSts) {
+							FPSTransactionStatusCode txSts = tx.getTxSts();
+							txsts = txSts.value();
+							orgnlTxId = tx.getOrgnlTxId();
+							orgnlEndToEndId = tx.getOrgnlEndToEndId();
+							updateTB_TX_JNL = " update tb_tx_jnl set tx_stat = ? where transaction_id  = ? AND end_to_end_id = ? ";
+							updateTB_tX_JNL_ACTION = "update tb_tx_jnlaction a1 inner join tb_tx_jnl a2  on a1.jnl_no=a2.jnl_no set a1.msg_status =? where a2.transaction_id = ? and a2.end_to_end_id = ? ";
+							list = new ArrayList();
+							list.add(txsts);
+							list.add(orgnlTxId);
+							list.add(orgnlEndToEndId);
+							EntityManager.update(conn, updateTB_TX_JNL, list.toArray());
+							list.clear();
+							list.add(txsts);
+							list.add(orgnlTxId);
+							list.add(orgnlEndToEndId);
+							EntityManager.update(conn, updateTB_tX_JNL_ACTION, list.toArray());
+						}
+						_logger.info(file.getName() + " txInfAndSts end ");
+
+					}
+					_logger.info(file.getName() + " List<ISO20022BusinessDataV01> bizData end ");
+				} catch (Exception ip_ex) {
+					_logger.info(file.getName() + " List<ISO20022BusinessDataV01> bizData error ");
+					ip_ex.printStackTrace();
+				}
+				_logger.info("dealXml(Connection conn) end");
+			}
+
+		} catch (Exception ex) {
+
+			ex.printStackTrace();
+			_logger.info(METHOD_NAME + " failed, please check!");
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+
+		}
+	}
+
+	public void sendXML(Connection conn) throws Exception {
+		final String METHOD_NAME = " sendXML(Connection conn) ";
+		try {
+			_logger.info("sendXML(Connection conn)  start ");
+
+			String orgnlTxId = null;
+			String orgnlEndToEndId = null;
+			List<PaymentTransaction801> txInfAndSts = null;
+			List listData = null;
+			String findJnl = null;
+			String insertAction = null;
+			String value = null;
+			List<Map<String, Object>> queryMapList = null;
+
+			List<File> readfiles = readfiles(filePath);
+			if (readfiles.size() == 0 || readfiles == null) {
+				_logger.info("the file folder " + filePath + " is empty ");
+				return;
+			}
+			for (File file : readfiles) {
+
+				List<ISO20022BusinessDataV01> list = map.get(file.getName());
+				if (list == null || list.size() == 0) {
+					continue;
+				}
+				Object document = list.get(0).getContent().get(1).getValue();
+				if (document instanceof Document) {
+					txInfAndSts = ((Document) document).getFIToFIPmtStsRpt().getTxInfAndSts();
+
+					for (PaymentTransaction801 tx : txInfAndSts) {
+						listData = new ArrayList();
+						orgnlTxId = tx.getOrgnlTxId();
+						orgnlEndToEndId = tx.getOrgnlEndToEndId();
+						value = tx.getTxSts().value();
+						StatusReasonInformation92 stsRsnInf = tx.getStsRsnInf();
+						listData.add(orgnlTxId);
+						listData.add(orgnlEndToEndId);
+						findJnl = " select A.jnl_no jnl_no ,MAX(A.seq_no) seq_no from tb_tx_jnlaction A left join tb_tx_jnl B on A.jnl_no = B.jnl_no where B.transaction_id = ? and B.end_to_end_id = ? ";
+						queryMapList = EntityManager.queryMapList(conn, findJnl, listData.toArray());
+						insertAction = " insert into tb_tx_jnlaction(jnl_no,seq_no,msg_from_type,msg_to_type,msg_type,msg_status)  values(?,?,?,?,?,?)";
+						if (queryMapList == null || queryMapList.size() == 0) {
+							_logger.info(
+									" orgnlTxId: " + orgnlTxId + " orgnlEndToEndId: " + orgnlEndToEndId + " no data");
+							continue;
+						}
+
+						for (Map<String, Object> map : queryMapList) {
+							if (map.get("jnl_no") == null || map.get("seq_no") == null) {
+								_logger.info("orgnlTxId(map): " + orgnlTxId + " orgnlEndToEndId(map): "
+										+ orgnlEndToEndId + " no data");
+								continue;
+							}
+							listData = new ArrayList();
+							listData.add((String) (map.get("jnl_no")));
+							listData.add(((int) (map.get("seq_no")))+1);
+							listData.add(FROM_FFP_O);
+							listData.add(TO_AGENT_O);
+							listData.add(CTO01_O_RES);
+							listData.add(ACCP_FROM_ICL_O);
+							int update = EntityManager.update(conn, insertAction, listData.toArray());
+							VOForRoot voForRoot = new VOForRoot();
+							voForRoot.setSrcReFNm((String) (map.get("JNL_NO")));
+							voForRoot.setFFPTransactionId(orgnlTxId);
+							voForRoot.setRsltCd(value);
+							if (stsRsnInf != null) {
+								voForRoot.setRejCd(stsRsnInf.getRsn().getPrtry());
+								voForRoot.setRejMsg(stsRsnInf.getAddtlInf().get(0));
+							}
+							try {
+								_logger.info("(map) " + file.getName() + " TCPBegin start ");
+
+								TCPBegin(voForRoot);
+								_logger.info("(map) " + file.getName() + " TCPBegin end  ");
+
+							} catch (Exception e) {
+								_logger.error("(map)" + file.getName() + " TCPBegin error ");
+							}
+						}
+
+					}
+
+				}
+			}
+			_logger.info(" sendXML(Connection conn)  end ");
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			_logger.info(METHOD_NAME + " failed, please check!");
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		}
+	}
+
+	public void TCPBegin(VOForRoot vo) throws Exception {
+		final String METHOD_NAME = " TCPBegin(VOForRoot vo) ";
+		try {
+			_logger.info("TCPBegin(VOForRoot vo) start, please check!");
+			ROOT root = new ROOT();
+			HEAD head = new HEAD();
+			head.setRequestID(Tool.STRING.getRandomNumeric(2));
+			head.setTransactionDate(Tool.STRING.getRandomNumeric(8));
+			head.setTransactionTime(Tool.STRING.getRandomNumeric(6));
+			head.setRequestRefno(Tool.STRING.getRandomNumeric(16));
+			head.setRequestID(Tool.STRING.getRandomNumeric(2));
+			head.setMessageType(Tool.STRING.getRandomNumeric(4));
+			FFPCTO01 body = new FFPCTO01();
+			body.setSrcRefNm(vo.getSrcReFNm());
+			body.setFFPTransactionId(vo.getFFPTransactionId());
+			if (vo.getRsltCd().equals("ACCP")) {
+				body.setRsltCd("S");
+			} else {
+				body.setRsltCd("R");
+				body.setRejCd(vo.getRejCd());
+				body.setRejMsg(vo.getRejMsg());
+			}
+			root.setHEAD(head);
+			root.setBODY(body);
+			String parseAck2FFPAgent = FFPTcpParticipantMessageConverter.parseXml2FFPAgent(root);
+			System.out.println(parseAck2FFPAgent);
+			Socket s = new Socket(ip, Integer.parseInt(port));
+			BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+			bufOut.write(parseAck2FFPAgent);
+			bufOut.flush();
+			s.close();
+			_logger.info("TCPBegin(VOForRoot vo) end, please check!");
+
+		} catch (Exception ex) {
+			_logger.info("TCPBegin(VOForRoot vo) error, please check!");
+			ex.printStackTrace();
+
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		}
+	}
+	
+	public List<File> readfiles(String filePath) 
+	{
+		File file = new File(filePath);
+		List<File> list = new ArrayList<File>();
+		//wh:for re-run
+		File[] files = file.listFiles(new FileFilter() {
+
+			@Override
+			public boolean accept(File subFile) {
+				String subFileName = subFile.getName();
+				String exFileName = subFileName.substring(subFileName.lastIndexOf(".") + 1);
+				String fileDate = subFileName.substring(10, 18);
+				
+				return subFileName.startsWith("FPSPCRR") || subFileName.startsWith("FPSERRI")					//compare file id
+						&& "XML".equalsIgnoreCase(exFileName) 													//compare file type
+						&& fileDate.compareTo(format.format(_batchDate)) == 0;									//compare date
+				
+			}});
+		
+		for(File f : files)
+		{
+			list.add(f);
+		}
+		
+		return list;
+	}
+
+	/*public List<File> readfiles(String filepath) throws FileNotFoundException, IOException, FFPSystemException {
+		final String METHOD_NAME = "readfiles()";
+		_logger.info("readfiles(String filepath) start ");
+
+		List<File> listFiles = new ArrayList();
+		try {
+			File file = new File(filepath);
+			if (file.isDirectory()) {
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File readfile = new File(filepath + "\\" + filelist[i]);
+					listFiles.add(readfile);
+				}
+			}
+			_logger.info("readfiles(String filepath) end ");
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			_logger.info("readfiles(String filepath) error the detail is  " + filepath + " failed, please check!");
+			throw new FFPSystemException(ERROR_CODE, CLASS_NAME.getName() + "->" + METHOD_NAME, ex.getMessage(),
+					FFPErrorLevel.ERR_LEVEL_ERRO, ex);
+		}
+		return listFiles;
+	}*/
+
+	public boolean delAllFile(String path) 
+	{
+		final String METHOD_NAME = "delAllFile()";
+		_logger.info("delAllFile(String path) start ");
+
+		boolean flag = false;
+		File file = new File(path);
+		if (!file.exists()) {
+			return flag;
+		}
+		if (!file.isDirectory()) {
+			return flag;
+		}
+		String[] tempList = file.list();
+		File temp = null;
+		for (int i = 0; i < tempList.length; i++) {
+			if (path.endsWith(File.separator)) {
+				temp = new File(path + tempList[i]);
+			} else {
+				temp = new File(path + File.separator + tempList[i]);
+			}
+			if (temp.isFile()) {
+				temp.delete();
+				flag = true;
+			}
+			if (temp.isDirectory()) {
+				delAllFile(path + "/" + tempList[i]);
+				flag = true;
+			}
+		}
+		_logger.info("delAllFile(String path) end ");
+
+		return flag;
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+}

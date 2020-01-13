@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="GBK"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<database-output-config>
+	<databaseName>risdb</databaseName>
+	<flush-rows>500</flush-rows>
+	<field-definition>
+		<field name="APPG_MODE"					  data-type="StringTypeRT"			/>
+		<field name="APPG_DATE"					  data-type="StringTypeRT"			/>
+		<field name="INST_NO"                     data-type="StringTypeRT"			/>
+		<field name="PAY_NO"                      data-type="StringTypeRT"			/>
+		<field name="REC_SEQ_NO"                  data-type="StringTypeRT"			/>
+		<field name="MSG_DATA"					  data-type="StringTypeRT"			/>
+		<field name="LAST_MAINT_DATE"             data-type="StringTypeRT"			/>
+		<field name="LAST_MAINT_STAT"             data-type="StringTypeRT"			/>
+		<field name="APP_SIGN"                    data-type="StringTypeRT"			/>
+		<field name="APDU"                        data-type="StringTypeRT"			/>
+		<field name="S_R_ORG_BANK"                data-type="StringTypeRT"			/>
+		<field name="SESSION_NUMBER"              data-type="StringTypeRT"			/>
+		<field name="IO_SEQ_NUMBER"               data-type="StringTypeRT"			/>
+		<field name="IO_SIGN"                     data-type="StringTypeRT"			/>
+		<field name="MESSAGE_TYPE"                data-type="StringTypeRT"			/>
+		<field name="MSG_TYPE"                	  data-type="StringTypeRT"			/>
+		<field name="RECV_BANK"                   data-type="StringTypeRT"			/>
+		<field name="INPUT_TIME"                  data-type="StringTypeRT"			/>
+		<field name="INPUT_DATE"                  data-type="RisDateLength10"			/>
+		<field name="SEND_BANK"                   data-type="StringTypeRT"			/>
+		<field name="SEND_OTHER"                  data-type="StringTypeRT"			/>
+		<field name="OUTPUT_DATE"                 data-type="RisDateLength10"		/>
+		<field name="OUTPUT_TIME"                 data-type="StringTypeRT"			/>
+		<field name="MSG_USER_REF_108"            data-type="StringTypeRT"			/>
+		<field name="MUR_109"                     data-type="StringTypeRT"			/>
+		<field name="SIT_11S"                     data-type="StringTypeRT"			/>
+		<field name="SIT_20"                      data-type="StringTypeRT"			/>
+		<field name="SIT_21"                      data-type="StringTypeRT"			/>
+		<field name="SIT_23B"                     data-type="StringTypeRT"			/>
+		<field name="SIT_25"                      data-type="StringTypeRT"			/>
+		<field name="SIT_26T"                     data-type="StringTypeRT"			/>
+		<field name="SIT_30"                      data-type="StringTypeRT"			/>
+		<field name="SIT_32A"                     data-type="StringTypeRT"			/>
+		<field name="SIT_33B"                     data-type="StringTypeRT"			/>
+		<field name="SIT_32C"                     data-type="StringTypeRT"			/>
+		<field name="SIT_32D"                     data-type="StringTypeRT"			/>
+		<field name="SIT_36"                      data-type="StringTypeRT"			/>
+		<field name="SIT_50_REMIT_BIC"            data-type="StringTypeRT"			/>
+		<field name="SIT_50_REMIT_AC"             data-type="StringTypeRT"			/>
+		<field name="SIT_50_REMIT"                data-type="StringTypeRT"			/>
+		<field name="SIT_52_REMIT_BANK_ACNO"      data-type="StringTypeRT"			/>
+		<field name="SIT_52_REMIT_BANK_BIC"       data-type="StringTypeRT"			/>
+		<field name="SIT_52_REMIT_BANK"           data-type="StringTypeRT"			/>
+		<field name="SIT_53_AG_SEND_BANK_BIC"     data-type="StringTypeRT"			/>
+		<field name="SIT_53_AG_SEND_BANK"         data-type="StringTypeRT"			/>
+		<field name="SIT_54_AG_RECV_BANK_BIC"     data-type="StringTypeRT"			/>
+		<field name="SIT_54_AG_RECV_BANK"         data-type="StringTypeRT"			/>
+		<field name="SIT_55_LIQUI_BANK_BIC"       data-type="StringTypeRT"			/>
+		<field name="SIT_55_LIQUI_BANK"           data-type="StringTypeRT"			/>
+		<field name="SIT_56_MID_BKNM_BIC"         data-type="StringTypeRT"			/>
+		<field name="SIT_56_MID_BKNM"             data-type="StringTypeRT"			/>
+		<field name="SIT_57_ACT_BKNM_BIC"         data-type="StringTypeRT"			/>
+		<field name="SIT_57_ACT_BKNM"             data-type="StringTypeRT"			/>
+		<field name="SIT_58_GATHERING_ACT"		  data-type="StringTypeRT"			/>
+		<field name="SIT_58_GATHERING_BIC"        data-type="StringTypeRT"			/>
+		<field name="SIT_58_GATHERING"            data-type="StringTypeRT"			/>
+		<field name="SIT_59_BENEFIT_ACT"          data-type="StringTypeRT"			/>
+		<field name="SIT_59_BENEFICIARY"          data-type="StringTypeRT"			/>
+		<field name="SIT_70"                      data-type="StringTypeRT"			/>
+		<field name="SIT_71A"                     data-type="StringTypeRT"			/>
+		<field name="SIT_71B"                     data-type="StringTypeRT"			/>
+		<field name="SIT_71G"                     data-type="StringTypeRT"			/>
+		<field name="SIT_72"                      data-type="StringTypeRT"			/>
+		<field name="SIT_75"                      data-type="StringTypeRT"			/>
+		<field name="SIT_76"                      data-type="StringTypeRT"			/>
+		<field name="SIT_77"                      data-type="StringTypeRT"			/>
+		<field name="SIT_79"                      data-type="StringTypeRT"			/>
+		<field name="docCnt"					  data-type="StringTypeRT"			/>
+	</field-definition>
+	
+	<update-sql>
+		INSERT INTO RTCXU01.D_OVERSEAS_PAY_MSGDATA_TEMP
+		(
+			APPG_MODE,
+			APPG_DATE,
+			INST_NO,
+			PAY_NO,
+			REC_SEQ_NO,
+			LAST_MAINT_DATE,
+			LAST_MAINT_STAT,
+			APP_SIGN,
+			APDU,
+			S_R_ORG_BANK,
+			SESSION_NUMBER,
+			IO_SEQ_NUMBER,
+			IO_SIGN,
+			MESSAGE_TYPE,
+			RECV_BANK,
+			INPUT_TIME,
+			INPUT_DATE,
+			SEND_BANK,
+			SEND_OTHER,
+			OUTPUT_DATE,
+			OUTPUT_TIME,
+			MSG_USER_REF_108,
+			MUR_109,
+			SIT_11S,
+			SIT_20,
+			SIT_21,
+			SIT_23B,
+			SIT_25,
+			SIT_26T,
+			SIT_30,
+			SIT_32A,
+			SIT_33B,
+			SIT_32C,
+			SIT_32D,
+			SIT_36,
+			SIT_50_REMIT_BIC,
+			SIT_50_REMIT_AC,
+			SIT_50_REMIT,
+			SIT_52_REMIT_BANK_ACNO,
+			SIT_52_REMIT_BANK_BIC,
+			SIT_52_REMIT_BANK,
+			SIT_53_AG_SEND_BANK_BIC,
+			SIT_53_AG_SEND_BANK,
+			SIT_54_AG_RECV_BANK_BIC,
+			SIT_54_AG_RECV_BANK,
+			SIT_55_LIQUI_BANK_BIC,
+			SIT_55_LIQUI_BANK,
+			SIT_56_MID_BKNM_BIC,
+			SIT_56_MID_BKNM,
+			SIT_57_ACT_BKNM_BIC,
+			SIT_57_ACT_BKNM,
+			SIT_58_GATHERING_BIC,
+			SIT_58_GATHERING,
+			SIT_59_BENEFIT_ACT,
+			SIT_59_BENEFICIARY,
+			SIT_70,
+			SIT_71A,
+			SIT_71B,
+			SIT_71G,
+			SIT_72,
+			SIT_75,
+			SIT_76,
+			SIT_77,
+			SIT_79,
+			SIT_58_GATHERING_ACT,
+			MSG_DATA,
+			DOC_CNT
+		)VALUES
+		(
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?
+		)
+	</update-sql> 
+
+	<sql-parameters>    
+		<sql-parameter index = "1"								field="APPG_MODE"					/>
+		<sql-parameter index = "2"								field="APPG_DATE"					/>
+		<sql-parameter index = "3"								field="INST_NO"                     />
+		<sql-parameter index = "4"								field="PAY_NO"                      />
+		<sql-parameter index = "5"								field="REC_SEQ_NO"                  />
+		<sql-parameter index = "6"								field="LAST_MAINT_DATE"             />
+		<sql-parameter index = "7"								field="LAST_MAINT_STAT"             />
+		<sql-parameter index = "8"								field="APP_SIGN"                    />
+		<sql-parameter index = "9"								field="APDU"                        />
+		<sql-parameter index = "10"								field="S_R_ORG_BANK"                />
+		<sql-parameter index = "11"								field="SESSION_NUMBER"              />
+		<sql-parameter index = "12"								field="IO_SEQ_NUMBER"               />
+		<sql-parameter index = "13"								field="IO_SIGN"                     />
+		<sql-parameter index = "14"								field="MSG_TYPE"                	/>
+		<sql-parameter index = "15"								field="RECV_BANK"                   />
+		<sql-parameter index = "16"								field="INPUT_TIME"                  />
+		<sql-parameter index = "17"								field="INPUT_DATE"                  />
+		<sql-parameter index = "18"								field="SEND_BANK"                   />
+		<sql-parameter index = "19"								field="SEND_OTHER"                  />
+		<sql-parameter index = "20"								field="OUTPUT_DATE"                 />
+		<sql-parameter index = "21"								field="OUTPUT_TIME"                 />
+		<sql-parameter index = "22"								field="MSG_USER_REF_108"            />
+		<sql-parameter index = "23"								field="MUR_109"                     />
+		<sql-parameter index = "24"								field="SIT_11S"                     />
+		<sql-parameter index = "25"								field="SIT_20"                      />
+		<sql-parameter index = "26"								field="SIT_21"                      />
+		<sql-parameter index = "27"								field="SIT_23B"                     />
+		<sql-parameter index = "28"								field="SIT_25"                      />
+		<sql-parameter index = "29"								field="SIT_26T"                     />
+		<sql-parameter index = "30"								field="SIT_30"                      />
+		<sql-parameter index = "31"								field="SIT_32A"                     />
+		<sql-parameter index = "32"								field="SIT_33B"                     />
+		<sql-parameter index = "33"								field="SIT_32C"                     />
+		<sql-parameter index = "34"								field="SIT_32D"                     />
+		<sql-parameter index = "35"								field="SIT_36"                      />
+		<sql-parameter index = "36"								field="SIT_50_REMIT_BIC"            />
+		<sql-parameter index = "37"								field="SIT_50_REMIT_AC"             />
+		<sql-parameter index = "38"								field="SIT_50_REMIT"                />
+		<sql-parameter index = "39"								field="SIT_52_REMIT_BANK_ACNO"      />
+		<sql-parameter index = "40"								field="SIT_52_REMIT_BANK_BIC"       />
+		<sql-parameter index = "41"								field="SIT_52_REMIT_BANK"           />
+		<sql-parameter index = "42"								field="SIT_53_AG_SEND_BANK_BIC"     />
+		<sql-parameter index = "43"								field="SIT_53_AG_SEND_BANK"         />
+		<sql-parameter index = "44"								field="SIT_54_AG_RECV_BANK_BIC"     />
+		<sql-parameter index = "45"								field="SIT_54_AG_RECV_BANK"         />
+		<sql-parameter index = "46"								field="SIT_55_LIQUI_BANK_BIC"       />
+		<sql-parameter index = "47"								field="SIT_55_LIQUI_BANK"           />
+		<sql-parameter index = "48"								field="SIT_56_MID_BKNM_BIC"         />
+		<sql-parameter index = "49"								field="SIT_56_MID_BKNM"             />
+		<sql-parameter index = "50"								field="SIT_57_ACT_BKNM_BIC"         />
+		<sql-parameter index = "51"								field="SIT_57_ACT_BKNM"             />
+		<sql-parameter index = "52"								field="SIT_58_GATHERING_BIC"        />
+		<sql-parameter index = "53"								field="SIT_58_GATHERING"            />
+		<sql-parameter index = "54"								field="SIT_59_BENEFIT_ACT"          />
+		<sql-parameter index = "55"								field="SIT_59_BENEFICIARY"          />
+		<sql-parameter index = "56"								field="SIT_70"                      />
+		<sql-parameter index = "57"								field="SIT_71A"                     />
+		<sql-parameter index = "58"								field="SIT_71B"                     />
+		<sql-parameter index = "59"								field="SIT_71G"                     />
+		<sql-parameter index = "60"								field="SIT_72"                      />
+		<sql-parameter index = "61"								field="SIT_75"                      />
+		<sql-parameter index = "62"								field="SIT_76"                      />
+		<sql-parameter index = "63"								field="SIT_77"                      />
+		<sql-parameter index = "64"								field="SIT_79"                      />
+		<sql-parameter index = "65"								field="SIT_58_GATHERING_ACT"		/>
+		<sql-parameter index = "66"								field="MSG_DATA"					/>
+		<sql-parameter index = "67"								field="docCnt"						/>
+	</sql-parameters>
+</database-output-config>

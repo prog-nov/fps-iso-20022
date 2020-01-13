@@ -1,0 +1,3 @@
+SET BAT_PATH="D:\CD_ICL File\Program\FFP\DownloadBase.BAT"
+
+CMD /C  %BAT_PATH% FPSD2006345*

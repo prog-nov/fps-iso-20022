@@ -1,0 +1,346 @@
+package com.forms.batch.job.unit.participant.outwardresponse;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.MSG_STATUS;
+import com.forms.ffp.core.define.FFPConstantsTxJnl.TX_STATUS;
+import com.forms.ffp.core.exception.FFPSystemException;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP100;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchResponseFileProcessor extends BatchBaseJob
+{
+	private static final String String = null;
+	private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName, CreditTransferOutwardBatchResponseFileProcessor.class);
+
+	private static Connection loc_conn = null;
+
+	public void init()
+	{
+		final String METHOD_NAME = "initial()";
+		try
+		{
+			if (loc_conn == null)
+			{
+				loc_conn = ConnectionManager.getInstance().getConnection();
+			}
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+			_logger.info("initial() error ,please check! ");
+
+		}
+	}
+
+	@Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			this.processor();
+			return true;
+		} catch (Exception ip_e)
+		{
+			throw new BatchJobException(ip_e);
+		}
+	}
+
+	private void processor() throws Exception
+	{
+		_logger.info("processor() method start");
+
+		try
+		{
+			List<FFPVO_Pacs002> FFPJbList = getTempData();
+			if (FFPJbList == null || FFPJbList.size() == 0)
+			{
+				_logger.info("TEMP TABLE TB_TX_JNL_RES_TEMP DATA IS EMPTY !! ");
+
+			} else
+			{
+				processTxData(FFPJbList);
+				_logger.info("processor() method end");
+			}
+
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+			_logger.error("Process outward file error", ex);
+			throw new BatchJobException(ex);
+		} finally
+		{
+			loc_conn.close();
+		}
+	}
+
+	private void processTxData(List<FFPVO_Pacs002> FFPJbList)
+	{
+		for (FFPVO_Pacs002 loc_pacs002 : FFPJbList)
+		{
+			try
+			{
+				saveAndSendPacs002Data(loc_pacs002);
+			} catch (Exception ip_e)
+			{
+				_logger.info(" saveAndSendPacs002Data() error .");
+
+			}
+		}
+
+	}
+
+	// get data from temp
+	private List<FFPVO_Pacs002> getTempData() throws FFPSystemException, Exception
+	{
+		List<FFPVO_Pacs002> list = new ArrayList<FFPVO_Pacs002>();
+		try
+		{
+
+			String sql_search = "SELECT * FROM TB_TX_JNL_RES_TEMP WHERE PRO_STAT = ?";
+			String getSrcRefNmSql = " SELECT SRC_REF_NM FROM TB_TX_P100DAT A LEFT JOIN TB_TX_JNL B ON A.JNL_NO = B.JNL_NO WHERE B.TRANSACTION_ID = ? AND B.END_TO_END_ID = ? ";
+
+			List search_param_list = new ArrayList();
+			String endToEndid = null;
+			String transactionId = null;
+			String srcRefNm = null;
+			String txStat = null;
+			search_param_list.add("I");
+			List<Map<String, Object>> queryMapList = EntityManager.queryMapList(sql_search, search_param_list.toArray());
+			if (queryMapList != null && queryMapList.size() > 0)
+			{
+
+				for (Map<String, Object> map : queryMapList)
+				{
+					FFPVO_Pacs002 pacs002 = new FFPVO_Pacs002();
+					List<FFPVO_Pacs002_TxInfAndSts> txInfList = new ArrayList<FFPVO_Pacs002_TxInfAndSts>();
+					FFPVO_Pacs002_TxInfAndSts toAgent = new FFPVO_Pacs002_TxInfAndSts();
+					FFPJbP100 p100 = new FFPJbP100();
+					if (map.get("END_TO_END_ID") != null)
+					{
+						endToEndid = (String) (map.get("END_TO_END_ID"));
+					} else
+					{
+						_logger.info("END_TO_END_ID FROM DATABASSE CANT EMPTY ! ");
+						continue;
+					}
+					if (map.get("TRANSACTION_ID") != null)
+					{
+						transactionId = (String) (map.get("TRANSACTION_ID"));
+					} else
+					{
+						_logger.info("TRANSACTION_ID FROM DATABASSE CANT EMPTY ! ");
+						continue;
+					}
+					if (map.get("TX_STAT") != null)
+					{
+						txStat = (String) (map.get("TX_STAT"));
+					} else
+					{
+						_logger.info("TX_STAT FROM DATABASSE CANT EMPTY ! ");
+						continue;
+					}
+
+					search_param_list.clear();
+					search_param_list.add(transactionId);
+					search_param_list.add(endToEndid);
+					Map<java.lang.String, Object> queryMap = EntityManager.queryMap(loc_conn, getSrcRefNmSql, search_param_list.toArray());
+					if (queryMap == null || queryMap.size() == 0)
+					{
+						_logger.info("SRC_REF_NM FROM TB_TX_P100DAT  IS EMPTY ! " + "(transactionId: " + transactionId + " endToEndid: " + endToEndid + ")");
+						search_param_list.clear();
+						continue;
+					}
+					srcRefNm = (String) (queryMap.get("SRC_REF_NM"));
+					p100.setSrcRefNm(srcRefNm);
+					toAgent.setP100Jb(p100);
+					toAgent.setOrgnlEndToEndId(endToEndid);
+					toAgent.setOrgnlTxId(transactionId);
+					toAgent.setTxSts(txStat);
+					toAgent.setTxStsRsnCode(map.get("REJ_CODE") != null ? (String) (map.get("REJ_CODE")) : null);
+					txInfList.add(toAgent);
+					pacs002.setTxInfList(txInfList);
+					list.add(pacs002);
+
+				}
+			} else
+			{
+				_logger.info("TEMP TABLE  EMPTY ! ");
+
+			}
+
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+			_logger.error(String.format("Failed to get file data from temporary table with batchDate[%s]", this.batchAcDate), ex);
+			throw new BatchJobException(ex);
+		}
+		return list;
+	}
+
+	private void saveAndSendPacs002Data(FFPVO_Pacs002 pacs002) throws Exception
+	{
+
+		// require jnlNo
+		String getJnlNoSql = "SELECT JNL_NO FROM TB_TX_JNL WHERE TRANSACTION_ID = ? AND END_TO_END_ID = ?";
+		// require seq_no ;
+		String getSeqNoSql = "SELECT MAX(SEQ_NO) SEQ_NO FROM TB_TX_JNLACTION WHERE JNL_NO = ? ";
+		// update tb_tx_jnl
+		String updateJnlByOSql = "UPDATE TB_TX_JNL SET TX_STAT = ? WHERE TRANSACTION_ID = ? AND END_TO_END_ID = ?";
+		String updateJnlByJnlNoSql = "UPDATE TB_TX_JNL SET TX_STAT = ? WHERE JNL_NO = ? ";
+		// update tb_tx_jnlaction
+		String updateJnlActionSql = "UPDATE TB_TX_JNLACTION SET MSG_STATUS = ?  WHERE JNL_NO = ? AND SEQ_NO = ? ";
+		// insert tb_tx_jnlaction
+		String insert_action_sql = "INSERT INTO TB_TX_JNLACTION (JNL_NO, MSG_ID, "
+				+ " MSG_FROM_TYPE, MSG_FROM,MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, REJ_CODE,REJ_RSN,MSG_CREAT_DATE,MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+		// update temp
+		String update_temp_sql = "UPDATE TB_TX_JNL_RES_TEMP SET PRO_STAT = ? WHERE TRANSACTION_ID = ? AND END_TO_END_ID = ?";
+
+		List list_jnl = new ArrayList();
+		List list_action = new ArrayList();
+		List list_temp = new ArrayList();
+
+		list_jnl.add(pacs002.getTxInfList().get(0).getOrgnlTxId());
+		list_jnl.add(pacs002.getTxInfList().get(0).getOrgnlEndToEndId());
+		Map<String, Object> queryMap = EntityManager.queryMap(loc_conn, getJnlNoSql, list_jnl.toArray());
+		if (queryMap == null || queryMap.size() == 0)
+		{
+			_logger.info("JNL_NO FROM TB_TX_JNL  IS EMPTY ! ");
+
+			return;
+		}
+		list_jnl.clear();
+		String jnlNo = (String) (queryMap.get("JNL_NO"));
+
+		list_action.add(jnlNo);
+		list_action.add(FFPIDUtils.getMessageId());
+		list_action.add(FFPConstants.MSG_TYPE_FFP);
+		list_action.add(FFPConstants.MSG_CODE_FFP);
+		list_action.add(FFPConstants.MSG_TYPE_AGENT);
+		list_action.add(FFPConstants.MSG_CODE_AGENT);
+		list_action.add(FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTO01);
+
+		list_action.add(MSG_STATUS.MSG_STAT_APPST.getStatus());
+		list_action.add(null);
+		list_action.add(null);
+		list_action.add(new Date());
+		list_action.add(null);
+		list_action.add(null);
+		try
+		{
+
+			loc_conn.setAutoCommit(false);
+			// insert action
+			EntityManager.update(loc_conn, insert_action_sql, list_action.toArray());
+			list_action.clear();
+			// update tx
+			list_jnl.add(pacs002.getTxInfList().get(0).getTxSts());
+			list_jnl.add(pacs002.getTxInfList().get(0).getOrgnlTxId());
+			list_jnl.add(pacs002.getTxInfList().get(0).getOrgnlEndToEndId());
+			EntityManager.update(loc_conn, updateJnlByOSql, list_jnl.toArray());
+			list_jnl.clear();
+			// update temp
+			list_temp.add("F");
+			list_temp.add(pacs002.getTxInfList().get(0).getOrgnlTxId());
+			list_temp.add(pacs002.getTxInfList().get(0).getOrgnlEndToEndId());
+			EntityManager.update(loc_conn, update_temp_sql, list_temp.toArray());
+			loc_conn.commit();
+		} catch (Exception ex)
+		{
+			loc_conn.rollback();
+			ex.printStackTrace();
+			_logger.error("(before)insert action,update tx ,update temp table of SQL execute batch failed", ex);
+			throw new BatchJobException(ex);
+		}
+		list_temp.clear();
+
+		/// send
+		int i = 0;
+		Integer seqNo = 0;
+		FFPMsgPacs002_CTO01 loc_msg = new FFPMsgPacs002_CTO01(pacs002, i);
+		FFPBaseResp response = FFPAdaptorMgr.getInstance().execute(loc_msg);
+		try
+		{
+			if (response != null)
+			{
+				list_action.add(jnlNo);
+				Map<String, Object> Re_map_seqNo = EntityManager.queryMap(loc_conn, getSeqNoSql, list_action.toArray());
+				if (Re_map_seqNo == null || Re_map_seqNo.size() == 0)
+				{
+					_logger.error(" SEQ_NO FROM TB_TX_JNLACTION IS EMPTY ." + "(jnlNo: " + jnlNo);
+
+					return;
+				}
+				seqNo = (Integer) (Re_map_seqNo.get("SEQ_NO"));
+
+				list_action.add(FFPIDUtils.getMessageId());
+				list_action.add(FFPConstants.MSG_TYPE_AGENT);
+				list_action.add(FFPConstants.MSG_CODE_AGENT);
+				list_action.add(FFPConstants.MSG_TYPE_FFP);
+				list_action.add(FFPConstants.MSG_CODE_FFP);
+				list_action.add(FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTO01);
+				list_action.add(MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+
+				FFPSendTcpMessageResp msgResp = (FFPSendTcpMessageResp) response;
+				loc_msg.unmarshalResponseMsg(msgResp.getRespMessage());
+				FFPVO_Pacs002_CTO01REPLY cto01Reply = loc_msg.getMsgJb_txInf().getCto01Reply();
+				if (cto01Reply == null)
+				{
+					return;
+				}
+
+				list_action.add(cto01Reply.getRejCd());
+				list_action.add(cto01Reply.getRejMsg());
+
+				list_action.add(new Date());
+				list_action.add(null);
+				list_action.add(null);
+
+				loc_conn.setAutoCommit(false);
+				// insert action
+				EntityManager.update(loc_conn, insert_action_sql, list_action.toArray());
+				list_action.clear();
+				list_action.add(MSG_STATUS.MSG_STAT_MSYNC.getStatus());
+				if (cto01Reply.getRsltCd().equals("R"))
+				{
+					list_jnl.add(TX_STATUS.TX_STAT_REJCT.getStatus());
+					
+				}else {
+					list_jnl.add(TX_STATUS.TX_STAT_COMPL.getStatus());
+				}
+			} else
+			{
+				list_action.add(MSG_STATUS.MSG_STAT_TMOUT.getStatus());
+			}
+			list_jnl.add(jnlNo);
+			list_action.add(jnlNo);
+			list_action.add(seqNo);
+			// update tx
+			EntityManager.update(loc_conn, updateJnlByJnlNoSql, list_jnl.toArray());
+			// update action
+			EntityManager.update(loc_conn, updateJnlActionSql, list_action.toArray());
+			loc_conn.commit();
+
+		} catch (Exception ex)
+		{
+
+			loc_conn.rollback();
+			ex.printStackTrace();
+			_logger.error("(return)insert action,update tx ,update action table of SQL execute batch failed", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+}

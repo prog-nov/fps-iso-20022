@@ -1,0 +1,350 @@
+package com.forms.ffp.webapp.cashmanagement.return_refund.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import javax.xml.bind.JAXBElement;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.BusinessApplicationHeaderV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.FPSBusinessServiceCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.AccountIdentification4Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.AccountSchemeName1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.BranchAndFinancialInstitutionIdentification51;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.CashAccount241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.CategoryPurpose1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ChargeBearerType1Code1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ClearingSystemIdentification3Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ClearingSystemMemberIdentification21;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ContactDetails21;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FPSAccountTypeCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FPSCategoryPurposeCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FPSClearingSystemCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FPSCurrencyCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FPSCustomerCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.FinancialInstitutionIdentification81;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.GenericAccountIdentification11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.GenericOrganisationIdentification11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.GenericPersonIdentification11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.GroupHeader721;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ObjectFactory;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.OrganisationIdentification81;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.OrganisationIdentificationSchemeName1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.OriginalTransactionReference241;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.Party11Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PartyIdentification431;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PaymentReturnReason11;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PaymentReturnV07;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PaymentTransaction761;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PaymentTypeInformation251;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PersonIdentification51;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.PersonIdentificationSchemeName1Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.RemittanceInformation111;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.Restricted15Digit2DecimalCurrencyAndAmount;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.ReturnReason5Choice1;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.SettlementInstruction41;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_004_001_07.SettlementMethod1Code1;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsServiceCode;
+import com.forms.ffp.core.msg.iclfps.FFPMsgBaseHkiclMessage;
+import com.forms.ffp.core.utils.FFPXMLUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300;
+
+public class ReturnRefund_pacs004 extends FFPMsgBaseHkiclMessage {
+
+	private FFPJbP300 p300;
+
+	ObjectFactory _factory = new ObjectFactory();
+
+	public FFPJbP300 getP300() {
+		return p300;
+	}
+
+	public void setP300(FFPJbP300 p300) {
+		this.p300 = p300;
+	}
+
+	public ReturnRefund_pacs004(FFPJbP300 p300) {
+		super();
+		this.p300 = p300;
+		this.msgTypeName = FFPJaxbConstants.JAXB_MSG_TYPE_PACS_004;
+		this.msgID = getMsgID();
+		msgBizSvc = FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC01;
+
+	}
+
+	protected JAXBElement<BusinessApplicationHeaderV01> marshalMsgBizDataHead() {
+		BusinessApplicationHeaderV01 appHdr = new BusinessApplicationHeaderV01();
+		appHdr.setFr(createParty(this.msgFromID));
+		appHdr.setTo(createParty(this.msgToID));
+		appHdr.setBizMsgIdr(this.getMsgID());
+		appHdr.setMsgDefIdr(this.msgTypeName);
+		appHdr.setBizSvc(FPSBusinessServiceCode.fromValue(this.msgBizSvc));
+		appHdr.setCreDt(FFPXMLUtils.toGregorianDt(this.creDt));
+
+		return (new com.forms.ffp.adaptor.jaxb.iclfps.head_001_001_01.ObjectFactory()).createAppHdr(appHdr);
+	}
+
+	public JAXBElement<?> marshalMsgBizDataDocument() {
+		Document doc = createDocument();
+		return (new ObjectFactory()).createDocument(doc);
+	}
+
+	/*
+	 * create document
+	 * 
+	 */
+	private Document createDocument() {
+
+		Document doc = this._factory.createDocument();
+		PaymentReturnV07 pr07 = new PaymentReturnV07();
+		pr07.setGrpHdr(getGroupHeader721());
+		getPT761(pr07);
+		doc.setPmtRtr(pr07);
+		return doc;
+	}
+
+	/**
+	 * get document's head
+	 * 
+	 * @return
+	 */
+	public GroupHeader721 getGroupHeader721() {
+		GroupHeader721 gh721 = new GroupHeader721();
+		gh721.setMsgId(this.msgID);
+		/**
+		 * real time only one message
+		 */
+		gh721.setNbOfTxs("1");
+		gh721.setCreDtTm(FFPXMLUtils.toGregorianDt(this.getCreDt()));
+		SettlementInstruction41 n41 = new SettlementInstruction41();
+		n41.setSttlmMtd(SettlementMethod1Code1.CLRG);
+		ClearingSystemIdentification3Choice1 cs = new ClearingSystemIdentification3Choice1();
+		cs.setPrtry(FPSClearingSystemCode.FPS);
+		n41.setClrSys(cs);
+		gh721.setSttlmInf(n41);
+		return gh721;
+	}
+
+	private void getPT761(PaymentReturnV07 pr07) {
+		List<PaymentTransaction761> list = pr07.getTxInf();
+		/*
+		 * realTime have only one TxInf
+		 */
+		PaymentTransaction761 n761 = new PaymentTransaction761();
+		FFPTxJnl txjnl = p300.getTxJnl();
+		// TODO
+		n761.setRtrId(p300.getReturnId());
+		// n761.setOrgnlInstrId("");
+		n761.setOrgnlEndToEndId(p300.getOrgnlEndToEndId());
+		n761.setOrgnlTxId(p300.getOrgnlTxId());
+
+		// TODO
+		n761.setOrgnlClrSysRef(p300.getOrgnlClrSysRef());
+		n761.setRtrdIntrBkSttlmAmt(getRDDCA(p300.getOrgnlInterbankSettAmt(), p300.getOrgnlInterbankSettCcy()));
+		/*
+		 * TODO DT is get from DB FFPXMLUtils.toGregorianDt(new Date())
+		 */
+
+		n761.setIntrBkSttlmDt(FFPXMLUtils.toGregorianDt(this.getCreDt()));
+
+		/**
+		 * TODO
+		 */
+		if (null != p300.getRetInsAmt())
+			n761.setRtrdInstdAmt(getRDDCA(p300.getRetInsAmt(), p300.getRetInsCur()));
+		/**
+		 * ...
+		 */
+		n761.setChrgBr(ChargeBearerType1Code1.SLEV);
+
+		// RtrRsnInf
+		if (null != p300.getReasonCode())
+			n761.setRtrRsnInf(getPR11());
+
+		// :OrgnlTxRef
+		n761.setOrgnlTxRef(getOTR());
+		list.add(n761);
+	}
+
+	// :OrgnlTxRef
+	public OriginalTransactionReference241 getOTR() {
+
+		OriginalTransactionReference241 otr = new OriginalTransactionReference241();
+
+		if (null != p300.getOrgnlInterbankSettAmt())
+			otr.setIntrBkSttlmAmt(getRDDCA(p300.getOrgnlInterbankSettAmt(), p300.getOrgnlInterbankSettCcy()));
+		/*
+		 * TODO DT is get from DB FFPXMLUtils.toGregorianDt(new Date())
+		 */
+		// otr.setIntrBkSttlmDt(FFPXMLUtils.toGregorianDt(this.getCreDt()));//p300.getSettlementDate());
+
+		if (null != p300.getOrgnlCatgyPurp()) {
+			PaymentTypeInformation251 pti = new PaymentTypeInformation251();
+			CategoryPurpose1Choice1 cpc = new CategoryPurpose1Choice1();
+			cpc.setPrtry(FPSCategoryPurposeCode.fromValue(p300.getOrgnlCatgyPurp()));
+			pti.setCtgyPurp(cpc);
+			otr.setPmtTpInf(pti);
+		}
+
+		if (null != p300.getOrgnlRemtInfo()) {
+			RemittanceInformation111 ri11 = new RemittanceInformation111();
+			ri11.setUstrd(p300.getOrgnlRemtInfo());
+			otr.setRmtInf(ri11);
+		}
+
+		/**
+		 * :Dbtr
+		 */
+		otr.setDbtr(getPI(p300.getOrgnlDbtrNm(), p300.getOrgnlDbtrEmAddr(), p300.getOrgnlDbtrPhNo(), false));
+
+		/**
+		 * DbtrAcc
+		 */
+		if (null != p300.getOrgnlDbtrAcctNo())
+			otr.setDbtrAcct(getAcct(p300.getOrgnlDbtrAcctNo(), p300.getOrgnlDbtrAcctNoTp()));
+
+		/**
+		 * DbtrAgt
+		 */
+		if (null != p300.getOrgnlDbtrAgtId())
+			otr.setDbtrAgt(getAgt(p300.getOrgnlDbtrAgtBIC(), p300.getOrgnlDbtrAgtId()));
+
+		/**
+		 * Creditor
+		 */
+		otr.setCdtr(getPI(p300.getOrgnlCdtrNm(), p300.getOrgnlCdtrEmAddr(), p300.getOrgnlCdtrPhNo(), true));
+
+		/**
+		 * CrediAcc
+		 */
+		if (null != p300.getOrgnlCdtrAcctNo())
+			otr.setCdtrAcct(getAcct(p300.getOrgnlCdtrAcctNo(), p300.getOrgnlCdtrAcctNoTp()));
+
+		/**
+		 * CreAgt
+		 */
+		if (null != p300.getOrgnlCdtrAgtId())
+			otr.setCdtrAgt(getAgt(p300.getOrgnlCdtrAgtBIC(), p300.getOrgnlCdtrAgtId()));
+
+		return otr;
+	}
+
+	private BranchAndFinancialInstitutionIdentification51 getAgt(String bic, String agentId) {
+		BranchAndFinancialInstitutionIdentification51 bii = new BranchAndFinancialInstitutionIdentification51();
+		FinancialInstitutionIdentification81 fin = new FinancialInstitutionIdentification81();
+		ClearingSystemMemberIdentification21 clear = new ClearingSystemMemberIdentification21();
+		clear.setMmbId(agentId);
+		fin.setClrSysMmbId(clear);
+		fin.setBICFI(bic);
+		bii.setFinInstnId(fin);
+		return bii;
+	}
+
+	/**
+	 * AccountNumber AccountNumberType
+	 * 
+	 * @param id
+	 * @param type
+	 * @return CashAccount241
+	 */
+	private CashAccount241 getAcct(String id, String type) {
+		CashAccount241 account = new CashAccount241();
+		AccountIdentification4Choice1 acc = new AccountIdentification4Choice1();
+		GenericAccountIdentification11 gacId = new GenericAccountIdentification11();
+		gacId.setId(id);
+		AccountSchemeName1Choice1 Nm = new AccountSchemeName1Choice1();
+		Nm.setPrtry(FPSAccountTypeCode.fromValue(type));
+		gacId.setSchmeNm(Nm);
+		acc.setOthr(gacId);
+		account.setId(acc);
+		return account;
+	}
+
+	/**
+	 * Information
+	 */
+	private PartyIdentification431 getPI(String name, String email, String phone, boolean isCreditor) {
+		PartyIdentification431 pi = new PartyIdentification431();
+		pi.setNm(name);
+		if (null != email || null != phone) {
+			ContactDetails21 cd = new ContactDetails21();
+			cd.setEmailAdr(email);
+			cd.setMobNb(phone);
+			pi.setCtctDtls(cd);
+		}
+		/**
+		 * TODO 
+		 */
+		Party11Choice1 pc = new Party11Choice1();
+		OrganisationIdentification81 id = new OrganisationIdentification81();
+		GenericOrganisationIdentification11 other = new GenericOrganisationIdentification11();
+		OrganisationIdentificationSchemeName1Choice1 choice = new OrganisationIdentificationSchemeName1Choice1();
+		if (isCreditor) {
+			id.setAnyBIC(p300.getOrgnlCdtrOrgIdAnyBIC());
+			other.setId(p300.getOrgnlCdtrOrgIdOthrId());
+			choice.setCd(FPSCustomerCode.fromValue(p300.getOrgnlCdtrOrgIdOthrIdSchmeNm()));
+			other.setIssr(p300.getOrgnlCdtrOrgIdOthrIssr());
+		} else {
+			id.setAnyBIC(p300.getOrgnlDbtrOrgIdAnyBIC());
+			other.setId(p300.getOrgnlDbtrOrgIdOthrId());
+			choice.setCd(FPSCustomerCode.fromValue(p300.getOrgnlCdtrOrgIdOthrIdSchmeNm()));
+			other.setIssr(p300.getOrgnlDbtrOrgIdOthrIssr());
+		}
+		other.setSchmeNm(choice);
+		id.setOthr(other);
+		pc.setOrgId(id);
+
+		PersonIdentification51 prvtId = new PersonIdentification51();
+		GenericPersonIdentification11 c11 = new GenericPersonIdentification11();
+		PersonIdentificationSchemeName1Choice1 ps = new PersonIdentificationSchemeName1Choice1();
+
+		if (isCreditor) {
+			c11.setId(p300.getOrgnlCdtrPrvtIdOthrId());
+			ps.setCd(FPSCustomerCode.fromValue(p300.getOrgnlCdtrPrvtIdOthrIdSchmeNm()));
+			c11.setIssr(p300.getOrgnlCdtrPrvtIdOthrIssr());
+		} else {
+			c11.setId(p300.getOrgnlDbtrPrvtIdOthrId());
+			ps.setCd(FPSCustomerCode.fromValue(p300.getOrgnlDbtrPrvtIdOthrIdSchmeNm()));
+			c11.setIssr(p300.getOrgnlDbtrPrvtIdOthrIssr());
+		}
+		c11.setSchmeNm(ps);
+		prvtId.setOthr(c11);
+		pc.setPrvtId(prvtId);
+		pi.setId(pc);
+
+		return pi;
+	}
+
+	public Restricted15Digit2DecimalCurrencyAndAmount getRDDCA(BigDecimal amt, String ccy) {
+		Restricted15Digit2DecimalCurrencyAndAmount rddca = new Restricted15Digit2DecimalCurrencyAndAmount();
+		rddca.setCcy(FPSCurrencyCode.fromValue(ccy));
+		rddca.setValue(amt);
+		return rddca;
+	}
+
+	// RtrRsnInf
+	public PaymentReturnReason11 getPR11() {
+		PaymentReturnReason11 pr11 = new PaymentReturnReason11();
+		ReturnReason5Choice1 rsn = new ReturnReason5Choice1();
+		rsn.setPrtry(p300.getReasonCode());// 返回码
+		pr11.setRsn(rsn);
+		pr11.getAddtlInf().add("/REASON/" + p300.getAdditionalInformation());
+		return pr11;
+	}
+
+	@Override
+	public String getSendType() {
+		// TODO Auto-generated method stub
+		return FFPConstants.SEND_TYPE_REQ;
+	}
+
+	@Override
+	public String getPriority() {
+		return FFPConstantsServiceCode.ICLFPS_SERVICECODE_PAYC01.equals(msgBizSvc) ? FFPConstants.MQ_LEVEL_PRIORITY_HIGH
+				: FFPConstants.MQ_LEVEL_PRIORITY_MEDIUM;
+	}
+
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.forms.ffp.webapp.cashmanagement.transactionstatus.dao.ITransactionStatusDao">
+	<select id="searchByJnlNo" resultType="com.forms.ffp.webapp.cashmanagement.transactionstatus.bean.FFPJbE100">
+		SELECT JNL_NO,TX_STAT,TX_CODE,
+		CLR_SYS_REF,DBTR_AGT_MMB_ID,
+		CDTR_AGT_MMB_ID,
+		TRANSACTION_ID,END_TO_END_ID,
+		TX_REJ_CODE,TX_REJ_REASON,
+		CREATE_TS
+		FROM tb_tx_i110dat U
+	    WHERE U.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	<!-- 新增報文信息或者更新 -->
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+		<!-- 新增交易开始 -->
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	<insert id="INSERT_TB_TX_e100dat">
+		INSERT INTO tb_tx_i110dat
+		(
+		JNL_NO,TX_CODE,
+		CLR_SYS_REF,TRANSACTION_ID,
+		DBTR_AGT_MMB_ID,CDTR_AGT_MMB_ID,
+		CREATE_TS)
+		VALUES
+		(#{jnlNo,jdbcType=VARCHAR},
+		#{txCode,jdbcType=VARCHAR},
+		#{clrSysRef,jdbcType=VARCHAR},
+		#{transactionId, jdbcType=VARCHAR},
+		#{dbtrAgtMmbId, jdbcType=VARCHAR},
+		#{cdtrAgtMmbId, jdbcType=VARCHAR},
+		#{createTs,jdbcType=TIMESTAMP})
+		ON DUPLICATE KEY UPDATE
+		END_TO_END_ID=#{endToEndId, jdbcType=VARCHAR},
+		TX_STAT =#{txStat, jdbcType=VARCHAR},
+		TX_REJ_CODE=#{txRejCode, jdbcType=VARCHAR},
+		TX_REJ_REASON=#{txRejReason, jdbcType=VARCHAR},
+		LAST_UPDATE_TS =#{lastUpdateTs,jdbcType=TIMESTAMP}
+	</insert>
+</mapper>

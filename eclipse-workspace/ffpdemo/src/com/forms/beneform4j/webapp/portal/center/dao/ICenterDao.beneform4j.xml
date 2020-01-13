@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.portal.center.dao.ICenterDao">
+
+	<!-- 查询首页任务队列数-->
+	<select id="dQueryTaskData">
+		SELECT T.TASK_ID,
+		       T.TASK_NAME,
+		       R.DETAIL_FLAG,
+		       T.MENU_ID,
+		       T.MENU_NAME,
+		       T.DETAIL_MENU_ID,
+		       M.MENU_NAME DETAIL_MENU_NAME,
+		       0 IDX1,
+		       0 IDX2
+		  FROM {{BF}}_TASK_PARAM T
+		  JOIN {{BF}}_TASK_REGEX R ON T.TASK_ID = R.TASK_ID
+		  JOIN {{BF}}_MENU M ON T.DETAIL_MENU_ID = M.MENU_ID
+		 WHERE EXISTS 
+		 		(SELECT 1
+				   FROM {{BF}}_ROLE_PERM RP
+				  WHERE EXISTS 
+				        (SELECT 1
+						   FROM {{BF}}_PERM BP
+						  WHERE RP.PERM_ID = BP.PERM_ID 
+						    AND (R.DETAIL_FLAG = '0' AND BP.PERM_TYPE_KEY = T.MENU_ID 
+								 OR
+								 R.DETAIL_FLAG = '1' AND BP.PERM_TYPE_KEY = T.DETAIL_MENU_ID))
+					AND EXISTS (SELECT 1
+								  FROM {{BF}}_USER_ROLE U
+								 WHERE U.USER_ID = #{userId, jdbcType=VARCHAR}
+								   AND RP.ROLE_ID = U.ROLE_ID))
+	</select>
+	
+	<select id="dQueryTaskNum" >
+		  SELECT D.TASK_ID, D.TARGET_URL, COUNT(1) TASK_NUM
+			FROM {{BF}}_TASK_DETAIL D
+			JOIN {{BF}}_TASK_REGEX P ON D.TASK_ID = P.TASK_ID
+		   WHERE (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_ROLES LR WHERE LR.KEY_ID = D.KEY_ID AND LR.ROLE_ID IN 
+					   		<foreach collection="rolesId" item="roleId" index="index" open="(" close=")" separator=",">
+						 		#{roleId, jdbcType=VARCHAR}
+						 	</foreach>
+						 )
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_ROLES LR WHERE LR.KEY_ID = D.KEY_ID))
+			  AND (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_ORGS LO WHERE LO.KEY_ID = D.KEY_ID AND LO.ORG_ID = #{orgId, jdbcType=VARCHAR}) 
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_ORGS LO WHERE LO.KEY_ID = D.KEY_ID))
+			  AND (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_USERS LU WHERE LU.KEY_ID = D.KEY_ID AND LU.USER_ID = #{userId, jdbcType=VARCHAR}) 
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_USERS LU WHERE LU.KEY_ID = D.KEY_ID))
+			 AND D.TASK_ID IN 
+			 	<foreach collection="taskIds" item="taskId" index="index" open="(" close=")" separator=",">
+			 		#{taskId, jdbcType=VARCHAR}
+			 	</foreach>
+		 GROUP BY D.TASK_ID, D.TARGET_URL
+	</select>
+	
+	<select id="dFindRoleId" resultType="java.lang.String">
+		SELECT ROLE_ID FROM {{BF}}_USER_ROLE T WHERE USER_ID = #{userId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="dFindTaskParam" >
+		  SELECT D.TASK_ID, D.BUSI_KEY,D.PARAMS
+			FROM {{BF}}_TASK_DETAIL D
+			JOIN {{BF}}_TASK_REGEX P ON D.TASK_ID = P.TASK_ID
+		    WHERE (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_ROLES LR WHERE LR.KEY_ID = D.KEY_ID AND LR.ROLE_ID IN
+			    			<foreach collection="rolesId" item="roleId" index="index" open="(" close=")" separator=",">
+						 		#{roleId, jdbcType=VARCHAR}
+						 	</foreach>
+						 	)
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_ROLES LR WHERE LR.KEY_ID = D.KEY_ID))
+			  AND (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_ORGS LO WHERE LO.KEY_ID = D.KEY_ID AND LO.ORG_ID = #{orgId, jdbcType=VARCHAR}) 
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_ORGS LO WHERE LO.KEY_ID = D.KEY_ID))
+			  AND (EXISTS (SELECT 1 FROM {{BF}}_TASK_LIMIT_USERS LU WHERE LU.KEY_ID = D.KEY_ID AND LU.USER_ID = #{userId, jdbcType=VARCHAR}) 
+		           OR 
+		           NOT EXISTS	(SELECT 1 FROM {{BF}}_TASK_LIMIT_USERS LU WHERE LU.KEY_ID = D.KEY_ID)) 
+			 AND D.TASK_ID = #{taskId, jdbcType=VARCHAR}
+	</select>
+	
+</mapper>

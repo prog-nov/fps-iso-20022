@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FORMS FFP" default="all">
+	<description>FORMS FPS BUILD HKCIL XSD FILE</description>
+	
+	<property name="appname" value="ffp"></property>
+	<property name="appdir" location="C:/Users/qingzhizi/working/Project/FFP/Workspaces/FFPWorkspace2/"></property>
+	<property name="dir.src.appname" location="${appdir}"></property>
+	
+	<target name="all" depends="jaxb_out"/>
+	
+	<target name="jaxb_out" description="Process Message OUT Schema">
+		<echo message="Creating OutMesssage jaxb files"></echo>
+		<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+			<classpath>
+				<fileset dir="../lib/" includes="*.jar"></fileset>
+			</classpath>
+		</taskdef>
+		<xjc removeOldOutput="Yes" extension="true" destdir="${dir.src.appname}/ffp_jaxb/src">
+			<schema dir="${appdir}/ffp_jaxb/schema/iclfps/" includes="*.xsd" />
+			<binding dir="${appdir}/ffp_jaxb/schema/iclfps/" includes="*.xjb"/>
+		</xjc>
+	</target>
+</project>

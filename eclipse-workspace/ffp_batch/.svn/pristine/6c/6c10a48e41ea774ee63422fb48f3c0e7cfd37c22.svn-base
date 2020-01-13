@@ -1,0 +1,5 @@
+package com.forms.batch.job.outward;
+
+public class CreditTransferOutwardBatchResponseFileProcessor {
+
+}

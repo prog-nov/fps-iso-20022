@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+	<appender name="debug-log" class="org.apache.log4j.RollingFileAppender">
+		<param name="MaxFileSize" value="100MB"/>
+		<param name="MaxBackupIndex" value="5" />
+		<param name="Threshold" value="DEBUG"/>
+		<param name="File" value="$__DEBUG_LOG_PATH"/>	
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}][%t] %m  [%t]%n"/>
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelMatchFilter">  
+	       <param name="LevelToMatch" value="DEBUG" />  
+	       <param name="AcceptOnMatch" value="TRUE" />  
+	     </filter>  		
+		 <filter class="org.apache.log4j.varia.DenyAllFilter"/>  			
+	</appender>
+	
+	<appender name="info-log" class="org.apache.log4j.FileAppender">
+		<param name="Threshold" value="INFO"/>
+		<param name="File" value="$__INFO_LOG_PATH"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}][%t] %m  [%t]%n"/>
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelMatchFilter">  
+	       <param name="LevelToMatch" value="INFO" />  
+	       <param name="AcceptOnMatch" value="TRUE" />  
+	     </filter>  		
+		 <filter class="org.apache.log4j.varia.DenyAllFilter"/>  			
+	</appender>
+	<appender name="warn-log" class="org.apache.log4j.FileAppender">
+		<param name="Threshold" value="WARN"/>
+		<param name="File" value="$__WARN_LOG_PATH"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}] %m [%t]%n"/>
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelMatchFilter">  
+	       <param name="LevelToMatch" value="WARN" />  
+	       <param name="AcceptOnMatch" value="TRUE" />  
+	     </filter>  		
+		 <filter class="org.apache.log4j.varia.DenyAllFilter"/>  			
+		
+	</appender>
+	<appender name="error-log" class="org.apache.log4j.FileAppender">
+		<param name="Threshold" value="ERROR"/>
+		<param name="File" value="$__ERROR_LOG_PATH" />	
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[ERRO] [%d{yyyy/MM/dd HH:mm:ss}]  %m %n"/>
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelMatchFilter">  
+	       <param name="LevelToMatch" value="ERROR" />  
+	       <param name="AcceptOnMatch" value="TRUE" />  
+	     </filter>  		
+		 <filter class="org.apache.log4j.varia.DenyAllFilter"/>  			
+	</appender>
+	<appender name="debug-log-console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="DEBUG"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}] %m [%t]%n"/>
+		</layout>
+	</appender>	
+	<appender name="info-log-console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="INFO"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}] %m [%t]%n"/>
+		</layout>
+	</appender>
+	<appender name="warn-log-console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="WARN"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-4p] [%d{yyyy/MM/dd HH:mm:ss}] %m [%t]%n"/>
+		</layout>
+	</appender>
+	<appender name="erro-log-console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="ERROR"/>
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[ERRO] [%d{yyyy/MM/dd HH:mm:ss}] %m [%t]%n"/>
+		</layout>
+	</appender>
+	
+		<root>
+    	<priority value="$__LOGFILE_LOG_LEVEL" />		
+    	<appender-ref ref="debug-log" />    	
+    	<appender-ref ref="info-log" />
+    	<appender-ref ref="warn-log" />
+    	<appender-ref ref="error-log" />
+    	<appender-ref ref="debug-log-console" />
+    </root>
+</log4j:configuration>

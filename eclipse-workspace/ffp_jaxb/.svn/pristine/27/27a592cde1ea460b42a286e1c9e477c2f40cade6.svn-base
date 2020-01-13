@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2017 Hong Kong Interbank Clearing Limited
+
+Collection: HKICL - Payments - FPS - V1 - FINAL_
+Base Message: fps.adrs.001.001.01
+Date of publication: 29 September 2017
+-->
+<xs:schema xmlns="urn:hkicl:fps:xsd:fps.adrs.001.001.01"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="urn:hkicl:fps:xsd:fps.adrs.001.001.01">
+
+    <xs:simpleType name="ISODateTimeType1">
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([0-2][0-9]):([0-5][0-9]):([0-5][0-9])\.\d{3}" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="YesNoIndicator">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Yes"/>
+            <xs:enumeration value="No"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ClearingCode">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z0-9]{3,3}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max34Text">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z !@#$%^&amp;\*\(\)_+~\{\}|:&quot;&lt;&gt;?`\-=\[\]\\;',\./]{1,34}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="34"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max35Text">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9a-zA-Z !@#$%^&amp;\*\(\)_+~\{\}|:&quot;&lt;&gt;?`\-=\[\]\\;',\./]{1,35}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="35"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Max140Text">
+        <xs:restriction base="xs:string">
+        	<xs:pattern value="[^\n\r\t]{1,140}"/>
+			<xs:minLength value="1"/>
+            <xs:maxLength value="140"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="BICFIIdentifier">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Language">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EN"/>
+            <xs:enumeration value="ZH"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="Agent">
+        <xs:sequence>
+            <xs:element name="FinInstnId" type="FinancialInstitutionIdentification"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FinancialInstitutionIdentification">
+        <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="0" name="BICFI" type="BICFIIdentifier"/>
+            <xs:element name="ClrSysMmbId" type="ClearingSystemMemberIdentification"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ClearingSystemMemberIdentification">
+        <xs:sequence>
+            <xs:element name="MmbId" type="ClearingCode"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="PurposeCode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="PAYM"/>
+        </xs:restriction>
+    </xs:simpleType>
+	<xs:simpleType name="OptionCode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EDDA"/>
+			<xs:enumeration value="RTOP"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ProxyIDType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EMAL"/>
+            <xs:enumeration value="MOBN"/>
+            <xs:enumeration value="SVID"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="CustomerType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="PERS"/>
+            <xs:enumeration value="CORP"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="GroupHeader">
+        <xs:sequence>
+            <xs:element name="MsgId" type="Max35Text"/>
+            <xs:element name="CreDtTm" type="ISODateTimeType1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Purpose">
+        <xs:sequence>
+            <xs:element name="Cd" type="PurposeCode"/>
+        </xs:sequence>
+    </xs:complexType>
+	<xs:complexType name="SupportedOption">
+        <xs:sequence>
+            <xs:element maxOccurs="2" minOccurs="1" name="Cd" type="OptionCode"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:element name="Document" type="Document"/>
+    
+    <xs:complexType name="Document">
+        <xs:sequence>
+            <xs:element name="AdrInitnReq" type="MessageRoot"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CustomerName">
+        <xs:sequence>
+            <xs:element name="Lang" type="Language"/>
+            <xs:element name="FullNm" type="Max140Text"/>
+            <xs:element name="DispNm" type="Max140Text"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MessageRoot">
+        <xs:sequence>
+            <xs:element name="GrpHdr" type="GroupHeader"/>
+            <xs:element maxOccurs="10000" minOccurs="1" name="AdrSchme" type="AddressingScheme"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="AddressingScheme">
+        <xs:sequence>
+            <xs:element name="AdrReqId" type="Max35Text"/>
+            <xs:element name="Agt" type="Agent"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="Id" type="Max34Text"/>
+            <xs:element name="Tp" type="ProxyIDType"/>
+            <xs:element maxOccurs="2" minOccurs="1" name="CusNm" type="CustomerName"/>
+            <xs:element name="CusId" type="Max34Text"/>
+            <xs:element name="CusTp" type="CustomerType"/>
+			<xs:element maxOccurs="1" minOccurs="0" name="SupOp" type="SupportedOption"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="Dflt" type="YesNoIndicator"/>
+            <xs:element name="Purp" type="Purpose"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

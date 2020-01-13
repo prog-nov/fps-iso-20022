@@ -1,0 +1,99 @@
+package com.forms.batch.job.outward;
+
+public class VOForRoot {
+    private String SrcReFNm;
+    private String FFPTransactionId;
+    private String RsltCd;
+    private String RejCd;
+    private String RejMsg;
+    
+    private String RequestID;
+    private String TransactionDate;
+    private String TransactionTime;
+    private String RequestRefno;
+    private String ResponseID;
+    private String MessageType;
+    private String AccountingDate;
+    private String SystemRefno;
+	public String getSrcReFNm() {
+		return SrcReFNm;
+	}
+	public void setSrcReFNm(String srcReFNm) {
+		SrcReFNm = srcReFNm;
+	}
+	public String getFFPTransactionId() {
+		return FFPTransactionId;
+	}
+	public void setFFPTransactionId(String fFPTransactionId) {
+		FFPTransactionId = fFPTransactionId;
+	}
+	public String getRsltCd() {
+		return RsltCd;
+	}
+	public void setRsltCd(String rsltCd) {
+		RsltCd = rsltCd;
+	}
+	public String getRejCd() {
+		return RejCd;
+	}
+	public void setRejCd(String rejCd) {
+		RejCd = rejCd;
+	}
+	public String getRejMsg() {
+		return RejMsg;
+	}
+	public void setRejMsg(String rejMsg) {
+		RejMsg = rejMsg;
+	}
+	public String getRequestID() {
+		return RequestID;
+	}
+	public void setRequestID(String requestID) {
+		RequestID = requestID;
+	}
+	public String getTransactionDate() {
+		return TransactionDate;
+	}
+	public void setTransactionDate(String transactionDate) {
+		TransactionDate = transactionDate;
+	}
+	public String getTransactionTime() {
+		return TransactionTime;
+	}
+	public void setTransactionTime(String transactionTime) {
+		TransactionTime = transactionTime;
+	}
+	public String getRequestRefno() {
+		return RequestRefno;
+	}
+	public void setRequestRefno(String requestRefno) {
+		RequestRefno = requestRefno;
+	}
+	public String getResponseID() {
+		return ResponseID;
+	}
+	public void setResponseID(String responseID) {
+		ResponseID = responseID;
+	}
+	public String getMessageType() {
+		return MessageType;
+	}
+	public void setMessageType(String messageType) {
+		MessageType = messageType;
+	}
+	public String getAccountingDate() {
+		return AccountingDate;
+	}
+	public void setAccountingDate(String accountingDate) {
+		AccountingDate = accountingDate;
+	}
+	public String getSystemRefno() {
+		return SystemRefno;
+	}
+	public void setSystemRefno(String systemRefno) {
+		SystemRefno = systemRefno;
+	}
+    
+    
+    
+}

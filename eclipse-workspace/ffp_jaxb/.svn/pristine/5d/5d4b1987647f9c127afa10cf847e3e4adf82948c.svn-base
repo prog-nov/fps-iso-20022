@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FORMS FFP" default="all">
+	<description>FORMS FFP BUILD HKCIL XSD FILE</description>
+	
+	<property name="appname" value="ffp"></property>
+	<property name="appdir" location="C:/zhangying/myprogram/java/workspace/"></property>
+	<property name="dir.src.appname" location="${appdir}"></property>
+	
+	<target name="all" depends="jaxb_response"/>
+	<target name="jaxb_response" description="Process Response Message Schema">
+		<echo message="Process Request Message Schema"></echo>
+		<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+			<classpath>
+				<fileset dir="../lib/" includes="*.jar"></fileset>
+			</classpath>
+		</taskdef>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/HEAD.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.head" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPCTI01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpcti01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPCTI02.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpcti02" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPCTO01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPDBI01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpdbi01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPDBI02.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpdbi02" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPDBO01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpdbo01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPADR01.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpadr01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPMS001.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffpms001" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Response/FFPHC001.xsd" removeOldOutput="No" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.response.ffphc001" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+	</target>
+	
+</project>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<!-- 配置属性文件，后续配置可以通过${var}的形式引用属性文件中的值 -->
+	<bean id="propertyConfigurer"
+		class="com.forms.beneform4j.core.service.spring.component.SpringPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>  
+				<value>classpath:config.properties</value>
+				<value>classpath:cache/redis/redis.properties</value>
+				<value>classpath:ffpconfig.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- 国际化的消息资源文件 -->
+	<bean id="messageSource" p:cacheSeconds="60"
+		class="com.forms.beneform4j.core.service.spring.component.SpringReloadableResourceBundleMessageSource">
+		<property name="basenames">
+			<list>
+				<value>classpath:locale/exception/exception</value>
+				<value>classpath:locale/label/label</value>
+				<value>classpath:locale/message/message</value>
+				<value>classpath:locale/validator/validator</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- 扫描通过注解配置的Bean -->
+    <context:component-scan base-package="com.forms"/>
+    <!-- 开启AOP自动代理 -->
+    <bean id="controllAspect"
+    	class="com.forms.beneform4j.web.aop.ControllerAspect">
+    </bean>
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+	<!-- AOP配置 -->
+	
+	<bean id="serviceAspect" class="com.forms.beneform4j.core.service.aop.ServiceAspect"></bean>
+	<bean id="daoAspect" class="com.forms.beneform4j.core.dao.aop.DaoAspect"></bean>
+	<bean id="taskAspect" class="com.forms.beneform4j.webapp.systemmanage.task.taskcollect.aop.TaskAspect"></bean>
+	<aop:config>
+		<aop:aspect ref="controllAspect">
+			<!-- 拦截所有标注了@Service注解的类中的public方法 -->
+			<aop:around method="doAspect" pointcut="execution(public * com.forms.beneform4j..*Controller.*(..)) and @target(org.springframework.stereotype.Controller)"/>
+		</aop:aspect>
+		<aop:aspect ref="serviceAspect">
+			<!-- 拦截所有标注了@Service注解的类中的public方法 -->
+			<aop:around method="doAspect" pointcut="execution(public * com.forms.beneform4j..*Service.*(..)) and @target(org.springframework.stereotype.Service)"/>
+		</aop:aspect>
+		<aop:aspect ref="daoAspect">
+			<!-- 拦截所有标注了@Repository注解的类中的public方法 -->
+			<aop:around method="doAspect" pointcut="execution(public * com.forms.beneform4j..*Dao.*(..)) and @target(org.springframework.stereotype.Repository)"/>
+		</aop:aspect>
+		<aop:aspect ref="taskAspect">
+			<!-- 拦截所有标注了@Task注解的类中的public方法 -->
+			<aop:around method="doAspect" pointcut="execution(public * com.forms.beneform4j..*.*(com.forms.beneform4j.webapp.systemmanage.task.taskcollect.bean.ITaskBean,..)) and @annotation(task) ) "/>
+		</aop:aspect>
+	</aop:config>
+	
+	<bean class="com.forms.beneform4j.core.util.clean.CleanManager" init-method="initialize" />
+</beans>

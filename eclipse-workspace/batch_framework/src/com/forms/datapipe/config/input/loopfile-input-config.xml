@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<loopfile-input-config>
+	<file-name>#{filePath}/in.txt</file-name><!-- 支持外部传入的参数，参数形如：#{para} -->
+	<encoding>GBK</encoding>
+	<header-lines>1</header-lines><!-- 头部信息 -->
+	<header-handle-class>test.java.ylcs.HeaderHandler</header-handle-class><!-- 必须实现自FileInputHeaderHandler，可以留空 -->
+	<pre-read-rows>1000</pre-read-rows><!-- 预读多少行数据，用于优化性能 -->
+	<line-feed>\r\n</line-feed> <!-- 4种：none;\r;\n;\r\n -->
+	<field-definition>
+		<field name="length"  bytes="1"  data-type="Number" />
+		<field name="accountList" loop-count="field:length" ><!-- 允許3种數據定義： field, constant, class -->
+			<field name="account"  bytes="1"  data-type="CharType" />
+			<field name="testlength"  bytes="3"  data-type="CharType" />
+			<field name="testList"  loop-count="field:testlength" ><!-- 允許3种數據定義： field, constant, class -->
+				<field name="test1"     bytes="1"  data-type="CharType" />
+				<field name="test2"     bytes="1"  data-type="CharType" />
+   			</field>
+		</field>
+
+		<field name="recType"  bytes="1"  data-type="CharType" />
+		<field name="redefine"  bytes="32" data-type="CharType" case-depend="field:recType" case-default="2"><!-- 允許3种數據定義： field, constant, class -->
+			<case value="1">
+				<field name="account"  bytes="32" data-type="CharType" />
+			</case>
+			<case value="2">
+				<field name="account1"  bytes="20" data-type="CharType" />			
+				<field name="amount1"   bytes="12" data-type="CharType" />
+ 			</case>
+		</field>
+
+
+
+		<!--（必须按顺序）完整定义一整行的数据.
+			一些字段说明：
+			bytes      : 字段长度（字节数）；
+			data-type  : 自定义数据类型，参考datatype-config.xml；
+		-->
+		<!-- 3种數據定義： field, constant, class，定義為class的類
+			 必須包含一個execute方法，接受一個List<FieldData>的參數，
+			 參數中包含所有已獲取的字段的數據 -->
+	</field-definition>
+</loopfile-input-config>

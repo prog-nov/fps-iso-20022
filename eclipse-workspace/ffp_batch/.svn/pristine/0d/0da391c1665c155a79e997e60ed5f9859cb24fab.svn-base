@@ -1,0 +1,305 @@
+package com.forms.batch.job.outward;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.MessageRejectV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.FpsMessageEnvelope;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.FPSTransactionStatusCode;
+import com.forms.ffp.adaptor.jaxb.iclfps.pacs_002_001_08.PaymentTransaction801;
+import com.forms.ffp.adaptor.jaxb.participant.response.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD;
+import com.forms.ffp.core.msg.iclfps.FFPHkiclMessageConverter;
+import com.forms.ffp.core.msg.participant.FFPTcpParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class CreditTransferOutwardBatchResponseFileProcessor {
+	public static final String FILE_PATH = "C:\\Users\\zhang qing wen\\Desktop\\dy";
+	public static final String TO_IP = "172.21.21.252";
+	public static final int TO_PORT = 100;
+	public static Boolean FLAG = false;
+	public static final int SEQ_NO_ONE = 2;
+	public static final String FROM_FFP_O = "FFP";
+	public static final String TO_AGENT_O = "AGENT";
+	public static final String CTO01_O_RES = "CTO01";
+	public static final String ACCP_FROM_ICL_O = "ACCP";
+	public static final String ACSP_FROM_ICL_O = "ACSP";
+	public static final String PDNG_FROM_ICL_O = "PDNG";
+	public static final String RJCT_FROM_ICL_O = "RJCT";
+	public static Map<String, List<ISO20022BusinessDataV01>> map = null;
+	public static final boolean FALSE = false;
+	Logger logger = null;
+
+	public CreditTransferOutwardBatchResponseFileProcessor() {
+		map = new HashMap<String, List<ISO20022BusinessDataV01>>();
+	}
+
+	public static String readFromFile(File src) {
+
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = new BufferedReader(new FileReader(src));
+			StringBuilder stringBuilder = new StringBuilder();
+			String content;
+			while ((content = bufferedReader.readLine()) != null) {
+				stringBuilder.append(content);
+			}
+			return stringBuilder.toString();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} finally {
+			try {
+				bufferedReader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// 解析ICL
+	public static void main(String[] args) {
+		new CreditTransferOutwardBatchResponseFileProcessor();
+		Connection conn = null;
+		;
+		try {
+			conn = ConnectionManager.getConn();
+			dealXml(conn);
+			sendXML(conn);
+		    delAllFile(FILE_PATH);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void dealXml(Connection conn) throws Exception {
+		List<File> readfiles = CreditTransferOutwardBatchResponseFileProcessor.readfiles(FILE_PATH);
+		List list = null;
+		String updateTB_TX_JNL = null;
+		String updateTB_tX_JNL_ACTION = null;
+		String txsts = null;
+		String orgnlTxId = null;
+		String orgnlEndToEndId = null;
+		for (File file : readfiles) {
+			String fileString = CreditTransferOutwardBatchResponseFileProcessor.readFromFile(file);
+			FpsMessageEnvelope fpsMsg = FFPHkiclMessageConverter.parseObject(fileString);
+			List<ISO20022BusinessDataV01> bizData = fpsMsg.getFpsPylds().getBizData();
+			/*if (!(bizData.size() + "").equals(fpsMsg.getNbOfMsgs())) {
+				System.out.println(file.getName() + " not correct format,please retry");
+				continue;
+			}*/
+			try {
+				Object document = bizData.get(0).getContent().get(1).getValue();
+				if (document instanceof com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) {
+					MessageRejectV01 admi00200101 = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+							.getAdmi00200101();
+					String rjctgPtyRsn = admi00200101.getRsn().getRjctgPtyRsn();
+					String ref = ((com.forms.ffp.adaptor.jaxb.iclfps.admi_002_001_01.Document) document)
+							.getAdmi00200101().getRltdRef().getRef();
+					if (ref.equals("NOREF")) {
+						System.out.println(file.getName() + " 处于NOREF状态");
+					} else {
+						System.out.println(file.getName() + " REF值normal");
+					}
+				} else if (document instanceof Document) {
+					/*if (!(bizData.size() + "").equals(fpsMsg.getNbOfMsgs())) {
+					System.out.println(file.getName() + " not correct format,please retry");
+					continue;
+				*/
+					map.put(file.getName(), bizData);
+					System.out.println(file.getName() + " 正在解析中....");
+					List<PaymentTransaction801> txInfAndSts = ((Document) document).getFIToFIPmtStsRpt()
+							.getTxInfAndSts();
+					for (PaymentTransaction801 tx : txInfAndSts) {
+						FPSTransactionStatusCode txSts = tx.getTxSts();
+						txsts = txSts.value();
+						orgnlTxId = tx.getOrgnlTxId();
+						orgnlEndToEndId = tx.getOrgnlEndToEndId();
+						updateTB_TX_JNL = " update tb_tx_jnl set tx_stat = ? where transaction_id  = ? AND end_to_end_id = ? ";
+						updateTB_tX_JNL_ACTION = "update tb_tx_jnlaction a1 inner join tb_tx_jnl a2  on a1.jnl_no=a2.jnl_no set a1.msg_status =? where a2.transaction_id = ? and a2.end_to_end_id = ? ";
+						list = new ArrayList();
+						list.add(txsts);
+						list.add(orgnlTxId);
+						list.add(orgnlEndToEndId);
+						EntityManager.update(conn, updateTB_TX_JNL, list.toArray());
+						list.clear();
+						list.add(ACSP_FROM_ICL_O);
+						list.add(orgnlTxId);
+						list.add(orgnlEndToEndId);
+						EntityManager.update(conn, updateTB_tX_JNL_ACTION, list.toArray());
+					}
+				}
+			} catch (Exception ip_ex) {
+				ip_ex.printStackTrace();
+			}
+		}
+	}
+	public static void sendXML(Connection conn) throws Exception {
+		String orgnlTxId = null;
+		String orgnlEndToEndId = null;
+		List<File> readfiles = readfiles(FILE_PATH);
+		List listData = null;
+		String findJnl = null;
+		String insertAction = null;
+		for (File file : readfiles) {
+			List<ISO20022BusinessDataV01> list = map.get(file.getName());
+			if (list == null || list.size() == 0) {
+				continue;
+			}
+			Object document = list.get(0).getContent().get(1).getValue();
+			if (document instanceof Document) {
+				List<PaymentTransaction801> txInfAndSts = ((Document) document).getFIToFIPmtStsRpt().getTxInfAndSts();
+				for (PaymentTransaction801 tx : txInfAndSts) {
+					listData = new ArrayList();
+					orgnlTxId = tx.getOrgnlTxId();
+					orgnlEndToEndId = tx.getOrgnlEndToEndId();
+					listData.add(orgnlTxId);
+					listData.add(orgnlEndToEndId);
+					//通过每一个transactionid 和endtoendid查找数据库获得数据集封装成voForroot
+					 //对象,传递给root字段所需要的各种值.
+					findJnl = "select A.jnl_no from tb_tx_jnl A  where transaction_id  = ? AND end_to_end_id = ? ";
+					List<Map<String, Object>> queryMapList = EntityManager.queryMapList(conn, findJnl,
+							listData.toArray());
+					insertAction = " insert into tb_tx_jnlaction(jnl_no,seq_no,msg_from_type,msg_to_type,msg_type,msg_status)  values(?,?,?,?,?,?)";
+					for (Map<String, Object> map : queryMapList) {
+						listData = new ArrayList();
+						String transctionId = FFPIDUtils.getTransactionId();
+						System.out.println("transactionId: "+transctionId);
+						listData.add(transctionId);
+						listData.add(SEQ_NO_ONE);
+						listData.add(FROM_FFP_O);
+						listData.add(TO_AGENT_O);
+						listData.add(CTO01_O_RES);
+						listData.add(ACCP_FROM_ICL_O);
+						int update = EntityManager.update(conn, insertAction, listData.toArray());
+						VOForRoot voForRoot = new VOForRoot();
+						tCPBegin(voForRoot);// 提取root需要的数据封装成一个对象,包括body和head部分
+					}
+				}
+			}
+		}
+	}
+
+	public static void tCPBegin(VOForRoot vo) throws Exception {
+		/*
+		 * ROOT root = new ROOT(); HEAD head = new HEAD(); FFPCTO01 body = new
+		 * FFPCTO01(); head.setRequestID(vo.getRequestID());
+		 * head.setTransactionDate(vo.getAccountingDate());
+		 * head.setTransactionTime(vo.getTransactionTime());
+		 * head.setRequestRefno(vo.getRequestRefno());
+		 * head.setResponseID(vo.getResponseID());
+		 * head.setMessageType(vo.getMessageType());
+		 * body.setFFPTransactionId(vo.getFFPTransactionId());
+		 * body.setRejCd(vo.getRejCd()); body.setRejMsg(vo.getRejMsg());
+		 * body.setRsltCd(vo.getRsltCd()); body.setSrcRefNm(vo.getSrcReFNm());
+		 * root.setBODY(body); root.setHEAD(head);
+		 */
+
+		ROOT root = new ROOT();
+		HEAD head = new HEAD();
+		head.setRequestID("04");
+		head.setTransactionDate("20131009");
+		head.setTransactionTime("140203");
+		head.setRequestRefno("000001");
+		head.setAccountingDate("20131009");
+		head.setRequestID("03");
+		head.setMessageType("ACEQ");
+		head.setSystemRefno("20131113000000000000127");
+		head.setSystemBeginTIme("103029");
+		head.setSystemEndTIme("103030");
+		head.setResponseBeginTime("103029");
+		head.setResponseEndTime("103030");
+		head.setResponseStatus("N");
+		head.setFinalNode("0");
+		head.setSystemMessageCode("000000");
+		FFPCTO01 body = new FFPCTO01();
+		body.setSrcRefNm("jnl");
+		body.setFFPTransactionId("transctionId");
+		body.setRsltCd("S");
+		body.setRejCd("001");
+		body.setRejMsg("infor");
+		root.setHEAD(head);
+		root.setBODY(body);
+		String parseAck2FFPAgent = FFPTcpParticipantMessageConverter.parseXml2FFPAgent(root);
+		System.out.println(parseAck2FFPAgent);
+		Socket s = new Socket(TO_IP, TO_PORT);
+		BufferedWriter bufOut = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+		bufOut.write(parseAck2FFPAgent);
+		bufOut.flush();
+		s.close();
+	}
+
+	public static List<File> readfiles(String filepath) throws FileNotFoundException, IOException {
+		List<File> listFiles = new ArrayList();
+
+		try {
+			File file = new File(filepath);
+			if (file.isDirectory()) {
+				String[] filelist = file.list();
+				for (int i = 0; i < filelist.length; i++) {
+					File readfile = new File(filepath + "\\" + filelist[i]);
+					listFiles.add(readfile);
+				}
+			}
+		} catch (Exception e) {
+		}
+		return listFiles;
+	}
+
+	public static boolean delAllFile(String path) {
+		boolean flag = false;
+		File file = new File(path);
+		if (!file.exists()) {
+			return flag;
+		}
+		if (!file.isDirectory()) {
+			return flag;
+		}
+		String[] tempList = file.list();
+		File temp = null;
+		for (int i = 0; i < tempList.length; i++) {
+			if (path.endsWith(File.separator)) {
+				temp = new File(path + tempList[i]);
+			} else {
+				temp = new File(path + File.separator + tempList[i]);
+			}
+			if (temp.isFile()) {
+				temp.delete();
+			}
+			if (temp.isDirectory()) {
+				delAllFile(path + "/" + tempList[i]);// 删除文件夹里面的文件
+				flag = true;
+			}
+		}
+		return flag;
+	}
+}

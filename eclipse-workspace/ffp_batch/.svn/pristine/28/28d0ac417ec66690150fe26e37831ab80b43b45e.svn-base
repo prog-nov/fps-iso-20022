@@ -1,0 +1,450 @@
+package com.forms.batch.job.unit.participant.receivefile;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Timestamp;
+import java.util.Date;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.adaptor.jaxb.participant.request.ROOT;
+import com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01.FFPCTO01;
+import com.forms.ffp.adaptor.jaxb.participant.request.head.HEAD;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.msg.participant.FFPParticipantMessageConverter;
+import com.forms.ffp.core.utils.FFPDateUtils;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.framework.log.BatchLogger;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class FFPReceiveFileServerThread implements Runnable {
+
+	BatchLogger _logger = BatchLogger.getLogger("RECEIVE_FILE_SERVER_SESSION",
+			String.valueOf(Thread.currentThread().getId()), FFPReceiveFileServerThread.class);
+	private String jnlNo;
+	private String transactionId;
+	private String end2endId;
+	private Timestamp createTs;
+	private String seqNo;
+	private String msgId;
+	private String srcRefNm; 
+	Socket socket = null;// 和本线程相关的Socket
+
+	String outputPath = null;
+
+	public FFPReceiveFileServerThread(String outputPath, Socket socket) {
+		this.outputPath = outputPath;
+		this.socket = socket;
+	}
+
+	public FFPReceiveFileServerThread(Socket socket) {
+		this.socket = socket;
+	}
+
+	@Override
+	public void run() {
+		BatchLogger logger = BatchLogger.getLogger("RECEIVE_FILE_SERVER_SESSION",
+				String.valueOf(Thread.currentThread().getId()), FFPReceiveFileServerThread.class);
+		InputStream is = null;
+		InputStreamReader isr = null;
+		BufferedReader br = null;
+		OutputStream os = null;
+		PrintWriter pw = null;
+
+		StringBuffer sb = new StringBuffer();
+		String data = "";
+		try {
+			// 与客户端建立通信，获取输入流，读取取客户端提供的信息
+			is = socket.getInputStream();
+			isr = new InputStreamReader(is, "UTF-8");
+			br = new BufferedReader(isr);
+			// String data = null;
+
+			// File file = new File(outputPath + File.separator +
+			// FFPIDUtils.getReceiveParticipantFileName() + ".temp");
+			// File file = new File(outputPath + File.separator +
+			// FFPIDUtils.getReceiveParticipantFileName() + ".xml");
+
+			char[] mesBuffer = new char[256];
+			int count = 0;
+			while ((count = br.read(mesBuffer)) != -1) {
+				// 循环读取客户端的信息
+				data = String.valueOf(mesBuffer, 0, count);
+				//logger.info("我是服务器，客户端提交信息为：" + data);
+				sb.append(data);
+			}
+			logger.info("我是服务器，客户端提交信息为：" + sb.toString());
+			/*
+			 * while ((data = br.readLine()) != null) {// 循环读取客户端的信息
+			 * //logger.info("我是服务器，客户端提交信息为：" + data);
+			 * 
+			 * //将字符串转换为文档 sb.append(data); System.out.println(sb.toString());
+			 * //解析xml文档 ///判断是c1,c2,c3
+			 * ///返回rej报文；写到DB，并发送一个iso2022报文给ICL；写到DB,直接结束 }
+			 */
+
+			socket.shutdownInput();// 关闭输入流
+			// 获取输出流，响应客户端的请求
+			os = socket.getOutputStream();
+			pw = new PrintWriter(os);
+			pw.write("ACK");
+			pw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pw != null)
+					pw.close();
+				if (os != null)
+					os.close();
+				if (br != null)
+					br.close();
+				if (isr != null)
+					isr.close();
+				if (is != null)
+					is.close();
+				if (socket != null)
+					socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			logger.info("我是服务器，客户端提交信息为：" + sb.toString());
+			System.out.println("我是服务器，客户端提交信息为：" + sb.toString());
+			ROOT root = FFPParticipantMessageConverter.parseObject(sb.toString());
+
+			///////初始化各种id//////////////////
+			init();
+			///////将信息保存至db//////////////////
+			test(root);
+			///////处理xml//////////////////
+			executeXmlfFFPCTO01(root);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("服务器异常，请稍后交易");
+		}
+	}
+
+	public void init() {
+		jnlNo = FFPIDUtils.getJnlNo();
+		transactionId = FFPIDUtils.getTransactionId();
+		end2endId = FFPIDUtils.getEndToEndId();
+		createTs = FFPDateUtils.getTimestamp(new Date());
+		//seqNo = FFPIDUtils.getSeq();
+		seqNo = "0";
+		msgId = FFPIDUtils.getMessageId();
+		srcRefNm = FFPIDUtils.getSrcRefNm();
+	}
+
+	//////暂时有问题
+	public void save(ROOT root) {
+		HEAD head = root.getHEAD();
+		FFPCTO01 body = (FFPCTO01) root.getBODY();
+		String servcMode = body.getSrvcMode();
+		
+		String txState = FFPConstantsTxJnl.TX_STAT_APPST;
+		String txSrc = FFPConstants.TX_SOURCE_FFPAGENT;
+		Timestamp lastUpdateTs = createTs;
+		String msgFromType = FFPConstants.TX_SOURCE_FFPAGENT;
+		String msgFrom = head.getRequestID();
+		String msg2Type = FFPConstants.TX_SOURCE_FFP;
+		String msgTo = FFPConstants.TX_SOURCE_FFP;
+		String msgType = head.getMessageType();
+		String msgStatus = (servcMode.equals("C1")?"REJ":FFPConstantsTxJnl.MSG_STAT_PROCE);
+		Timestamp msgCreateData = createTs;
+		Timestamp msgProceDate = createTs;
+		String msgComplDate = "";
+
+		try {
+			Connection loc_conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+			String sql_jnl = "insert into tb_tx_jnl value(?,?,?,?,?,?,?)";
+			PreparedStatement pstmt = loc_conn.prepareStatement(sql_jnl);
+			pstmt.setString(1, jnlNo);
+			pstmt.setString(2, txState);
+			pstmt.setString(2, txState);
+			pstmt.setString(3, txSrc);
+			pstmt.setString(4, transactionId);
+			pstmt.setString(5, end2endId);////
+			pstmt.setTimestamp(6, createTs);
+			pstmt.setTimestamp(7, lastUpdateTs);
+
+			String sql_action = "insert into tb_tx_jnlaction value(?,?,?,?,?,?,?,?,?,?,?,?)";
+			PreparedStatement pstmt_action = loc_conn.prepareStatement(sql_action);
+			pstmt_action.setString(1, jnlNo);
+			pstmt_action.setString(2, seqNo);
+			pstmt_action.setString(3, msgId);
+			pstmt_action.setString(4, msgFromType);
+			pstmt_action.setString(5, msgFrom);
+			pstmt_action.setString(6, msg2Type);
+			pstmt_action.setString(7, msgTo);
+			pstmt_action.setString(8, msgType);
+			pstmt_action.setString(9, msgStatus);///////
+			pstmt_action.setTimestamp(10, msgCreateData);
+			pstmt_action.setTimestamp(11, msgProceDate);
+			pstmt_action.setString(12, msgComplDate);
+
+			String sql_p100dat = "insert into tb_tx_p100dat value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			PreparedStatement pstmt_p100dat = loc_conn.prepareStatement(sql_p100dat);
+			pstmt_p100dat.setString(1, jnlNo);
+			pstmt_p100dat.setString(2, body.getPymtCatPrps());
+			pstmt_p100dat.setString(3, body.getAcctVerf());
+			pstmt_p100dat.setString(4, body.getSettlCcy());
+			pstmt_p100dat.setBigDecimal(5, body.getSettlAmt());
+			pstmt_p100dat.setString(6, body.getSettlDate());
+			pstmt_p100dat.setString(7, body.getInstrCcy());
+			pstmt_p100dat.setBigDecimal(8, body.getInstrAmt());
+			pstmt_p100dat.setString(9, body.getChrgrsAgent().getID());
+			pstmt_p100dat.setString(10, body.getChrgrsAgent().getBICCODE());
+			pstmt_p100dat.setString(11, body.getChrgrsCcy());
+			pstmt_p100dat.setBigDecimal(12, body.getChrgrsAmt());
+			pstmt_p100dat.setString(13, body.getDbtrNm());
+			pstmt_p100dat.setString(14, body.getDbtrAcNo());
+			pstmt_p100dat.setString(15, body.getDbtrAcTp());
+			pstmt_p100dat.setString(16, "");//DEBTOR_AGT_ID
+			pstmt_p100dat.setString(17, "");//DEBTOR_AGT_BIC
+			pstmt_p100dat.setString(18, body.getCdtrNm());
+			pstmt_p100dat.setString(19, body.getCdtrAcNo());
+			pstmt_p100dat.setString(20, body.getCdtrAcTp());
+			pstmt_p100dat.setString(21, body.getCdtrAgent().getID());
+			pstmt_p100dat.setString(22, body.getCdtrAgent().getBICCODE());
+			pstmt_p100dat.setString(23, ""); /// purpose_type
+			pstmt_p100dat.setString(24, "");/// purpose_code
+			pstmt_p100dat.setString(25, "");/// purpose_other
+			pstmt_p100dat.setString(26, "");
+
+			pstmt.execute(sql_jnl);
+			//pstmt_action.execute(sql_action);
+			//pstmt_p100dat.execute(sql_p100dat);
+
+			pstmt.close();
+			//pstmt_action.close();
+			//pstmt_p100dat.close();
+			loc_conn.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			_logger.error("数据库异常");
+		}
+	}
+
+	public void test(ROOT root){
+		HEAD head = root.getHEAD();
+		FFPCTO01 body = (FFPCTO01) root.getBODY();
+		String servcMode = body.getSrvcMode();
+		
+		String txState = FFPConstantsTxJnl.TX_STAT_APPST;
+		String txRejReason = "";
+		String txRejCode = "";
+		String txSrc = FFPConstants.TX_SOURCE_FFPAGENT;
+		Timestamp lastUpdateTs = createTs;
+		String msgFromType = FFPConstants.TX_SOURCE_FFPAGENT;
+		String msgFrom = head.getRequestID();
+		String msg2Type = FFPConstants.TX_SOURCE_FFP;
+		String msgTo = FFPConstants.TX_SOURCE_FFP;
+		String msgType = head.getMessageType();
+		String msgStatus = (servcMode.equals("C1")?"REJ":FFPConstantsTxJnl.MSG_STAT_PROCE);
+		Timestamp msgCreateData = createTs;
+		Timestamp msgProceDate = createTs;
+		Timestamp msgComplDate = createTs;
+		
+		String status = "";
+		try {
+			Connection loc_conn = ConnectionManager.getInstance_ffp().getConnection_ffp();
+			loc_conn.setAutoCommit(false);
+			String sql_jnl = "insert into tb_tx_jnl value(?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_jnl, jnlNo,txState,txRejReason,txRejCode,txSrc,transactionId,end2endId,createTs,lastUpdateTs);
+
+			String sql_action = "insert into tb_tx_jnlaction value(?,?,?,?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_action, jnlNo,seqNo,msgId,msgFromType,msgFrom,msg2Type,msgTo,msgType,msgStatus,msgCreateData,msgProceDate,msgComplDate);
+			
+			String sql_p100dat = "insert into tb_tx_p100dat value(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			EntityManager.update(loc_conn, sql_p100dat, jnlNo,
+					srcRefNm,
+					status,
+					txRejCode,
+					txRejReason,
+					body.getPymtCatPrps(),
+					body.getAcctVerf(),
+					body.getSettlCcy(),
+					body.getSettlAmt(),
+					body.getSettlDate(),
+					body.getInstrCcy(),
+					body.getInstrAmt(),
+					body.getChrgrsAgent().getID(),
+					body.getChrgrsAgent().getBICCODE(),
+					body.getChrgrsCcy(),
+					body.getChrgrsAmt(),
+					body.getDbtrNm(),
+					body.getDbtrAcNo(),
+					body.getDbtrAcTp(),
+					"",//DEBTOR_AGT_ID
+					"",//DEBTOR_AGT_BIC
+					body.getCdtrNm(),
+					body.getCdtrAcNo(),
+					body.getCdtrAcTp(),
+					body.getCdtrAgent().getID(),
+					body.getCdtrAgent().getBICCODE(),
+			"", /// purpose_type
+			"",/// purpose_code
+			"",/// purpose_other
+			"",
+			servcMode);
+			loc_conn.commit();
+			loc_conn.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	// 处理FFPCTO01 xml
+	public void executeXmlfFFPCTO01(ROOT reqRoot) throws Exception {
+		HEAD reqHead = reqRoot.getHEAD();
+		FFPCTO01 ffpcto01 = (FFPCTO01) reqRoot.getBODY();
+		String servcMode = ffpcto01.getSrvcMode();
+		switch (servcMode) {
+		case "C1":
+			/// 交易拒纳，通过批处理送回交易状态
+			com.forms.ffp.adaptor.jaxb.participant.response.ROOT root = new com.forms.ffp.adaptor.jaxb.participant.response.ROOT();
+			com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD head = new com.forms.ffp.adaptor.jaxb.participant.response.head.HEAD();
+			com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01 body = new com.forms.ffp.adaptor.jaxb.participant.response.ffpcto01.FFPCTO01();
+			// set属性
+			head.setRequestID(reqHead.getRequestID());
+			head.setTransactionDate(reqHead.getTransactionDate());
+			head.setTransactionTime(reqHead.getTransactionTime());
+			head.setRequestRefno(reqHead.getRequestRefno());
+			head.setAccountingDate(reqHead.getAccountingDate());
+			head.setResponseID(reqHead.getResponseID());
+			head.setMessageType(reqHead.getMessageType());
+			head.setSystemRefno(reqHead.getSystemRefno());
+			head.setSystemBeginTIme("");
+			head.setSystemEndTIme("");
+			head.setResponseRefno("");
+			head.setResponseBeginTime("");
+			head.setResponseEndTime("");
+			head.setResponseStatus("");
+			head.setFinalNode("0");
+			head.setSystemMessageCode("");
+			head.setResponseMessageCode("");
+			head.setResponseMessage("");
+
+			body.setSrcRefNm("1");
+			body.setFFPTransactionId(transactionId);
+			body.setRsltCd("R");
+			body.setRejCd("12");
+			body.setRejMsg("rej");
+
+			root.setHEAD(head);
+			root.setBODY(body);
+			sendXml(appendXmlLength(packageXml(root)));
+			break;
+		case "C2":
+			// 通过批处理文件（只有C2一笔交易）送至ICL FPS处理
+			
+			break;
+		case "C3":
+			// 批处理文件
+
+			break;
+		default:
+			break;
+		}
+	}
+
+	// rejXml
+	public void sendXml(String outXml) {
+		Socket socket = null;
+		OutputStream os = null;
+		OutputStreamWriter osw = null;
+		try {
+			System.out.println("发送rejXml");
+			socket = new Socket();
+			SocketAddress socketAddress = new InetSocketAddress("172.21.21.249", 10001);
+			socket.connect(socketAddress, 10000);
+			os = socket.getOutputStream();
+			osw = new OutputStreamWriter(os, "UTF-8");
+			osw.write(outXml);
+			osw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (osw != null)
+					osw.close();
+				if (os != null)
+					os.close();
+				if (socket != null)
+					socket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	// rejXml处理
+	public String appendXmlLength(String xml) throws Exception {
+		//// 报文长度：为八位数字，表示报文头和报文体字符的总长度，长度数字不足八位，前面补零.
+		if ((xml == null) || (xml.length() == 0)) {
+			throw new RuntimeException("xml is Empty");
+		}
+		int length = (xml.getBytes("utf-8")).length;// 300
+		// 将int----string
+		String lenStr = String.valueOf(length);
+
+		int paddingLen = 0;
+		StringBuffer sb = null;
+		if (lenStr.length() < 8) {
+			paddingLen = 8 - lenStr.length(); /// 需要补多少个0
+			sb = new StringBuffer();
+		}
+		for (int i = 0; i < paddingLen; i++) {
+			sb.append("0");
+		}
+		sb.append(lenStr);
+		sb.append(xml);
+		System.out.println(sb.toString());
+		return sb.toString();
+	}
+
+	// 包装rejXxml
+	public String packageXml(com.forms.ffp.adaptor.jaxb.participant.response.ROOT root) {
+
+		JAXBContext context = null;
+		Marshaller createMarshaller = null;
+		String xml = "";
+		try {
+			context = JAXBContext.newInstance(FFPJaxbConstants.JAXB_CONTEXT_PACKAGE_AGENT);
+			createMarshaller = context.createMarshaller();
+			createMarshaller.setProperty("jaxb.formatted.output", Boolean.valueOf(true));
+			createMarshaller.setProperty("jaxb.encoding", "UTF-8");
+			StringWriter sw = new StringWriter();
+			createMarshaller.marshal(root, sw);
+			xml = sw.toString();
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return xml;
+	}
+
+}

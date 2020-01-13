@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-config>
+	<fixed-settings>
+		<!--  job-id:job id,using to BATCH_JOB_JNL_TABLE and LOG -->
+		<job-id>RISHUSTEMPTABLE</job-id>
+		<run-frequency>A</run-frequency>
+		<rerun-type>FromBegin</rerun-type>
+	</fixed-settings>
+	<action-flow>
+		<action>
+			<action-name>Sql Job HOUSE KEEP TEMP TABLE</action-name>
+			<action-type>JavaSysCall</action-type>
+			<processor>com.forms.batch.job.unit.rishus.RisHousekeepService</processor>
+			<databaseName>risdb</databaseName>
+			<parameters>
+				<parameter>husjob/rishustemptable/ris-payin-temptable-sql-job-config.xml</parameter>
+				<parameter>husjob/rishustemptable/ris-payout-temptable-sql-job-config.xml</parameter>
+			</parameters>
+		</action>
+	</action-flow>
+</job-config>

@@ -1,0 +1,490 @@
+package com.forms.batch.job.commom;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.dom4j.Element;
+
+import com.forms.datapipe.ValveMapping;
+import com.forms.datapipe.config.PipeField;
+import com.forms.datapipe.config.ValveConfig;
+import com.forms.datapipe.context.InputContext;
+import com.forms.datapipe.context.OutputContext;
+import com.forms.datapipe.context.PipeContext;
+import com.forms.datapipe.exception.DataPipeException;
+import com.forms.datapipe.pipedata.PipeData;
+import com.forms.framework.exception.BatchFrameworkException;
+import com.forms.framework.job.common.valve.BaseOutputDataProcessValve;
+
+public abstract class SwiftDataProcessValve extends BaseOutputDataProcessValve
+{
+	protected SwiftConfigUtil swiftConfigUtil;
+//	protected Set<String> SWIFT_SIGN_SET = new HashSet<String>();
+	protected Set SWIFT_SIGN_SET = new HashSet();
+
+	protected Element header;
+
+	// basic header block List<Element> header1
+	protected List header1;
+
+	// application header block for input
+	protected Element header2I;
+
+	// application header block for output
+	protected Element header2O;
+
+	// user header block List<Element> header3
+	protected List header3;
+
+	// text block Map<String, Element> contents
+	protected Map contents;
+
+	// trailer block
+	protected Element footer;
+
+	private String currentSit;
+	
+	private String nextSit;
+	
+	private String currentMsgType;
+	
+//	@SuppressWarnings("static-access")
+	public void init(ValveConfig ip_config, PipeContext ip_pipeContext)
+			throws DataPipeException
+	{
+		super.init(ip_config, ip_pipeContext);
+		try
+		{	
+			initSwiftXml();
+//			List<SwiftField> loc_swiftFileds = SwiftConfigUtil.getAllFields();
+			List loc_swiftFileds = SwiftConfigUtil.getAllFields();
+//			Iterator<SwiftField> loc_it = loc_swiftFileds.iterator();
+			Iterator loc_it = loc_swiftFileds.iterator();
+			SwiftField loc_sf = null;
+			while (loc_it.hasNext())
+			{
+				loc_sf = (SwiftField) loc_it.next();
+				if (!ip_pipeContext.getPipeConfig().getPipeData().getFields()
+						.containsKey(loc_sf.getName()))
+				{
+					PipeField pf = new PipeField();
+					pf.setDataType("java.lang.String");
+					pf.setName(loc_sf.getName());
+					ip_pipeContext.getPipeConfig().getPipeData().addPipeField(
+							pf);
+				}
+			}
+			initSwiftSignSet();
+			header = swiftConfigUtil.getHeaders();
+			header1 = swiftConfigUtil.getHeaderByIndex(SwiftContants.SWIFT_SIGN[0], header);
+			header2I = swiftConfigUtil.getHeaderByIndexAndSign(SwiftContants.SWIFT_SIGN[1],
+					SwiftContants.APPTYPE_I, header);
+			header2O = swiftConfigUtil.getHeaderByIndexAndSign(SwiftContants.SWIFT_SIGN[1],
+					SwiftContants.APPTYPE_O, header);
+			header3 = swiftConfigUtil.getHeaderByIndex(SwiftContants.SWIFT_SIGN[2], header);
+			contents = swiftConfigUtil.getContents();
+			footer = swiftConfigUtil.getFooters();
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException(ip_e);
+		}
+	}
+	
+	public void initSwiftXml() throws DataPipeException
+	{
+		try
+		{
+			swiftConfigUtil = SwiftConfigUtil.getInstance("SWIFT_CONFIG_PATH");
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException(ip_e);
+		}
+	}
+//	List<ValveForward>
+	public List process(ValveMapping ip_valveMapping,
+			PipeData ip_pipeData, InputContext ip_in, OutputContext ip_out)
+			throws DataPipeException
+	{
+		String loc_swiftInfo = ip_pipeData.getPipeFieldStringValue("MSG_DATA");
+		dealSwiftString(loc_swiftInfo, ip_pipeData, SwiftContants.CONTENT_END_MODE1);
+		return super.process(ip_valveMapping, ip_pipeData, ip_in, ip_out);
+	}
+
+	protected void dealSwiftString(String ip_str, PipeData ip_pipeData, String contentEndStr)
+			throws DataPipeException
+	{
+		int length = 0;
+		int loc_flag = 0;
+		String loc_temp = ip_str;
+		for (int i = 0; i < SwiftContants.SWIFT_SIGN.length && loc_temp.trim().length() > 0; i++)
+		{
+			SplitResult sr = SwiftDataProcessValve.getNextValue(loc_temp);
+			String loc_splitStr[] = sr.getResultString()
+					.split(SwiftContants.MSG_DELIMITER, 2);
+			length = sr.getEnd() + 1;
+			if (loc_splitStr[0].matches("[1-5]"))
+			{
+				loc_flag = Integer.parseInt(loc_splitStr[0]);
+				loc_temp = loc_temp.substring(length);
+				String loc_str = loc_splitStr[1];
+				switch (loc_flag)
+				{
+				case 1:
+					dealHeader1(loc_str, ip_pipeData);
+					break;
+				case 2:
+					dealHeader2(loc_str, ip_pipeData);
+					break;
+				case 3:
+					dealHeader3(loc_str, ip_pipeData);
+					break;
+				case 4:
+					dealContent(loc_str, ip_pipeData, contentEndStr);
+					break;
+				case 5:
+					dealFooter(loc_str, ip_pipeData);
+					break;
+				}
+			} else
+			{
+				throw new DataPipeException("data block sign not in [0-5]");
+			}
+		}
+
+	}
+
+//	@SuppressWarnings("unchecked")
+	private void dealHeader1(String ip_header1, PipeData ip_pipeData)
+			throws DataPipeException
+	{
+		if (header1.size() != 1)
+		{
+			throw new DataPipeException("Init swift basic header block failed!");
+		}
+		try
+		{
+//			Iterator<Element> loc_it = header1.get(0).elements().iterator();
+			Iterator loc_it = ((Element) header1.get(0)).elements().iterator();
+			setFieldValues(loc_it, ip_header1, ip_pipeData);
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException(
+					"Set basic header block values failed :" + ip_e);
+		}
+
+	}
+
+//	@SuppressWarnings("unchecked")
+	private void dealHeader2(String ip_header2, PipeData ip_pipeData)
+			throws DataPipeException
+	{
+		if (header2I == null && header2O == null)
+		{
+			throw new DataPipeException(
+					"Init swift application header block failed!");
+		}
+		String msg_type = "";
+		try
+		{
+			if (ip_header2.startsWith(SwiftContants.APPTYPE_I))
+			{
+//				Iterator<Element> loc_it = header2I.elements().iterator();
+				Iterator loc_it = header2I.elements().iterator();
+				setFieldValues(loc_it, ip_header2, ip_pipeData);
+			} else
+			{
+//				Iterator<Element> loc_it = header2O.elements().iterator();
+				Iterator loc_it = header2O.elements().iterator();
+				setFieldValues(loc_it, ip_header2, ip_pipeData);
+			}
+			msg_type = ip_pipeData.getPipeFieldStringValue("MESSAGE_TYPE");
+			ip_pipeData.setPipeFieldValue("MSG_TYPE", "MT" + msg_type);
+			currentMsgType = "MT" + msg_type;
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException(
+					"Set application header block values failed :" + ip_e);
+		}
+	}
+
+//	@SuppressWarnings("unchecked")
+	private void dealHeader3(String ip_header3, PipeData ip_pipeData)
+			throws DataPipeException
+	{
+		if (header3.size() < 0)
+		{
+			throw new DataPipeException("Init swift user header block failed!");
+		}
+		try
+		{
+			int length = 0;
+			String temp = ip_header3;
+			while (temp.length() > 0)
+			{
+				SplitResult sr = getNextValue(temp);
+				length = sr.getEnd() + 1;
+				String sign = sr.getResultString().split(SwiftContants.MSG_DELIMITER)[0];
+				temp = temp.substring(length);
+//				Iterator<Element> loc_it = header3.iterator();
+				Iterator loc_it = header3.iterator();
+				while (loc_it.hasNext())
+				{
+					Element loc_element = (Element) loc_it.next();
+					String loc_sign = loc_element.attributeValue("sign");
+					if (loc_sign.equals(sign))
+					{
+						setFieldValues(loc_element.elements().iterator(), sr
+								.getResultString().substring(
+										sr.getResultString().indexOf(
+												SwiftContants.MSG_DELIMITER) + 1),
+								ip_pipeData);
+						break;
+					}
+				}
+			}
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException("Set user header block values failed :"
+					+ ip_e);
+		}
+
+	}
+
+//	@SuppressWarnings("unchecked")
+	private void dealFooter(String ip_footer, PipeData ip_pipeData)
+			throws DataPipeException
+	{
+		if (footer.elements().size() < 0)
+		{
+			throw new DataPipeException("Init swift trailer block failed!");
+		}
+		try
+		{
+			int length = 0;
+			String temp = ip_footer;
+			while (temp.length() > 0)
+			{
+				SplitResult sr = getNextValue(temp);
+				length = sr.getEnd() + 1;
+				String sign = sr.getResultString().split(SwiftContants.MSG_DELIMITER)[0];
+				temp = temp.substring(length);
+//				Iterator<Element> loc_it = footer.elements().iterator();
+				Iterator loc_it = footer.elements().iterator();
+				while (loc_it.hasNext())
+				{
+					Element loc_element = (Element) loc_it.next();
+					String loc_sign = loc_element.attributeValue("sign");
+					if (loc_sign.equals(sign))
+					{
+						setFieldValues(loc_element.elements().iterator(), sr
+								.getResultString().substring(
+										sr.getResultString().indexOf(
+												SwiftContants.MSG_DELIMITER) + 1),
+								ip_pipeData);
+						break;
+					}
+				}
+			}
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException("Set trailer block values failed :"
+					+ ip_e);
+		}
+
+	}
+
+//	@SuppressWarnings("unchecked")
+	public void dealContent(String ip_content, PipeData ip_pipeData, String contentEndStr)
+			throws DataPipeException
+	{
+		String loc_temp = ip_content;
+//		Element content = contents.get(ip_pipeData.getPipeFieldValue("MSG_TYPE"));
+		Element content = (Element) contents.get(ip_pipeData.getPipeFieldStringValue("MSG_TYPE"));
+		if(null == content)
+		{
+			content = (Element) contents.get("COMMON");
+		}
+		try
+		{
+			while (loc_temp.length() > 0)
+			{
+				SplitResult loc_sr = getNextValue4Content(loc_temp, contentEndStr);
+				if (loc_sr == null)
+					loc_temp = "";
+				else
+				{
+					Element loc_element = SwiftConfigUtil.getContentBySign(
+							loc_sr.getSign(), content);
+					if (loc_element != null)
+					{
+						String loc_processor = loc_element
+								.attributeValue("processor");
+						if (loc_processor != null && !"".equals(loc_processor))
+						{
+							Class loc_class = Class.forName(loc_processor
+									.substring(0, loc_processor
+											.lastIndexOf(".")));
+							String loc_method = loc_processor
+									.substring(loc_processor.lastIndexOf(".") + 1);
+							loc_class.getMethod(loc_method, new Class[]{String.class,PipeData.class})
+										.invoke(null, new Object[]{loc_sr.getResultString(), ip_pipeData});
+						} else
+						{
+							setFieldValues(loc_element.elements().iterator(),
+									loc_sr.getResultString(), ip_pipeData);
+						}
+					}
+					loc_temp = loc_temp.substring(loc_sr.getEnd());
+
+				}
+			}
+		} catch (Exception ip_e)
+		{
+			throw new DataPipeException(ip_e);
+		}
+	}
+//	Iterator<Element> ip_element
+	public void setFieldValues(Iterator ip_element, String ip_value,
+			PipeData ip_pipeData) throws DataPipeException
+	{
+//		Iterator<Element> loc_it = ip_element;
+		Iterator loc_it = ip_element;
+		while (loc_it.hasNext())
+		{
+			Element loc_e = (Element) loc_it.next();
+			SwiftField swiftField = SwiftConfigUtil.getField(loc_e);
+			if (loc_it.hasNext())
+			{
+				if (swiftField.getBytes() == 0)
+				{
+					throw new DataPipeException(
+							swiftField.getName() + "bytes can't be null or 0 when it is not the last field");
+				}
+				String loc_newValue = ip_value.substring(0, swiftField
+						.getBytes());
+				ip_value = ip_value.substring(swiftField.getBytes());
+				ip_pipeData.setPipeFieldValue(swiftField.getName(),
+						loc_newValue);
+			} else
+			{
+				ip_pipeData.setPipeFieldValue(swiftField.getName(), ip_value);
+			}
+		}
+	}
+
+	public static SplitResult getNextValue(String ip_str)
+	{
+		int flag = 0;
+		int firstStart = ip_str.indexOf(SwiftContants.HEADER_FOOTER_START);
+		flag++;
+		int start = firstStart;
+		int end = ip_str.indexOf(SwiftContants.HEADER_FOOTER_END);
+		flag = 1;
+		int nextStart;
+		while (flag > 0)
+		{
+			nextStart = ip_str.indexOf(SwiftContants.HEADER_FOOTER_START, start + 1);
+			if (nextStart != -1 && nextStart < end)
+			{
+				start = nextStart;
+				flag++;
+			} else
+			{
+				flag--;
+				if (flag > 0)
+					end = ip_str.indexOf(SwiftContants.HEADER_FOOTER_END, end + 1);
+			}
+		}
+		SplitResult splitResult = new SplitResult();
+		splitResult.setResultString(ip_str.substring(firstStart + 1, end));
+		splitResult.setStart(firstStart + 1);
+		splitResult.setEnd(end);
+		return splitResult;
+	}
+
+	public SplitResult getNextValue4Content(String ip_str, String contentEndStr)
+			throws BatchFrameworkException
+	{
+		SplitResult splitResult = new SplitResult();
+		String loc_returnValue = "";
+		String loc_startSwiftField = getStartSwiftField(ip_str);
+		if (contentEndStr.equals(ip_str))
+		{
+			return null;
+		}
+		if (loc_startSwiftField == null)
+		{
+			throw new BatchFrameworkException(
+					"text block format error for input:" + ip_str);
+		}
+		int loc_nextFieldIndex = getNextSwiftFieldindex(ip_str
+				.substring(loc_startSwiftField.length()));
+		if (loc_nextFieldIndex == Integer.MAX_VALUE)
+		{
+			ip_str = ip_str + "}";
+			loc_nextFieldIndex = ip_str.indexOf(contentEndStr + "}");
+			loc_returnValue = ip_str.subSequence(loc_startSwiftField.length(),
+					loc_nextFieldIndex).toString();
+		} else
+		{
+			loc_nextFieldIndex = loc_nextFieldIndex
+					+ loc_startSwiftField.length();
+			loc_returnValue = ip_str.subSequence(loc_startSwiftField.length(),
+					loc_nextFieldIndex).toString();
+		}
+		splitResult.setResultString(loc_returnValue);
+		splitResult.setSign(ip_str.split(SwiftContants.MSG_DELIMITER, 3)[1]);
+		splitResult.setEnd(0);
+		splitResult.setEnd(loc_nextFieldIndex);
+		return splitResult;
+	}
+
+	protected abstract void initSwiftSignSet();
+
+//	public Set<String> getSwiftFieldSet()
+//	{
+//		return SWIFT_SIGN_SET;
+//	}
+
+	public int getNextSwiftFieldindex(String ip_string) throws BatchFrameworkException
+	{
+		int loc_index = Integer.MAX_VALUE;
+		nextSit = currentSit;
+		Iterator iter = SWIFT_SIGN_SET.iterator();
+		while(iter.hasNext())
+		{
+			String loc_str = (String) iter.next();
+//			如果当前是79场 并且是996报文
+			if(SwiftContants.CONTENT_SPECIAL_DEAL_79.equals(currentSit))
+			{
+				if("MT996".equals(currentMsgType))
+				{
+					return Integer.MAX_VALUE;
+				}
+			}
+			int loc_tempIndex = ip_string.indexOf(loc_str) == -1 ? loc_index
+					: ip_string.indexOf(loc_str);
+			nextSit = (loc_tempIndex < loc_index) ? loc_str : nextSit;
+			loc_index = (loc_tempIndex < loc_index) ? loc_tempIndex : loc_index;
+		}
+		return loc_index;
+	}
+
+	public String getStartSwiftField(String ip_string)
+	{
+		Iterator iter = SWIFT_SIGN_SET.iterator();
+		while(iter.hasNext())
+		{
+			String loc_str = (String) iter.next();
+			if (ip_string.startsWith(loc_str))
+			{
+				currentSit = loc_str;
+				return loc_str;
+			}
+		}
+		return null;
+	}
+}

@@ -1,0 +1,2 @@
+beneform4j.web=Web控制层异常
+beneform4j.web.upload_io_exception=上传文件IO异常：{0}

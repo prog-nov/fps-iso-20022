@@ -1,0 +1,351 @@
+package com.forms.ffp.persistents.bean.payment.credittransfer;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.forms.ffp.persistents.bean.FFPJbBaseFin;
+
+public class FFPJbP100 extends FFPJbBaseFin
+{
+	@SuppressWarnings("unused")
+	private static final long serialVersionUID = 1L;
+
+	private String SrvcMode;
+	private String PymtCatPrps;
+	private String accountVerification;
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date settlementDate;
+	private String settlementCurrency;
+	private BigDecimal settlementAmount;
+	private String instructedCurrency;
+	private BigDecimal instructedAmount;
+	private String chargersAgentId;
+	private String chargersAgentBic;
+	private String chargersCurrency;
+	private BigDecimal chargersAmount;
+	private String debtorName;
+	private String debtorAccountNumber;
+	private String debtorAccountNumberType;
+	private String debtorAgentId;
+	private String debtorAgentBic;
+
+	private String DbtrContPhone;
+	private String DbtrContEmailAddr;
+
+	private String creditorName;
+	private String creditorAccountNumber;
+	private String creditorAccountNumberType;
+	private String creditorAgentId;
+	private String creditorAgentBic;
+
+	private String CdtrContPhone;
+	private String CdtrContEmailAddr;
+
+	private String paymentPurposeType;
+	private String paymentPurposeCd;
+	private String paymentPurposeProprietary;
+	private String remittanceInformation;
+
+	public String getPymtCatPrps()
+	{
+		return this.PymtCatPrps;
+	}
+
+	public void setPymtCatPrps(String PymtCatPrps)
+	{
+		this.PymtCatPrps = PymtCatPrps;
+	}
+
+	public String getAccountVerification()
+	{
+		return this.accountVerification;
+	}
+
+	public void setAccountVerification(String accountVerification)
+	{
+		this.accountVerification = accountVerification;
+	}
+
+	public Date getSettlementDate()
+	{
+		return this.settlementDate;
+	}
+
+	public void setSettlementDate(Date settlementDate)
+	{
+		this.settlementDate = settlementDate;
+	}
+
+	public String getSettlementCurrency()
+	{
+		return this.settlementCurrency;
+	}
+
+	public void setSettlementCurrency(String settlementCurrency)
+	{
+		this.settlementCurrency = settlementCurrency;
+	}
+
+	public BigDecimal getSettlementAmount()
+	{
+		return this.settlementAmount;
+	}
+
+	public void setSettlementAmount(BigDecimal settlementAmount)
+	{
+		this.settlementAmount = settlementAmount;
+	}
+
+	public String getInstructedCurrency()
+	{
+		return this.instructedCurrency;
+	}
+
+	public void setInstructedCurrency(String instructedCurrency)
+	{
+		this.instructedCurrency = instructedCurrency;
+	}
+
+	public BigDecimal getInstructedAmount()
+	{
+		return this.instructedAmount;
+	}
+
+	public void setInstructedAmount(BigDecimal instructedAmount)
+	{
+		this.instructedAmount = instructedAmount;
+	}
+
+	public String getChargersAgentId()
+	{
+		return this.chargersAgentId;
+	}
+
+	public void setChargersAgentId(String chargersAgentId)
+	{
+		this.chargersAgentId = chargersAgentId;
+	}
+
+	public String getChargersAgentBic()
+	{
+		return this.chargersAgentBic;
+	}
+
+	public void setChargersAgentBic(String chargersAgentBic)
+	{
+		this.chargersAgentBic = chargersAgentBic;
+	}
+
+	public String getChargersCurrency()
+	{
+		return this.chargersCurrency;
+	}
+
+	public void setChargersCurrency(String chargersCurrency)
+	{
+		this.chargersCurrency = chargersCurrency;
+	}
+
+	public BigDecimal getChargersAmount()
+	{
+		return this.chargersAmount;
+	}
+
+	public void setChargersAmount(BigDecimal chargersAmount)
+	{
+		this.chargersAmount = chargersAmount;
+	}
+
+	public String getDebtorName()
+	{
+		return this.debtorName;
+	}
+
+	public void setDebtorName(String debtorName)
+	{
+		this.debtorName = debtorName;
+	}
+
+	public String getDebtorAccountNumber()
+	{
+		return this.debtorAccountNumber;
+	}
+
+	public void setDebtorAccountNumber(String debtorAccountNumber)
+	{
+		this.debtorAccountNumber = debtorAccountNumber;
+	}
+
+	public String getDebtorAccountNumberType()
+	{
+		return this.debtorAccountNumberType;
+	}
+
+	public void setDebtorAccountNumberType(String debtorAccountNumberType)
+	{
+		this.debtorAccountNumberType = debtorAccountNumberType;
+	}
+
+	public String getDebtorAgentId()
+	{
+		return this.debtorAgentId;
+	}
+
+	public void setDebtorAgentId(String debtorAgentId)
+	{
+		this.debtorAgentId = debtorAgentId;
+	}
+
+	public String getDebtorAgentBic()
+	{
+		return this.debtorAgentBic;
+	}
+
+	public void setDebtorAgentBic(String debtorAgentBic)
+	{
+		this.debtorAgentBic = debtorAgentBic;
+	}
+
+	public String getCreditorName()
+	{
+		return this.creditorName;
+	}
+
+	public void setCreditorName(String creditorName)
+	{
+		this.creditorName = creditorName;
+	}
+
+	public String getCreditorAccountNumber()
+	{
+		return this.creditorAccountNumber;
+	}
+
+	public void setCreditorAccountNumber(String creditorAccountNumber)
+	{
+		this.creditorAccountNumber = creditorAccountNumber;
+	}
+
+	public String getCreditorAccountNumberType()
+	{
+		return this.creditorAccountNumberType;
+	}
+
+	public void setCreditorAccountNumberType(String creditorAccountNumberType)
+	{
+		this.creditorAccountNumberType = creditorAccountNumberType;
+	}
+
+	public String getCreditorAgentId()
+	{
+		return this.creditorAgentId;
+	}
+
+	public void setCreditorAgentId(String creditorAgentId)
+	{
+		this.creditorAgentId = creditorAgentId;
+	}
+
+	public String getCreditorAgentBic()
+	{
+		return this.creditorAgentBic;
+	}
+
+	public void setCreditorAgentBic(String creditorAgentBic)
+	{
+		this.creditorAgentBic = creditorAgentBic;
+	}
+
+	public String getPaymentPurposeType()
+	{
+		return this.paymentPurposeType;
+	}
+
+	public void setPaymentPurposeType(String paymentPurposeType)
+	{
+		this.paymentPurposeType = paymentPurposeType;
+	}
+
+	public String getPaymentPurposeCd()
+	{
+		return this.paymentPurposeCd;
+	}
+
+	public void setPaymentPurposeCd(String paymentPurposeCd)
+	{
+		this.paymentPurposeCd = paymentPurposeCd;
+	}
+
+	public String getPaymentPurposeProprietary()
+	{
+		return this.paymentPurposeProprietary;
+	}
+
+	public void setPaymentPurposeProprietary(String paymentPurposeProprietary)
+	{
+		this.paymentPurposeProprietary = paymentPurposeProprietary;
+	}
+
+	public String getRemittanceInformation()
+	{
+		return this.remittanceInformation;
+	}
+
+	public void setRemittanceInformation(String remittanceInformation)
+	{
+		this.remittanceInformation = remittanceInformation;
+	}	
+
+	public String getDbtrContPhone()
+	{
+		return DbtrContPhone;
+	}
+
+	public void setDbtrContPhone(String dbtrContPhone)
+	{
+		DbtrContPhone = dbtrContPhone;
+	}
+
+	public String getDbtrContEmailAddr()
+	{
+		return DbtrContEmailAddr;
+	}
+
+	public void setDbtrContEmailAddr(String dbtrContEmailAddr)
+	{
+		DbtrContEmailAddr = dbtrContEmailAddr;
+	}
+
+	public String getCdtrContPhone()
+	{
+		return CdtrContPhone;
+	}
+
+	public void setCdtrContPhone(String cdtrContPhone)
+	{
+		CdtrContPhone = cdtrContPhone;
+	}
+
+	public String getCdtrContEmailAddr()
+	{
+		return CdtrContEmailAddr;
+	}
+
+	public void setCdtrContEmailAddr(String cdtrContEmailAddr)
+	{
+		CdtrContEmailAddr = cdtrContEmailAddr;
+	}
+
+	public String getSrvcMode()
+	{
+		return SrvcMode;
+	}
+
+	public void setSrvcMode(String srvcMode)
+	{
+		SrvcMode = srvcMode;
+	}
+
+}

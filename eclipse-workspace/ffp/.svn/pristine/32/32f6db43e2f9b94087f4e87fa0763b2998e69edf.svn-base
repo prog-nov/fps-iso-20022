@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100">
+
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<sql id="INSERT_TB_TX_A100DAT">
+		INSERT INTO TB_TX_A100DAT(
+			JNL_NO,		STAT,			SRC_REF_NM,		ADR_REQ_ID,		
+			MSG_TP,		RPOXY_ID,		RPOXY_ID_TP,	CLR_CD,			
+			LANG_EN,	FULL_NM_EN, 	DISP_NM_EN,		LANG_ZH,		
+			FULL_NM_ZH,	DISP_NM_ZH, 	CUS_ID,			CUS_TP,			
+			SUP_OP_CD,	DFLT,		PURP_CD		
+		)
+		VALUES (
+			#{txJnl.jnlNo, jdbcType=VARCHAR},	#{Stat, jdbcType=VARCHAR},		#{SrcRefNm, jdbcType=VARCHAR},	#{AdrReqId, jdbcType=VARCHAR},  
+			#{MsgType, jdbcType=VARCHAR},		#{Id, jdbcType=VARCHAR},		#{Tp, jdbcType=VARCHAR},		#{ClrCd, jdbcType=VARCHAR},		
+			#{LangEn, jdbcType=VARCHAR},  		#{FullNmEn, jdbcType=VARCHAR},  #{DispNmEn, jdbcType=VARCHAR},	#{LangZh, jdbcType=VARCHAR},	
+			#{FullNmZh, jdbcType=VARCHAR},    	#{DispNmZh, jdbcType=VARCHAR}, 	#{CusId, jdbcType=VARCHAR},		#{CusTp, jdbcType=VARCHAR},		
+			#{SupOpCd, jdbcType=VARCHAR},		#{Dflt, jdbcType=VARCHAR}, 		#{PurpCd, jdbcType=VARCHAR}
+		)
+	</sql>
+	
+	<update id="UPDATE_TXJNL_STAT">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<select id="inqueryJnlNoByMsgId" resultType="String">
+		SELECT
+			A.JNL_NO
+		FROM
+			tb_tx_jnlaction A
+		WHERE
+			A.MSG_ID = #{msgId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="inqueryJbA100ByJnlNo" resultType="String">
+		SELECT
+			*
+		FROM
+			tb_tx_a100dat 
+		WHERE
+			JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	
+	<update id="UPDATE_A100_STAT" >
+		UPDATE tb_tx_a100dat
+			SET STAT = #{Stat, jdbcType=VARCHAR}
+		WHERE
+			SRC_REF_NM = #{SrcRefNm, jdbcType=VARCHAR}
+	</update>
+	
+	<!-- about table tb_dt_addressing -->
+	<update id="UPDATE_TB_DT_ADDRESSING">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing.UPDATE_TB_DT_ADRESSING"></include>
+	</update>
+	
+	<insert id="INSERT_UPDATE_TB_DT_ADDRESSING">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing.INSERT_UPDATE_TB_DT_ADDRESSING"></include>
+	</insert>
+	
+</mapper>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<import-valve-config>
+	<field-mappings>
+		<mapping input-field="F1" pipe-field="Field1" />
+	</field-mappings>
+</import-valve-config>

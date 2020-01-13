@@ -1,0 +1,51 @@
+login.user.login_success = 登录成功
+login.user.notexist = 登录失败,用户{0}不存在
+login.auth.failure = 用户名或密码错,剩余可尝试登录次数{1}
+login.auth.failure.nolimit = 用户{0}登录失败,用户名或密码错
+login.ip.error = 用户{0}当前IP{1}不允许登录
+login.state.error = 用户{0}状态异常,请联系系统管理员
+login.try.too_more = 用户{0}尝试登录次数过多被锁定
+login.session.toomany = 用户{0}登录会话数过多，最大允许会话数为{1}
+login.user.dump_login = 不允许同时登录多个用户，请退出已登录用户后重试
+login.publickey.error = 获取公钥异常
+
+
+user.oldpwd.error = 用户{0}原始密码错误
+
+common.dao.data_not_found=未找到记录:{0}
+common.dao.has_many_datas=找到多条记录:{0}
+common.dao.data_has_exist=记录已存在:{0}
+
+systemmanager.user.rolelimit=角色不符合编号为{0}的约束关系
+systemmanager.user.deleleAdministratorlimit=超级管理员无法删除(修改或者重置密码)
+systemmanager.user.updateUserStatuslimit= 登录用户不允许停用自己
+systemmanager.user.DeleteYoulimit = 登录用户不允许删除自己
+
+systemmanager.role.exist_rolelimit=角色约束已经存在，或其子约束已经存在，{0}
+systemmanager.role.deleleAdministratorRoleId= 超级管理员角色不允许删除(修改)
+
+
+checker.notempty={0}不能为空
+
+systemmanager.news.effectiveDayCnt.required=生效天数不能为空
+
+systemmanager.doc.status.error=文档状态已锁定，不能下载
+systemmanager.doc.file.notexists=文件不存在或已经损坏，下载失败
+systemmanager.doc.file.nowrite=没有写入权限
+systemmanager.doc.file.saveerror=文件{0}保存记录出错
+systemmanager.doc.file.alreadyexists=文件{0}已经上传过，不能再次上传
+systemmanager.doc.file.filekey.isnull=插件返回的fileKey为空，处理失败
+systemmanager.doc.file.download.error=文件下载异常
+systemmanager.doc.file.param.error=传入的文件或列表当中文件[{0}]不存在或文件是目录
+systemmanager.doc.file.param.ftpmode=ftp模式【ftp模式｜sftp模式】参数没有配置
+
+systemmanager.taskrule.alreadysetrule={0}已设置规则，请到修改页面修改
+systemmanager.taskrule.validate.nullitbean=参数bean缺失
+systemmanager.taskrule.validate.nullbusikey=参数缺失：业务编号缺失
+systemmanager.taskrule.validate.nullnexttaskid=参数缺失：下一个任务节点缺失
+systemmanager.taskrule.validate.nullparams=参数缺失：该任务节点为进入明细，对应业务参数缺失
+systemmanager.taskrule.validate.unfindtargeturl=代办任务生成失败，找不到代办任务URL，请联系技术人员
+
+systemmanager.organ.orgid_suporgid_same=拖动机构时，机构号和父机构号不能相同
+systemmanager.organ.suporg_not_exist=拖动机构时，父机构不存在
+systemmanager.organ.suporg_cannot_child=拖动机构时，父机构不能是当前机构的子机构

@@ -1,0 +1,354 @@
+/*
+ * Copy Right Information : Forms Syntron 
+ * Project : 四方精创 Java EE 开发平台 <br>
+ * Description : 公共样式文件 。主框架和内页都会用到.
+ * Author : Leo Yang <br>
+ * Version : 1.0.0 <br>
+ * Since : 1.0.0 <br>
+ * Date : 2016-5-13<br>
+ */
+/**公共样式 add by leo**/
+.bf4j-warp{
+	margin:0px 10px;
+}
+
+.bf4j-group,
+.bf4j-group-search,
+.bf4j-group-list,
+.bf4j-group-form,
+.bf4j-group-detail,
+.bf4j-group-btn
+ {
+	width:100%;
+	margin:5px 0px;
+    clear:both;
+    float:left;
+}
+
+.bf4j-group-more {
+	width:100%;
+	margin:0px;
+    clear:both;
+    float:left;
+}
+
+.bf4j-group .bf4j-group-title,
+.bf4j-group-search .bf4j-group-title{
+	margin:0px;
+    padding:0px;
+	float:left;
+	height:20px;
+}
+.bf4j-group .bf4j-group-title span,
+.bf4j-group-search .bf4j-group-title span {
+	margin:0px;
+    padding:0px;
+    padding-left: 10px;
+    cursor: pointer;
+    float:left;
+}
+
+.bf4j-group .bf4j-group-title .icon-sup,
+.bf4j-group-search .bf4j-group-title .icon-sup{
+    width:10px;
+    height:10px;
+    float:left;
+    margin:2px 0px 0px 10px;
+    cursor: pointer;
+}
+.bf4j-group .bf4j-group-title .icon-sdown,
+.bf4j-group-search .bf4j-group-title .icon-sdown{
+    width:10px;
+    height:10px;
+    margin:2px 0px 0px 10px;
+    float:left;
+    cursor: pointer;
+}
+
+.bf4j-group .bf4j-group-content, 
+.bf4j-group-search .bf4j-group-content{
+	clear:both;
+    padding: 10px;
+    border-radius: 5px;
+	margin:0px;
+	float:left;
+	width:100%;
+	padding:10px 0px;
+}
+
+/**按钮样式1号(大)**/
+.bf4j-btn {
+    cursor: pointer;
+    text-align: center;
+    padding:7px;
+    border-radius: 5px;
+	text-decoration: none;
+}
+/**按钮样式1号(中)**/
+.bf4j-btn-2 {
+    cursor: pointer;
+    text-align: center;
+    padding:5px;
+    border-radius: 2px;
+    text-decoration: none;
+}
+
+.bf4j-btn:hover,.bf4j-btn-2:hover{
+    text-decoration: none;
+}
+
+.bf4j-btn i,.bf4j-btn-2 i{
+	width:20px;
+	height:20px;
+    display:inline-block;
+    padding:0px;
+    margin:-6px 0px;
+}
+/**按钮样式3号(小)**/
+.bf4j-btn-3 {
+    cursor: pointer;
+    text-align: center;
+    padding:3px 5px;
+    border-radius: 5px;
+}
+
+.bf4j-btn-3 i{
+	width:15px;
+	height:15px;
+    display:inline-block;
+    padding:0px;
+    margin:-2px 0px;
+}
+
+.bf4j-line {
+    width: 100%;
+    padding:0px;
+    margin:0px;
+    float:left;
+    margin:5px 0px;
+}
+
+.bf4j-line .bf4j-cell {
+    float: left;
+}
+
+.bf4j-line .bf4j-cell label {
+      float: left;
+      display: block;
+      text-align: right;
+      padding-right:18%;
+      width:82%;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      line-height:22px;
+}
+
+.bf4j-line .bf4j-cell .bf4j-input {
+     text-align: left;
+     width:100%;
+     overflow:hidden;
+     white-space:nowrap;
+     text-overflow:ellipsis;
+}
+
+.bf4j-line .bf4j-cell select,
+.bf4j-line .bf4j-cell .bf4j-input input[type='text'],
+.bf4j-line .bf4j-cell .bf4j-input .validatebox-text
+{
+     width:90%;
+     height:22px; 
+}
+
+ .bf4j-line .bf4j-cell input{font-size:14px;}   
+ .bf4j-line .bf4j-c1{width:8.33333%}
+ .bf4j-line .bf4j-c2{width:16.66667%}
+ .bf4j-line .bf4j-c3{width:25%}
+ .bf4j-line .bf4j-c4{width:30.33333%}
+ .bf4j-line .bf4j-c5{width:41.66667%}
+ .bf4j-line .bf4j-c6{width:50%}
+ .bf4j-line .bf4j-c7{width:58.33333%}
+ .bf4j-line .bf4j-c8{width:56.66667%}
+ .bf4j-line .bf4j-c9{width:75%}
+ .bf4j-line .bf4j-c10{width:83.33333%}
+ .bf4j-line .bf4j-c11{width:91.66667%}
+ .bf4j-line .bf4j-c12{width:100%}
+ 
+ .bf4j-line .bf4j-sc1{width:4.166666666666667%}
+ .bf4j-line .bf4j-sc2{width:8.333333333333333%}
+ .bf4j-line .bf4j-sc3{width:12.5%}
+ .bf4j-line .bf4j-sc4{width:16.66666666666667%}
+ .bf4j-line .bf4j-sc5{width:20.83333333333333%}
+ .bf4j-line .bf4j-sc6{width:25%}
+ .bf4j-line .bf4j-sc7{width:29.16666666666667%}
+ .bf4j-line .bf4j-sc8{width:33.33333333333333%}
+ .bf4j-line .bf4j-sc9{width:37.5%}
+ .bf4j-line .bf4j-sc10{width:41.66666666666667%}
+ .bf4j-line .bf4j-sc11{width:45.83333333333333%}
+ .bf4j-line .bf4j-sc12{width:50%}
+ .bf4j-line .bf4j-sc13{width:54.16666666666667%}
+ .bf4j-line .bf4j-sc14{width:58.33333333333333%}
+ .bf4j-line .bf4j-sc15{width:62.5%}
+ .bf4j-line .bf4j-sc16{width:66.66666666666667%}
+ .bf4j-line .bf4j-sc17{width:70.83333333333333%}
+ .bf4j-line .bf4j-sc18{width:75%}
+ .bf4j-line .bf4j-sc19{width:79.16666666666667%}
+ .bf4j-line .bf4j-sc20{width:83.33333333333333%}
+ .bf4j-line .bf4j-sc21{width:87.5%}
+ .bf4j-line .bf4j-sc22{width:91.66666666666667%}
+ .bf4j-line .bf4j-sc23{width:95.83333333333333%}
+ .bf4j-line .bf4j-sc24{width:100%} 
+ 
+ .bf4j-line .bf4j-left{text-align:left;}
+ .bf4j-line .bf4j-center{text-align:center;}
+ .bf4j-line .bf4j-right{text-align:right;}
+ 
+/***间隔系列***/
+.bf4j-pt100 {
+    height: 100px!important;
+}
+.bf4j-pt95 {
+    height: 95px!important;
+}
+.bf4j-pt90 {
+    height: 90px!important;
+}
+.bf4j-pt85 {
+    height: 85px!important;
+}
+.bf4j-pt80 {
+    height: 80px!important;
+}
+.bf4j-pt75 {
+    height: 75px!important;
+}
+.bf4j-pt70 {
+    height: 70px!important;
+}
+.bf4j-pt65 {
+    height: 65px!important;
+}
+.bf4j-pt60 {
+    height: 60px!important;
+}
+.bf4j-pt55 {
+    height: 55px!important;
+}
+.bf4j-pt50 {
+    height: 50px!important;
+}
+.bf4j-pt45 {
+    height: 45px!important;
+}
+.bf4j-pt40 {
+    height: 40px!important;
+}
+.bf4j-pt35 {
+    height: 35px!important;
+}
+.bf4j-pt30 {
+    height: 30px!important;
+}
+.bf4j-pt25 {
+    height: 25px!important;
+}
+.bf4j-pt20 {
+    height: 20px!important;
+}
+.bf4j-pt15 {
+    height: 15px!important;
+}
+.bf4j-pt10 {
+    height: 10px!important;
+}
+.bf4j-pt9 {
+    height: 9px!important;
+}
+.bf4j-pt8 {
+    height: 8px!important;
+}
+.bf4j-pt7 {
+    height: 7px!important;
+}
+.bf4j-pt6 {
+    height: 6px!important;
+}
+.bf4j-pt5 {
+    height: 5px!important;
+}
+.bf4j-pt4 {
+    height: 4px!important;
+}
+.bf4j-pt3 {
+    height: 3px!important;
+}
+.bf4j-pt2 {
+    height: 2px!important;
+}
+.bf4j-pt1 {
+    height: 1px!important;
+}
+.bf4j-clear{
+	clear:both;
+}
+.bf4j-red{
+	color:red;
+}
+
+.window .bf4j-warp{
+	padding-top:10px;
+}
+/***扩展行级工具栏样式***/
+.datagrid-row-tool{
+	position: absolute;
+    height: 35px;
+    line-height:35px;
+    z-index:100;
+    padding:0px 10px;
+    display:none;
+    border-radius:5px;
+    filter:alpha(opacity=90);
+    opacity:0.9;
+}
+
+.datagrid-row-tool i{
+	padding:6px 13px 7px 13px;
+	margin:0px 5px;
+	cursor:pointer;
+}
+
+/****重构外部插件自带样式****/
+ .gotop{
+   	position:fixed;
+    right:0px; 
+    bottom:20px;
+    line-height:25px;
+    z-index:9999;
+    font-weight:800;
+	text-decoration: none;
+	text-align:center;
+	border-radius: 6px;
+	display:none;
+	width:45px;
+	height:40px;
+ }
+ .gotop:hover{
+	text-decoration: none;
+ }
+.panel-body{
+	font-size:14px;
+}
+.webuploader-container {
+	position: relative;
+}
+.webuploader-element-invisible {
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+    clip: rect(1px,1px,1px,1px);
+}
+.webuploader-pick {
+	
+}
+.datagrid-header div{
+	text-align:center!important;	
+}

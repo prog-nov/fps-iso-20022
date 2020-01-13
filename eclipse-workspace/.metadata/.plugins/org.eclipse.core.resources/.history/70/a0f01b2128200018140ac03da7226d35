@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="FORMS FFP" default="all">
+	<description>FORMS FFP BUILD HKCIL XSD FILE</description>
+	
+	<property name="appname" value="ffp"></property>
+	<property name="appdir" location="C:/Users/qingzhizi/working/Project/FFP/Workspaces/FFPWorkspace1/"></property>
+	<property name="dir.src.appname" location="${appdir}"></property>
+	
+	<target name="all" depends="jaxb_request"/>
+	
+	<target name="jaxb_request" description="Process Request Message Schema">
+		<echo message="Process Request Message Schema"></echo>
+		<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+			<classpath>
+				<fileset dir="../lib/" includes="*.jar"></fileset>
+			</classpath>
+		</taskdef>
+		<!--<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/HEAD.xsd" removeOldOutput="Yes" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.head" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>-->
+		<xjc schema="${appdir}/ffp_jaxb/schema/participant/Request/FFPCTO01.xsd" removeOldOutput="Yes" extension="true"
+				package="com.forms.ffp.adaptor.jaxb.participant.request.ffpcto01" destdir="${dir.src.appname}/ffp_jaxb/src">
+		</xjc>
+	</target>
+</project>

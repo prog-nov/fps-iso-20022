@@ -1,0 +1,131 @@
+package com.forms.ffp.bussiness.iclfps.fpsadrs004;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.Document;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.GroupHeader;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.MessageRoot;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_adrs_004_001_01.UnderlyingMaintenanceDetails;
+import com.forms.ffp.adaptor.jaxb.iclfps.fps_envelope_01.ISO20022BusinessDataV01;
+import com.forms.ffp.bussiness.iclfps.fpsadrs004.FFPVo_Fpsadrs004.UndrlygDtls;
+import com.forms.ffp.bussiness.utils.FFPJnlUtils;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.utils.FFPStringUtils;
+import com.forms.ffp.persistents.bean.FFPTxBase;
+import com.forms.ffp.persistents.bean.FFPTxJnlAction;
+import com.forms.ffp.persistents.bean.addressing.FFPJbA100;
+import com.forms.ffp.persistents.service.FFPIDaoService_Txjnl;
+import com.forms.ffp.persistents.service.addressing.FFPIDaoService_A100;
+import com.forms.ffp.persistents.service.addressing.FFPIDaoService_Addressing_Acct;
+
+@Component("ICL.fps.adrs.004.001.01")
+@Scope("prototype")
+public class FFPTxFpsadrs004 extends FFPTxBase {
+
+	@Resource(name = "FFPDaoService_A100")
+	private FFPIDaoService_A100 a100Service;
+	
+	@Resource(name = "FFPDaoService_Addressing_Acct")
+	private FFPIDaoService_Addressing_Acct acctService;
+
+	@Resource(name = "FFPDaoService_Txjnl")
+	private FFPIDaoService_Txjnl txJnlService;
+	
+
+	@Override
+	public void perform() throws Exception {
+		Date locDate = new Date();
+		
+		FFPVo_Fpsadrs004 locVo = (FFPVo_Fpsadrs004) txVo;
+		UndrlygDtls dtl = locVo.getDtls().get(0);
+		String jnlNo = a100Service.inqueryJnlNoByMsgId(locVo.getOrgnlMsgId());
+		if(jnlNo == null){
+			return ;
+		}
+		Object obj = txJnlService.inquiryByJnlNo(jnlNo);
+
+		if (obj instanceof FFPJbA100) {
+			FFPJbA100 a100Db = (FFPJbA100) obj;
+			
+			if(FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus().equalsIgnoreCase(a100Db.getTxJnl().getTxStat())){
+				return ;
+			}
+			
+			List<FFPTxJnlAction> actionList = new ArrayList<>();
+			actionList.add(FFPJnlUtils.getInstance().newJnlAction(
+					jnlNo, locVo.getMsgId(), FFPConstants.MSG_DIRECTION_INWARD,
+					FFPConstants.RELATION_SYSTEM_HKICL, locVo.getMsgDefIdr(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), 
+					locVo.getCreDtTm(), locDate, locDate, locVo.getOrgnlMsgId()));
+			a100Db.setJnlActionList(actionList);
+			
+			if ("ACCT".equals(dtl.getSts())) {
+				a100Db.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_APPST.getStatus());
+				if("SVID".equalsIgnoreCase(dtl.getTp())){
+					if(!FFPStringUtils.isEmptyOrNull(dtl.getId()))
+						a100Db.setProxyId(dtl.getId());
+					//update tb_dt_a100dat
+					a100Service.sUpdateA100(a100Db);
+				}
+			} else if ("RJCT".equals(dtl.getSts())) {
+				a100Db.getTxJnl().setTxStat(FFPConstantsTxJnl.TX_STATUS.TX_STAT_FPS_REJCT.getStatus());
+				a100Db.getTxJnl().setTxRejCode(locVo.getDtls().get(0).getCd());
+			}
+			a100Db.getTxJnl().setLastUpdateTs(new Date());
+			
+			//update txjnl  jnlaction
+			a100Service.updateJnlStat(a100Db);
+		}
+	}
+
+	@Override
+	public boolean validate() throws Exception {
+		return true;
+	}
+
+	@Override
+	public void parseISO20022BizData(ISO20022BusinessDataV01 bizData) throws Exception {
+		if ("ICL.fps.adrs.004.001.01".equals(this.serviceName)) {
+			txVo = new FFPVo_Fpsadrs004();
+			FFPVo_Fpsadrs004 locVo = (FFPVo_Fpsadrs004) txVo;
+			
+			parseISO20022BizDataHead(bizData);
+
+			Document doc = (Document) bizData.getContent().get(1).getValue();
+			MessageRoot mr = doc.getAdrRpt();
+
+			GroupHeader hdr = mr.getGrpHdr();
+			locVo.setMsgId(hdr.getMsgId());
+			locVo.setCreDtTm(hdr.getCreDtTm().toGregorianCalendar().getTime());
+			
+			locVo.setOrgnlMsgId(mr.getOrgnlGrpHdr().getMsgId());
+			
+			List<UndrlygDtls> dtls = new ArrayList<>();
+			UnderlyingMaintenanceDetails dtl = mr.getUndrlygDtls().get(0);
+
+			FFPVo_Fpsadrs004.UndrlygDtls adr004Ud = new FFPVo_Fpsadrs004().new UndrlygDtls();
+			adr004Ud.setAdrReqId(dtl.getAdrReqId());
+			if(!FFPStringUtils.isEmptyOrNull(dtl.getId())){
+				adr004Ud.setId(dtl.getId());
+			}
+			adr004Ud.setTp(dtl.getTp().value());
+			adr004Ud.setMmbId(dtl.getAgt().getFinInstnId().getClrSysMmbId().getMmbId());
+			adr004Ud.setSts(dtl.getSts().name());
+			//rjct details judge
+			if("RJCT".equalsIgnoreCase(dtl.getSts().name())){
+				adr004Ud.setCd(dtl.getStsRsnInf().getRsn().getCd());
+			}
+			adr004Ud.setTp(dtl.getTp().value());
+			
+			dtls.add(adr004Ud);
+			locVo.setDtls(dtls);
+		}
+	}
+}

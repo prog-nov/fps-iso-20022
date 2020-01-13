@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fps:FpsMsg xmlns:fps="urn:hkicl:fps:xsd:fps.envelope.01" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:hkicl:fps:xsd:fps.envelope.01 fps.envelope.01.xsd">
+	<fps:NbOfMsgs>1</fps:NbOfMsgs>
+	<fps:FpsPylds>
+		<fps:BizData>
+			<ah:AppHdr xmlns:ah="urn:iso:std:iso:20022:tech:xsd:head.001.001.01">
+				<ah:Fr>
+					<ah:FIId>
+						<ah:FinInstnId>
+							<ah:ClrSysMmbId>
+								<ah:MmbId>##FrMmbId##</ah:MmbId>
+							</ah:ClrSysMmbId>
+						</ah:FinInstnId>
+					</ah:FIId>
+				</ah:Fr>
+				<ah:To>
+					<ah:FIId>
+						<ah:FinInstnId>
+							<ah:ClrSysMmbId>
+								<ah:MmbId>##ToMmbId##</ah:MmbId>
+							</ah:ClrSysMmbId>
+						</ah:FinInstnId>
+					</ah:FIId>
+				</ah:To>
+				<ah:BizMsgIdr>ICL##yyyyMMddhhmmss####random##</ah:BizMsgIdr>
+				<ah:MsgDefIdr>pacs.002.001.08</ah:MsgDefIdr>
+				<ah:BizSvc>##BizSvc##</ah:BizSvc>
+				<ah:CreDt>##yyyy-MM-dd'T'hh:mm:ss.sss'Z'##</ah:CreDt>
+			</ah:AppHdr>
+			<doc:Document xmlns:doc="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.08">
+				<doc:FIToFIPmtStsRpt>
+					<doc:GrpHdr>
+						<doc:MsgId>ICL##yyyyMMddhhmmss####random##</doc:MsgId>
+						<doc:CreDtTm>##yyyy-MM-dd'T'hh:mm:ss.sss##</doc:CreDtTm>
+					</doc:GrpHdr>
+					<doc:OrgnlGrpInfAndSts>
+						<doc:OrgnlMsgId>##OrgnlMsgId##</doc:OrgnlMsgId>
+						<doc:OrgnlMsgNmId>##OrgnlMsgNmId##</doc:OrgnlMsgNmId>
+					</doc:OrgnlGrpInfAndSts>
+					<doc:TxInfAndSts>
+						<doc:OrgnlEndToEndId>##OrgnlEndToEndId##</doc:OrgnlEndToEndId>
+						<doc:OrgnlTxId>##OrgnlTxId##</doc:OrgnlTxId>
+						<doc:TxSts>ACSC</doc:TxSts>
+						<doc:AccptncDtTm>##yyyy-MM-dd'T'hh:mm:ss.sss##</doc:AccptncDtTm>
+						<doc:ClrSysRef>ICL##yyyyMMddhhmmss####random##</doc:ClrSysRef>
+					</doc:TxInfAndSts>
+				</doc:FIToFIPmtStsRpt>
+			</doc:Document>
+		</fps:BizData>
+	</fps:FpsPylds>
+</fps:FpsMsg>

@@ -1,0 +1,530 @@
+package com.forms.batch.job.unit.iclfps.payment.credittransfer;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.forms.batch.job.unit.iclfps.payment.message.FFPBatchMsg_CTI01;
+import com.forms.batch.util.CuttoffUtils;
+import com.forms.ffp.adaptor.define.FFPJaxbConstants;
+import com.forms.ffp.core.define.FFPConstants;
+import com.forms.ffp.core.define.FFPConstantsTxJnl;
+import com.forms.ffp.core.define.FFPStatus;
+import com.forms.ffp.core.msg.FFPAdaptorMgr;
+import com.forms.ffp.core.msg.FFPBaseResp;
+import com.forms.ffp.core.msg.participant.FFPSendTcpMessageResp;
+import com.forms.ffp.core.utils.FFPIDUtils;
+import com.forms.ffp.persistents.bean.FFPTxJnl;
+import com.forms.ffp.persistents.bean.payment.credittransfer.FFPJbP110;
+import com.forms.framework.BatchBaseJob;
+import com.forms.framework.exception.BatchJobException;
+import com.forms.framework.persistence.ConnectionManager;
+import com.forms.framework.persistence.EntityManager;
+
+public class PaymentConfirmationInwardProcessor extends BatchBaseJob
+{
+	//private BatchLogger _logger = BatchLogger.getLogger(this.jobName, this.actionName, PaymentConfirmationInwardProcessor.class);
+	//private static SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static String RESPONSE_HEAD_STATUS_N = "N";
+	private static String RESPONSE_HEAD_STATUS_E = "E";
+	private static String RESPONSE_RESULT_CODE_S = "S";
+	private static String RESPONSE_RESULT_CODE_R = "R";
+	
+	public void init()
+	{
+		
+	}
+	
+	@Override
+	public boolean execute() throws BatchJobException
+	{
+		try
+		{
+			this.processor();
+			return true;
+		}
+		catch(Exception ip_e)
+		{
+			throw new BatchJobException(ip_e);
+		}
+	}
+	
+	private void processor() throws Exception
+	{
+		batchLogger.info("Started processor inward batch file data");
+		
+		//List<com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document> pacs008list = new ArrayList<com.forms.ffp.adaptor.jaxb.iclfps.pacs_008_001_06.Document>();
+		FFPAdaptorMgr ffpMgr = FFPAdaptorMgr.getInstance();
+		Connection con = null;
+		
+		try
+		{
+			//Get FFP Batch DB configuration, DB manager
+			con = ConnectionManager.getInstance().getConnection();
+			
+			//check FFP Agent status, CUT OFF/ON
+			boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+			if(agentCutOff)
+			{
+				batchLogger.info("FFP Agent CUT OFF right now!");
+				return;
+			}
+			
+			//1.Get batch file data
+			List<FFPJbP110> FFPJbP110List = getTempData(con);
+			//2.persistent inward credit transfer data
+			processTxData(con, FFPJbP110List, ffpMgr);
+			
+			batchLogger.info("Ended processor inward batch file data");
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Process inward file error", ex);
+			throw new BatchJobException(ex);
+		}
+		finally
+		{
+			//close connection
+			if(con != null)
+				con.close();
+		}
+	}
+	
+	private void processTxData(Connection conn, List<FFPJbP110> FFPJbP110List, FFPAdaptorMgr ffpMgr)
+	{
+		batchLogger.info("Start to process inward credit transfer transaction data.");
+		for(FFPJbP110 singleP110Info : FFPJbP110List)
+		{
+			try
+			{
+				String ffpJnlNo = FFPIDUtils.getJnlNo();
+				//3a.persistent inward credit transfer data to transaction table
+				savePacs008Data(conn, singleP110Info, ffpJnlNo);
+				
+				String reqRefNo = FFPIDUtils.getRefno();
+				FFPBatchMsg_CTI01 cti01 = new FFPBatchMsg_CTI01(singleP110Info);
+				cti01.setReqRefNo(reqRefNo);
+				//updOrInstAction(conn, ffpJnlNo, reqRefNo, null);
+				
+				//3b.check Agent cut off or not
+				boolean agentCutOff = CuttoffUtils.isCutoff("FFP");
+				if(agentCutOff)
+				{
+					batchLogger.info(String.format("FFP Agent CUT OFF right now in processing transaction data[TX_ID:%s]!", singleP110Info.getTxJnl().getTransactionId()));
+					continue;
+				}
+				
+				//3c.Insert Action flow of FFPCIT01 for request message
+				insertAcitonFlow(conn, ffpJnlNo, reqRefNo, FFPConstants.MSG_CODE_FFP, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT.getStatus(), 
+						null, null, null, null, null, null, null, null);
+				//send message
+				//reply = ffpMgr.execute(ffpRequestMessage);//send list message?
+				
+				//3d.Send data to Participant----Synchronous
+				FFPBaseResp result = ffpMgr.execute(cti01);
+				
+				//3e.Synchronously update FFP DB status according to the response message
+				if(result != null)
+				{
+					FFPSendTcpMessageResp cti01_reply = (FFPSendTcpMessageResp)result;
+					if(cti01_reply.isTimeOut())
+					{
+						//a.update tb_tx_jnl status = TMOUT
+						//b.update tb_tx_jnlaction status = TMOUT
+						batchLogger.info(String.format("Update FFP Transaction Final status[%s] and Action request status[%s] with Source Reference number[%s]", 
+								FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), singleP110Info.getSrcRefNm()));
+						updateResultSts(conn, FFPConstantsTxJnl.TX_STATUS.TX_STAT_TMOUT.getStatus(), null, null, null, null, null, null, null, null, null, null, 
+								FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_TMOUT.getStatus(), ffpJnlNo, reqRefNo);
+		
+						//_logger.info(String.format("Update FFP credit transfer status not with response message from Agent by FFP tx_jnl[%s]", ffpJnlNo));
+					}
+					else
+					{
+						cti01.unmarshalResponseMsg(cti01_reply.getRespMessage());
+						
+						String resultSts;
+						if(RESPONSE_HEAD_STATUS_E.compareTo(cti01.getResponseSts()) == 0 && RESPONSE_RESULT_CODE_R.equals(cti01.getRsltCd()))
+						{
+							//responseStatus = E, resultCode = R
+							//resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_UNHANDLE.getStatus();//FFP Agent didn't handle this business data
+							resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+						}
+						else if(RESPONSE_HEAD_STATUS_N.compareTo(cti01.getResponseSts()) == 0 && RESPONSE_RESULT_CODE_S.equals(cti01.getRsltCd()))
+						{
+							//responseStatus = N, resultCode = S
+							//resultSts = "S".equals(cti01.getRsltCd()) ? FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus() : FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+							resultSts = FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus();
+						}
+						else
+						{
+							batchLogger.warn(String.format("Invalid response head status[%s] with resultCode[%s] from FFP Agent.", cti01.getResponseSts(), cti01.getRsltCd()));
+							throw new BatchJobException(String.format("Invalid response head status[%s] with resultCode[%s] from FFP Agent.", cti01.getResponseSts(), cti01.getRsltCd()));
+						}
+						
+						//a.update tb_tx_jnl status = COMP/REJECT according to result code
+						//b.update tb_tx_jnlaction status = MSYNC
+						//String resultSts = "S".equals(reply.getRsltCd()) ? FFPConstantsTxJnl.TX_STATUS.TX_STAT_COMPL.getStatus() : FFPConstantsTxJnl.TX_STATUS.TX_STAT_REJCT.getStatus();
+						batchLogger.info(String.format("Update FFP Transaction Final status[%s] and Action status[%s] with Credit Transfer Status[%s] and Source Reference number[%s]", 
+										resultSts, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), cti01.getRsltCd(), singleP110Info.getSrcRefNm()));
+						updateResultSts(conn, resultSts, cti01.getRejCd(), cti01.getRejMsg(), cti01.getResRefNo(), FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTI01, "I", 
+												FFPConstants.MSG_CODE_AGENT, new Date(), cti01.getResponseSts(), cti01.getResponseMsgCode(), cti01.getResponseMsg(), 
+														FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), ffpJnlNo, cti01.getReqRefNo());
+						//_logger.info(String.format("Update FFP credit transfer status from FFP Agent with source reference number[%s]", reply.getSrcRefNm()));
+						
+						//c.Insert action flow
+						//insertAcitonFlow(conn, ffpJnlNo, cti01.getResRefNo(), FFPConstants.MSG_TYPE_AGENT, FFPConstants.MSG_CODE_AGENT, FFPConstants.MSG_TYPE_FFP, 
+						//		FFPConstants.MSG_CODE_FFP, FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_MSYNC.getStatus(), cti01.getRejCd(), cti01.getRejMsg());
+					}
+				}
+				else
+				{
+					//this case to be continue
+				}
+			}
+			catch(Exception ex)
+			{
+				ex.printStackTrace();
+				batchLogger.error(String.format("Error on processing transaction data[TX_ID:%s]", singleP110Info.getTxJnl().getTransactionId()), ex);
+				//if error, the transaction data not handled, retry it?
+				//update status = retry?
+			}
+		}
+		
+		batchLogger.info("End to process inward credit transfer transaction data.");
+	}
+	
+	/*private void updOrInstAction(Connection conn, String jnlNo, String msgId, Date compDate) throws BatchJobException
+	{
+		//MERGE INTO USING FOR ORACLE
+		try
+		{
+			//String sql = "MERGE INTO TB_TX_JNLACTION TAR_ACTION"
+			//		+ "USING (SELECT * FROM TB_TX_JNLACTION WHERE JNL_NO = ? ) AS ORG_ACTION "
+			//		+ "ON TAR_ACTION.MSG_ID = ORG_ACTION.MSG_ID "
+			//		+ "WHEN MATCHED THEN UPDATE SET TAR_ACTION.MSG_ID = ? "
+			//		+ "WHEN NOT MATCHED THEN INSERT(JNL_NO, SEQ_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, "
+			//		+ "MSG_TYPE, MSG_STATUS, REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+			
+			String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, SEQ_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, "
+					+ "MSG_TYPE, MSG_STATUS, REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) "
+					+ "ON DUPLICATE KEY "
+					+ "UPDATE MSG_ID = ? ";
+			
+			List<Object> list = new ArrayList<Object>();
+			//list.add(jnlNo);
+			//list.add(msgId);
+			list.add(jnlNo);
+			list.add(1);//FIRST SEQ_NO
+			list.add(msgId);
+			list.add(FFPConstants.MSG_TYPE_FFP);//MSG_FROM_TYPE
+			list.add(FFPConstants.MSG_CODE_FFP);//MSG_FROM
+			list.add(FFPConstants.MSG_TYPE_AGENT);//MSG_TO_TYPE
+			list.add(FFPConstants.MSG_CODE_AGENT);//MSG_TO
+			list.add("FFPCTI01");//MSG_TYPE
+			list.add(FFPConstantsTxJnl.MSG_STATUS.MSG_STAT_CREAT);//MSG_STATUS
+			list.add(null);//REJ_CODE
+			list.add(null);//REJ_REASON
+			list.add(new java.sql.Timestamp(new Date().getTime()));//CREATE_TIME
+			list.add(new java.sql.Timestamp(new Date().getTime()));//PROCESS_TIME
+			list.add(compDate);//COMPELE_TIME
+			list.add(msgId);
+			
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			_logger.error("Error on updating action flow", e);
+			throw new BatchJobException(e);
+		}
+	}*/
+	
+	private void insertAcitonFlow(Connection conn, String jnlNo, String reqMsgId, String reqSystemId, String reqMsgStatus, String resMsgId, String resMsgType, 
+			String resMsgDirection, String resSystemId, Date resDate, String resMsgStatus,  String resMsgRejCode, String resMsgRejReason) throws BatchJobException
+	{
+		//String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, MSG_ID, MSG_FROM_TYPE, MSG_FROM, MSG_TO_TYPE, MSG_TO, MSG_TYPE, MSG_STATUS, "
+		//		+ "REJ_CODE, REJ_RSN, MSG_CREAT_DATE, MSG_PROCE_DATE, MSG_COMPL_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO TB_TX_JNLACTION(JNL_NO, REQUEST_MSG_ID, REQUEST_MSG_TYPE, REQUEST_MSG_DIRECTION, REQUEST_SYSTEMID, REQUEST_MSG_CREATE_TS, REQUEST_MSG_STAT,"
+				+ 	 "REQUEST_MSG_REJ_CODE, REQUEST_MSG_REJ_RSN, RESPONSE_MSG_ID, RESPONSE_MSG_TYPE, RESPONSE_MSG_DIRECTION, RESPONSE_SYSTEMID, "
+				+ 	 "RESPONSE_MSG_STAT, RESPONSE_MSG_REJ_CODE, RESPONSE_MSG_REJ_RSN) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(jnlNo);
+			//list.add(seq);
+			list.add(reqMsgId);
+			list.add(FFPJaxbConstants.JAXB_MSG_TYPE_FFPCTI01);//REQUEST_MSG_TYPE
+			list.add("O");//REQUEST_MSG_DIRECTION
+			list.add(reqSystemId);//REQUEST_SYSTEMID
+			list.add(new java.sql.Timestamp(new Date().getTime()));//REQUEST_CREATE_TIME
+			list.add(reqMsgStatus);//REQUEST_MSG_STAT
+			list.add(null);//REQUEST_MSG_REJ_CODE
+			list.add(null);//REQUEST_MSG_REJ_RSN
+			list.add(resMsgId);//RESPONSE_MSG_ID
+			list.add(resMsgType);//RESPONSE_MSG_TYPE
+			list.add(resMsgDirection);//RESPONSE_MSG_DIRECTION
+			list.add(resSystemId);//RESPONSE_SYSTEMID
+			//list.add(resDate);//RESPONSE_MSG_CREATE_TS
+			list.add(resMsgStatus);//RESPONSE_MSG_STAT
+			list.add(resMsgRejCode);//RESPONSE_MSG_REJ_CODE
+			list.add(resMsgRejReason);//RESPONSE_MSG_REJ_RSN
+			
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error("Error on adding action flow", ex);
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	private void updateResultSts(Connection conn, String tx_status, String tx_rejCd, String tx_rejRsn, String resMsgId, String resMsgType, String resMsgDirection, 
+			String resSystemId, Date resCtDate, String resMsgStatus, String resMsgRejCd, String resMsgRejRsn, String reqMsgStatus, String jnlNo, String reqMsgId) throws BatchJobException
+	{
+		//String sql = "UPDATE TB_TX_JNL SET TX_STAT = ?, LAST_UPDATE_TS = ? WHERE JNL_NO = ?";
+		//String sql = "UPDATE TB_TX_JNL JNL JOIN TB_TX_P100DAT P100 "	+ 
+		//			 "ON JNL.JNL_NO = P100.JNL_NO " + 
+		//			 "SET JNL.TX_STAT = ?, JNL.LAST_UPDATE_TS = ? , P100.STATUS = ?, P100.REJ_CODE = ?, P100.REJ_REASON = ? " + 
+		//			 "WHERE P100.SRC_REF_NM = ?";
+		//String sql = "UPDATE TB_TX_JNL JNL JOIN TB_TX_JNLACTION ACTION "	+ 
+		//		 "ON JNL.JNL_NO = ACTION.JNL_NO " + 
+		//		 "SET JNL.TX_STAT = ?, JNL.LAST_UPDATE_TS = ?, ACTION.MSG_STATUS = ?, ACTION.MSG_COMPL_DATE = ? " + 
+		//		 "WHERE JNL.JNL_NO = ?";
+		
+		String sql = "UPDATE TB_TX_JNL JNL JOIN TB_TX_JNLACTION ACTION ON JNL.JNL_NO = ACTION.JNL_NO "   + 	
+					 "SET JNL.TX_STAT = ?, JNL.TX_REJ_CODE = ?, JNL.TX_REJ_REASON = ?, JNL.LAST_UPDATE_TS = ?, ACTION.RESPONSE_MSG_ID = ?, ACTION.RESPONSE_MSG_TYPE = ?, "  + 
+					 "ACTION.RESPONSE_MSG_DIRECTION = ?, ACTION.RESPONSE_SYSTEMID = ?, ACTION.RESPONSE_MSG_CREATE_TS = ?, ACTION.RESPONSE_MSG_STAT = ?, "  + 
+					 "ACTION.RESPONSE_MSG_REJ_CODE = ?, ACTION.RESPONSE_MSG_REJ_RSN = ?, ACTION.REQUEST_MSG_STAT = ? WHERE JNL.JNL_NO = ? AND ACTION.REQUEST_MSG_ID = ?";
+		try
+		{
+			List<Object> list = new ArrayList<Object>();
+			list.add(tx_status);
+			list.add(tx_rejCd);
+			list.add(tx_rejRsn);
+			list.add(new java.sql.Timestamp(new Date().getTime()));
+			list.add(resMsgId);
+			list.add(resMsgType);
+			list.add(resMsgDirection);
+			list.add(resSystemId);
+			list.add(resCtDate == null ? "0000-00-00 00:00:00" : resCtDate);
+			list.add(resMsgStatus);
+			list.add(resMsgRejCd);
+			list.add(resMsgRejRsn);
+			list.add(reqMsgStatus);
+			list.add(jnlNo);
+			list.add(reqMsgId);
+			EntityManager.update(conn, sql, list.toArray());
+		}
+		catch(Exception ex)
+		{
+			batchLogger.error(String.format("Update TX_STATUS[%s] and ACTION_REQUSET_STATUS[%s] with JNL_NO[%s] and REQUEST_MSG_ID failed", tx_status, reqMsgStatus, jnlNo, reqMsgId), ex);
+			ex.printStackTrace();
+			throw new BatchJobException(ex);
+		}
+	}
+	
+	//query pacs008 data form temp table, according to batch_id for each batch times
+	private List<FFPJbP110> getTempData(Connection con) throws Exception
+	{
+		String sql = "SELECT * FROM TB_BH_INWARD_FPSPYCI WHERE STATUS = ?";
+		PreparedStatement pstm = null;
+		ResultSet rs = null;
+		List<FFPJbP110> list = new ArrayList<FFPJbP110>();
+		try
+		{
+			pstm = con.prepareStatement(sql);
+			//pstm.setDate(1, new java.sql.Date(format1.parse(this.batchAcDate).getTime()));
+			pstm.setString(1, FFPStatus.TEMP_CREDIT_STATUS.INWARD_INITATE.getCode());
+			
+			rs = pstm.executeQuery();
+			while(rs.next())
+			{
+				FFPJbP110 ctInfo = new FFPJbP110();
+				FFPTxJnl txJnl = new FFPTxJnl();
+				txJnl.setTransactionId(rs.getString("TRANSACTION_ID"));
+				txJnl.setEndToEndId(rs.getString("END_TO_END_ID"));
+				txJnl.setFpsRefNm(rs.getString("FPS_REF"));
+				
+				ctInfo.setTxJnl(txJnl);
+				ctInfo.setSrcRefNm(rs.getString("ID"));//just use this field to save temporary id
+				ctInfo.setPymtCatPrps(rs.getString("CATEGORY_PURPOSE"));
+				ctInfo.setAccountVerification(rs.getString("ACCT_VERF"));
+				ctInfo.setSettlementAmount(new BigDecimal(rs.getString("SETTLEMENT_AMT")));
+				ctInfo.setSettlementCurrency(rs.getString("SETTLEMENT_CUR"));
+				ctInfo.setSettlementDate(rs.getDate("SETTLEMENT_DATE"));
+				ctInfo.setInstructedCurrency(rs.getString("INSTRUCTED_CUR"));
+				ctInfo.setInstructedAmount(rs.getString("INSTRUCTED_AMT") != null ? new BigDecimal(rs.getString("INSTRUCTED_AMT")) : null);
+				ctInfo.setChargersAgentId(rs.getString("CHG_AGT_ID"));
+				ctInfo.setChargersAgentBic(rs.getString("CHG_AGT_BIC"));
+				ctInfo.setChargersCurrency(rs.getString("CHG_CUR"));
+				ctInfo.setChargersAmount(rs.getString("CHG_AMT") != null ? new BigDecimal(rs.getString("CHG_AMT")) : null);
+				ctInfo.setDebtorName(rs.getString("DEBTOR_NAME"));
+				ctInfo.setDebtorAccountNumber(rs.getString("DEBTOR_ACCTNO"));
+				ctInfo.setDebtorAccountNumberType(rs.getString("DEBTOR_ACCTNO_TYPE"));
+				ctInfo.setDebtorAgentId(rs.getString("DEBTOR_AGT_ID"));
+				ctInfo.setDebtorAgentBic(rs.getString("DEBTOR_AGT_BIC"));
+				ctInfo.setCreditorName(rs.getString("CREDITOR_NAME"));
+				ctInfo.setCreditorAccountNumber(rs.getString("CREDITOR_ACCTNO"));
+				ctInfo.setCreditorAccountNumberType(rs.getString("CREDITOR_ACCTNO_TYPE"));
+				ctInfo.setCreditorAgentId(rs.getString("CREDITOR_AGT_ID"));
+				ctInfo.setCreditorAgentBic(rs.getString("CREDITOR_AGT_BIC"));
+				ctInfo.setPaymentPurposeType(rs.getString("PURPOSE_TYPE"));
+				ctInfo.setPaymentPurposeCd(rs.getString("PURPOSE_CODE"));
+				ctInfo.setPaymentPurposeProprietary(rs.getString("PURPOSE_OTHER"));
+				ctInfo.setRemittanceInformation(rs.getString("REMIT_INFO"));
+				ctInfo.setSrvcMode(rs.getString("BIZ_SVC_TYPE"));
+				
+				list.add(ctInfo);
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			batchLogger.error(String.format("Failed to get file data from temporary table with batchDate[%s]", this.batchAcDate), ex);
+			//throw new FFPDBException(String.format("Failed to get file data from temporary table with batchId[%s]", batchId), ex);
+			throw new BatchJobException(ex);
+		}
+		finally
+		{
+			if(rs != null) rs.close();
+			if(pstm != null) pstm.close();
+		}
+		return list;
+	}
+	
+	private void savePacs008Data(Connection conn, FFPJbP110 txInf, String ffp_jnl_no) throws Exception
+	{
+		//a. p100,generate Jnl No.
+		//b. tb_tx_jnl
+		//c. update temporary status = F after success
+		//d. map remove this data
+		//Map<String, FFPMsgVO_Pacs008_CdtTrfTxInf> map = new HashMap<String, FFPMsgVO_Pacs008_CdtTrfTxInf>();
+		PreparedStatement pstm = null;
+		PreparedStatement pstm2 = null;
+		PreparedStatement pstm3 = null;
+		String jnl_sql = "INSERT INTO TB_TX_JNL VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		//Add refNo, status, reject_code, reject_reason
+		String p100_sql = "INSERT INTO TB_TX_P110DAT VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String inward_sql = "UPDATE TB_BH_INWARD_FPSPYCI SET STATUS = ?, LAST_MODI_DATE = ? WHERE ID = ? AND STATUS = ?";
+		//List<String> tempRefList = new ArrayList<String>();
+		//int count = 0;
+		try 
+		{
+			conn.setAutoCommit(false);
+			//Insert
+			pstm = conn.prepareStatement(jnl_sql);
+			pstm2 = conn.prepareStatement(p100_sql);
+			pstm3 = conn.prepareStatement(inward_sql);	
+			int i = 1;
+			String ref_no = FFPIDUtils.getSrcRefNm();
+			String inward_id = txInf.getSrcRefNm();
+			//String ffp_jnl_no = FFPIDUtils.getJnlNo();
+			FFPTxJnl txJnl = txInf.getTxJnl();	
+			//tx_p100.put(ffp_jnl_no, txInf);
+			txInf.setSrcRefNm(ref_no);//for send message to agent
+			pstm.setString(1, ffp_jnl_no);//generate FFP->FFP Agent Jnl_no
+			pstm.setString(2, FFPConstantsTxJnl.TX_STAT_CREAT);
+			pstm.setString(3, FFPConstantsTxJnl.TX_CODE.TX_CODE_P110.getCode());
+			pstm.setString(4, "FFP");
+			pstm.setString(5, "BTCH");//BATCH MODE
+			pstm.setString(6, txJnl.getTransactionId());
+			pstm.setString(7, txJnl.getEndToEndId());
+			pstm.setString(8, null);
+			pstm.setString(9, txJnl.getFpsRefNm());
+			pstm.setInt(10, 0);
+			pstm.setString(11, null);
+			pstm.setString(12, null);
+			pstm.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()));
+			pstm.setTimestamp(14, new java.sql.Timestamp(new Date().getTime()));
+						
+			pstm2.setString(i++, ffp_jnl_no);
+			pstm2.setString(i++,  ref_no);//ref Num for Agent
+			pstm2.setString(i++, txInf.getPymtCatPrps());
+			pstm2.setString(i++, txInf.getAccountVerification());
+			pstm2.setString(i++, txInf.getSettlementCurrency());
+			pstm2.setString(i++, txInf.getSettlementAmount() != null ? String.valueOf(txInf.getSettlementAmount()) : null);
+			pstm2.setTimestamp(i++, new java.sql.Timestamp(txInf.getSettlementDate().getTime()));
+			pstm2.setString(i++, txInf.getInstructedCurrency());
+			pstm2.setString(i++, txInf.getInstructedAmount() != null ? String.valueOf(txInf.getInstructedAmount()) : null);
+			pstm2.setString(i++, null);		//charge info
+			pstm2.setString(i++, null);
+			pstm2.setString(i++, null);
+			pstm2.setString(i++, null);
+			pstm2.setString(i++, txInf.getDebtorName());
+			pstm2.setString(i++, txInf.getDebtorAccountNumber());
+			pstm2.setString(i++, txInf.getDebtorAccountNumberType());
+			pstm2.setString(i++, txInf.getDebtorAgentId());//
+			pstm2.setString(i++, txInf.getDebtorAgentBic());
+			pstm2.setString(i++, txInf.getCreditorName());
+			pstm2.setString(i++, txInf.getCreditorAccountNumber());
+			pstm2.setString(i++, txInf.getCreditorAccountNumberType());
+			pstm2.setString(i++, txInf.getCreditorAgentId());
+			pstm2.setString(i++, txInf.getCreditorAgentBic());
+			pstm2.setString(i++, txInf.getPaymentPurposeType());
+			pstm2.setString(i++, txInf.getPaymentPurposeCd());
+			pstm2.setString(i++, txInf.getPaymentPurposeProprietary());
+			pstm2.setString(i++, txInf.getRemittanceInformation());		//remittance info
+			pstm2.setString(i++, txInf.getSrvcMode());//business service type
+				
+			pstm3.setString(1, FFPStatus.TEMP_CREDIT_STATUS.INWARD_FINISH.getCode());
+			pstm3.setTimestamp(2, new java.sql.Timestamp(new Date().getTime()));	
+			pstm3.setString(3, inward_id);
+			pstm3.setString(4, FFPStatus.TEMP_CREDIT_STATUS.INWARD_INITATE.getCode());
+				
+			pstm.executeUpdate();
+			pstm2.executeUpdate();
+			pstm3.executeUpdate();
+				
+			conn.commit();
+			conn.setAutoCommit(true);
+		}
+		catch (Exception ex) 
+		{
+			ex.printStackTrace();
+			batchLogger.error("Copy credit transfer data from temporary table of SQL execute batch failed", ex);
+			throw new BatchJobException(ex);
+			//update temporary table data 
+			/*StringBuilder sb = new StringBuilder("UPDATE TB_INWARD_DATA SET STATUS = ?, LAST_MODI_DATE = ? WHERE ID IN(");
+			for(int i= 1; i <= tempRefList.size(); i++)
+			{
+				sb.append(tempRefList.get(i - 1));
+				if(i < tempRefList.size()) sb.append(",");
+			}
+			sb.append(")");
+			PreparedStatement pst = null;
+			try {
+				pst = conn.prepareStatement(sb.toString());
+				pst.setString(1, CREDIT_STATUS.INWARD_TEMP_ERROR.getCode());
+				pst.setTimestamp(2, new java.sql.Timestamp(new Date().getTime()));	
+				
+				pst.executeUpdate();
+				
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			finally
+			{
+				if(pst != null)
+				{
+					try {
+						pst.close();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}*/
+		}
+		finally
+		{
+			if(pstm != null) pstm.close();
+			if(pstm2 != null) pstm2.close();
+			if(pstm3 != null) pstm3.close();
+		}
+	}
+}

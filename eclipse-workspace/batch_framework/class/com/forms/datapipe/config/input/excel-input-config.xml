@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<excel-input-config>
+	<file-name>XXX.xls</file-name><!-- 支持外部传入的参数，参数形如：#{para} -->
+	<sheet-name>XXX</sheet-name>
+	<encoding>GBK</encoding>
+	<stop-at-null>Y</stop-at-null><!-- 停在空记录 -->
+	<start-column>0</start-column>
+	<start-row>0</start-row>
+	<field-definition>
+		<field name="Field1" data-type="StringType" />
+		<field name="Field2" data-type="StringType" />
+
+		<!--（必须按顺序）完整定义一整行的数据.
+			一些字段说明：
+			data-type : 自定义数据类型，参考datatype-config.xml；
+		-->
+	</field-definition>
+</excel-input-config>
+

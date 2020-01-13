@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by cxl (EMBRACE) -->
+<validate-valve-config>
+	<approve-forward>success</approve-forward>
+	<unapprove-forward>failure</unapprove-forward>
+	<validate-rules>
+		<validate-rule>
+			<name>rule1</name>
+			<logic-express><![CDATA[
+			field1 > 0
+			]]>
+			</logic-express>
+		</validate-rule>
+	</validate-rules>
+	<!-- javascript express -->
+</validate-valve-config>

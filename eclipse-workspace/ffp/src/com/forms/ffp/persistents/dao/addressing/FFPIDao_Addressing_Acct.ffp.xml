@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing_Acct">
+
+	<!-- about table tb_dt_addressing_acct   START -->
+	<insert id="INSERT_UPDATE_TB_DT_ADDRESSING_ACCT">
+		<include refid="INSERT_UPDATE_ADDRESSING_ACCT"/>
+	</insert>
+	<sql id="INSERT_UPDATE_ADDRESSING_ACCT">
+		INSERT INTO tb_dt_addressing_acct(
+			CUS_ID,			PROXY_ID,		PROXY_ID_TP,									
+			ACCT_NUM,		ACCT_TP,		ACCT_CUR,				
+			ACCT_DEF,		CLR_CD,			SRVC_TP,
+			LSTUP_JNL	
+		)
+		VALUES (
+			#{jbAdrs.CusId, jdbcType=VARCHAR},		#{jbAdrs.ProxyId, jdbcType=VARCHAR},		#{jbAdrs.ProxyIdTp, jdbcType=VARCHAR},	
+			#{jbAdrs.AcctNum, jdbcType=VARCHAR},	#{jbAdrs.AcctTp, jdbcType=VARCHAR},			#{jbAdrs.AcctCur, jdbcType=VARCHAR},			  	
+			#{jbAdrs.AcctDef, jdbcType=VARCHAR},	#{jbAdrs.ClrCd, jdbcType=VARCHAR},			#{jbAdrs.SrvcTp, jdbcType=VARCHAR},
+			#{jbAdrs.LstUpJnl, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY 
+		UPDATE
+			ACCT_TP=#{jbAdrs.AcctTp, jdbcType=VARCHAR},
+			ACCT_CUR=#{jbAdrs.AcctCur, jdbcType=VARCHAR},
+			ACCT_DEF=#{jbAdrs.AcctDef, jdbcType=VARCHAR},
+			CLR_CD=#{jbAdrs.ClrCd, jdbcType=VARCHAR},
+			SRVC_TP=#{jbAdrs.SrvcTp, jdbcType=VARCHAR},
+			LSTUP_JNL=#{jbAdrs.LstUpJnl, jdbcType=VARCHAR}
+	</sql>
+	
+	<delete id="DETELE_TB_DT_ADDRESSING_ACCT">
+		<include refid="DELETE_ADDRESSING_ACCT"></include>
+	</delete>
+	<sql id="DELETE_ADDRESSING_ACCT">
+		DELETE FROM
+			tb_dt_addressing_acct
+		WHERE 
+			PROXY_ID_TP = #{jbAdrs.ProxyIdTp, jdbcType=VARCHAR}
+		AND
+			CUS_ID = #{jbAdrs.CusId, jdbcType=VARCHAR}
+		AND
+			PROXY_ID = #{jbAdrs.ProxyId, jdbcType=VARCHAR}
+	</sql>
+	
+	<select id="inqueryAdrsAcctById" resultType="com.forms.ffp.persistents.bean.addressing.FFPJbAddressing">
+		SELECT
+			*
+		FROM
+			tb_dt_addressing_acct
+		WHERE
+			CUS_ID = #{0}
+		AND
+			PROXY_ID_TP=#{1}
+	</select>
+	<!-- about table tb_dt_addressing_acct   END -->
+	
+	<!-- about table TB_DT_ADDRESSING   START -->
+	<insert id="INSERT_UPDATE_TB_DT_ADDRESSING">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100.INSERT_UPDATE_ADDRESSING"/>
+	</insert>
+	
+	<delete id="DETELE_TB_DT_ADDRESSING">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100.DETELE_ADDRESSING"/>
+	</delete>
+	<!-- about table TB_DT_ADDRESSING   END -->
+	
+</mapper>

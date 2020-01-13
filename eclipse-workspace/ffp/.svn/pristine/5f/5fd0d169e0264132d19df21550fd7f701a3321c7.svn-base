@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.beneform4j.webapp.portal.password.dao.IPasswordDao">
+
+	<select id="dFindUserById" resultType="com.forms.beneform4j.webapp.systemmanage.user.bean.UserInfo">
+		select user_id, user_name, nick_name, user_pwd, user_status, org_id, cert_type, 
+			   cert_no, mobile_phone, telephone, email, limit_ip, online_session_num, 
+			   lock_flag, lock_date, lock_time, login_num, last_login_ip, last_login_date, 
+			   last_login_time, inst_date, inst_time, inst_oper, modi_date, modi_time, modi_oper, 
+			   modi_pwd_date, modi_pwd_time from {{BF}}_user
+		<where>
+			<if test="null != userId and '' != userId">
+				and user_id = #{userId, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	
+	<update id="dUpdateUserPassword">
+		update {{BF}}_user set 
+			user_pwd = #{userPwd, jdbcType=VARCHAR},
+			modi_pwd_date = #{modiPwdDate, jdbcType=VARCHAR},
+			modi_pwd_time = #{modiPwdTime, jdbcType=VARCHAR}
+		 where user_id=#{userId, jdbcType=VARCHAR}
+	</update>
+
+</mapper>

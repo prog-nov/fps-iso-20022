@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="549" key="ExportRemoteFolderDialog.location.x"/>
+	<item value="86" key="DifferencesDialog.location.y"/>
+	<item value="185" key="ExportRemoteFolderDialog.location.y"/>
+	<item value="77" key="CommitDialog.location.y"/>
+	<item value="25" key="CommitDialog.location.x"/>
+	<item value="194" key="HistoryTableProvider.SVNHistoryPage.作者"/>
+	<item value="500" key="CommitDialog.weights.0"/>
+	<item value="483" key="HistoryTableProvider.SVNHistoryPage.注释"/>
+	<item value="500" key="CommitDialog.weights.1"/>
+	<item value="442" key="CommitDialog.size.y"/>
+	<item value="1331" key="CommitDialog.size.x"/>
+	<item value="723" key="DifferencesDialog.size.x"/>
+	<item value="242" key="HistoryTableProvider.SVNHistoryPage.日期"/>
+	<item value="417" key="DifferencesDialog.size.y"/>
+	<item value="269" key="ExportRemoteFolderDialog.size.x"/>
+	<item value="" key="DirectorySelectionPage.lastParent_https://172.21.21.198/svn/myffp"/>
+	<item value="269" key="ExportRemoteFolderDialog.size.y"/>
+	<item value="https://172.21.21.198/svn/myffp" key="RepositorySelectionPage.lastRepository"/>
+	<item value="97" key="HistoryTableProvider.SVNHistoryPage.修订"/>
+	<item value="322" key="DifferencesDialog.location.x"/>
+	<section name="CommitWizard">
+		<item value="500" key="VWeight2"/>
+		<item value="500" key="VWeight1"/>
+		<item value="false" key="ShowCompare"/>
+	</section>
+	<section name="NewLocationWizard">
+	</section>
+</section>

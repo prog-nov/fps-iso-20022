@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.addressing.FFPIDao_Addressing_Acct">
+	
+	<sql id="INSERT_UPDATE_TB_DT_ADDRESSING_ACCT">
+		INSERT INTO TB_DT_ADDRESSING_ACCT(
+			CUS_ID,			PROXY_ID,		RPOXY_ID_TP,									
+			ACCT_NUM,		ACCT_TP,		ACCT_CUR,				
+			ACCT_DEF,		CLR_CD,			LSTUP_JNL	
+		)
+		VALUES (
+			#{jbAdrs.CusId, jdbcType=VARCHAR},		#{jbAdrs.ProxyId, jdbcType=VARCHAR},		#{jbAdrs.ProxyIdTp, jdbcType=VARCHAR},	
+			#{jbAdrs.AcctNum, jdbcType=VARCHAR},	#{jbAdrs.AcctTp, jdbcType=VARCHAR},			#{jbAdrs.AcctCur, jdbcType=VARCHAR},			  	
+			#{jbAdrs.AcctDef, jdbcType=VARCHAR},	#{jbAdrs.ClrCd, jdbcType=VARCHAR},			#{txJnl.jnlNo, jdbcType=VARCHAR}
+		)
+		ON DUPLICATE KEY 
+		UPDATE 
+			ACCT_TP=#{jbAdrs.AcctTp, jdbcType=VARCHAR},
+			ACCT_CUR=#{jbAdrs.AcctCur, jdbcType=VARCHAR},
+			ACCT_DEF=#{jbAdrs.AcctDef, jdbcType=VARCHAR},
+			CLR_CD=#{jbAdrs.ClrCd, jdbcType=VARCHAR},
+			LSTUP_JNL=#{txJnl.jnlNo, jdbcType=VARCHAR}
+	</sql>
+	
+	<sql id="UPDATE_TB_DT_ADRESSING">
+		UPDATE 
+			tb_dt_addressing_acct
+		SET 
+			CUS_ID=#{CusId, jdbcType=VARCHAR},		
+			PROXY_ID=#{ProxyId, jdbcType=VARCHAR},	
+			RPOXY_ID_TP=#{ProxyIdTp, jdbcType=VARCHAR},		
+			ACCT_NUM=#{AcctNum, jdbcType=VARCHAR},		
+			ACCT_TP=#{AcctTp, jdbcType=VARCHAR},		
+			ACCT_CUR=#{AcctCur, jdbcType=VARCHAR},  	
+			ACCT_DEF=#{AcctDef, jdbcType=VARCHAR},	
+			CLR_CD=#{ClrCd, jdbcType=VARCHAR}, 	
+			LSTUP_JNL=#{txJnl.jnlNo, jdbcType=VARCHAR}
+		WHERE
+			CUS_ID=#{CusId, jdbcType=VARCHAR}
+	</sql>
+	
+	<insert id="INSERT_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	<insert id="INSERT_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERT_TB_TX_A100DAT">
+		<include refid="com.forms.ffp.persistents.dao.addressing.FFPIDao_A100.INSERT_A100DAT"></include>
+	</insert>
+	
+	<delete id="DETELE_TB_DT_ADDRESSING_ACCT">
+		<include refid="DELETE_ADDRESSING_ACCT"></include>
+	</delete>
+	
+	<sql id="DELETE_ADDRESSING_ACCT">
+		DELETE FROM
+			tb_dt_addressing_acct
+		WHERE 
+			PROXY_ID = #{jbAdrs.ProxyId, jdbcType=VARCHAR}
+		AND
+			RPOXY_ID_TP = #{jbAdrs.ProxyIdTp, jdbcType=VARCHAR}
+		AND
+			CLR_CD = #{jbAdrs.ClrCd, jdbcType=VARCHAR}
+		AND
+			CUS_ID = #{jbAdrs.CusId, jdbcType=VARCHAR}
+	</sql>
+	
+	<delete id="dDelete" parameterType="com.forms.ffp.persistents.bean.addressing.FFPJbAddressing">
+		DELETE FROM
+			tb_dt_addressing_acct
+		WHERE 
+			PROXY_ID = #{ProxyId, jdbcType=VARCHAR}
+		AND
+			RPOXY_ID_TP = #{ProxyIdTp, jdbcType=VARCHAR}
+		AND
+			CUS_ID = #{CusId, jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="dInsert">
+		<include refid="INSERT_UPDATE_TB_DT_ADDRESSING_ACCT"/>
+	</insert>
+	
+</mapper>

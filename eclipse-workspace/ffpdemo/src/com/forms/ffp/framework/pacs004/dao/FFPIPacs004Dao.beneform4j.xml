@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.framework.pacs004.dao.FFPIPacs004Dao">
+<!-- 更新交易状态 -->
+	  <update id="tbMsgJnlFromICLACK" >
+    update TB_MSG_JNL
+    set MSG_TRANS_STATUS = #{msgTransStatus,jdbcType=VARCHAR}
+    where END_TO_END_ID = #{endToEndId,jdbcType=VARCHAR} 
+    AND MSG_TRAN_ID = #{msgTranId,jdbcType=VARCHAR}
+  </update>
+	<insert id="tbMsgJnlActionFromICLACK">
+		INSERT INTO TB_MSG_JNL_ACTION (
+		MSG_TRAN_ID ,
+		MSG_ID,
+		ACTION_TYPE,
+		END_TO_END_ID,
+		ACTION_TRANS_STATUS
+		)
+		VALUES (
+		#{msgJnlAction.msgTranId, jdbcType=VARCHAR},
+		#{msgJnlAction.msgId,jdbcType=VARCHAR},
+		#{msgJnlAction.actionType, jdbcType=VARCHAR},
+		#{msgJnlAction.endToEndId, jdbcType=VARCHAR},
+		#{msgJnlAction.actionTransStatus, jdbcType=VARCHAR}
+		)
+	</insert>
+	<insert id="tbMsgDataFromICLACK">
+		INSERT INTO TB_MSG_DATA (
+		MSG_ID,
+		MSG_CONTENT
+		)
+		VALUES (
+		#{msgTranId, jdbcType=VARCHAR},
+		#{msgReason, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 更新formor报文状态 -->
+	  <update id="UTbMsgJnlActionFromICLACK" >
+    update TB_MSG_JNL_ACTION
+    set ACTION_TRANS_STATUS = #{actionTransStatus,jdbcType=VARCHAR}
+    where MSG_ID = #{msgId,jdbcType=VARCHAR}
+  </update>
+  	<!-- 记录每一次发送的报文 -->
+	<insert id="TbMsgJnlActionToParACK">
+		INSERT INTO TB_MSG_JNL_ACTION (
+		MSG_TRAN_ID ,
+		MSG_ID,
+		ACTION_TYPE,
+		END_TO_END_ID,
+		ACTION_TRANS_STATUS
+		)
+		VALUES (
+		#{msgTranId, jdbcType=VARCHAR},
+		#{OMsgId,jdbcType=VARCHAR},
+		#{ActionType, jdbcType=VARCHAR},
+		#{endToEndId, jdbcType=VARCHAR},
+		#{OActionTransStatus, jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 记录报文流水号 -->
+	<insert id="tbMsgDataToParACK">
+		INSERT INTO TB_MSG_DATA (
+		MSG_ID,
+		MSG_CONTENT
+		)
+		VALUES (
+		#{OMsgId, jdbcType=VARCHAR},
+		#{msgContent, jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 更新所有报文状态 -->
+	  <update id="confToParACK" >
+    update TB_MSG_JNL_ACTION
+    set ACTION_TRANS_STATUS = #{msgTransStatus,jdbcType=VARCHAR}
+    where MSG_TRAN_ID = #{msgTranId,jdbcType=VARCHAR}
+  </update>
+</mapper>

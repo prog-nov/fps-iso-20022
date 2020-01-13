@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.forms.ffp.persistents.dao.payment.returnrefund.FFPIDao_P300">
+
+	<!-- 新增交易开始 -->
+	<!-- <insert id="INSERT_UPDATE_TB_TX_JNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert> -->
+	
+	<insert id="INSERT_P300_LIST_TXJNLACTION">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnlAction.INSERT_UPDATE_LIST_TXJNLACTION"></include>
+	</insert>
+	
+	<insert id="INSERTLIST_TB_TX_P300DAT">
+		INSERT INTO TB_TX_P300DAT (
+			JNL_NO,						RETURN_ID,
+			ORGNL_INSTR_ID,				ORGNL_ENDTOEND_ID,			ORGNL_TX_ID,
+			ORGNL_CLRSYS_REF,			RETURN_SETTLEMENT_CUR,		RETURN_SETTLEMENT_AMT,
+			RETURN_SETTLEMENT_DATE,		RETURN_INSTRUCTED_CUR,		RETURN_INSTRUCTED_AMT,
+			RETURN_CHRGBR,				RETURN_CHG_CUR,				RETURN_CHG_AMT,
+			RETURN_CHG_AGT_ID,			RETURN_CHG_AGT_BIC,			
+			RETURN_CODE,				RETURN_REASON,
+			ORIG_SETTLEMENT_AMT,		ORIG_SETTLEMENT_CUR,		ORIG_SETTLEMENT_DATE,
+			ORIG_CATEGORY_PURPOSE,		ORIG_MANDATE_INFO,			ORIG_REM_INFO,
+			ORIG_DEBTOR_NAME,			ORIG_DEBTOR_ORGID_ANYBIC,	ORIG_DEBTOR_ORGID_OTHRID,
+			ORIG_DEBTOR_ORGID_OTHRID_SCHMENM,	ORIG_DEBTOR_ORGID_OTHR_ISSR,	ORIG_DEBTOR_PRVTID_OTHRID,
+			ORIG_DEBTOR_PRVTID_OTHRID_SCHMENM,	ORIG_DEBTOR_PRVTID_OTHR_ISSR,	ORIG_DEBTOR_PHNO,
+			ORIG_DEBTOR_EMADDR,
+			ORIG_DEBTOR_ACCTNO,			ORIG_DEBTOR_ACCTNO_TYPE,
+			ORIG_DEBTOR_AGT_ID,			ORIG_DEBTOR_AGT_BIC,
+			ORIG_CREDITOR_NAME,			ORIG_CREDITOR_ORGID_ANYBIC,	ORIG_CREDITOR_ORGID_OTHRID,
+			ORIG_CREDITOR_ORGID_OTHRID_SCHMENM,		ORIG_CREDITOR_ORGID_OTHR_ISSR,	ORIG_CREDITOR_PRVTID_OTHRID,
+			ORIG_CREDITOR_PRVTID_OTHRID_SCHMENM,	ORIG_CREDITOR_PRVTID_OTHR_ISSR,	ORIG_CREDITOR_PHNO,
+			ORIG_CREDITOR_EMADDR,
+			ORIG_CREDITOR_ACCTNO,		ORIG_CREDITOR_ACCTNO_TYPE,
+			ORIG_CREDITOR_AGT_ID,		ORIG_CREDITOR_AGT_BIC
+		) VALUES 
+	    (
+	    	#{txJnl.jnlNo, jdbcType=VARCHAR},	 				#{returnId, jdbcType=VARCHAR},
+			#{OrgnlInstrId, jdbcType=VARCHAR},					#{OrgnlEndToEndId, jdbcType=VARCHAR},			#{OrgnlTxId, jdbcType=DATE},
+			#{OrgnlClrSysRef, jdbcType=VARCHAR},				#{retIntSetCur, jdbcType=VARCHAR},				#{retIntSetAmt, jdbcType=VARCHAR},
+			#{settlementDate, jdbcType=DATE},					#{retInsCur, jdbcType=TIMESTAMP},				#{retInsAmt,jdbcType=VARCHAR},
+			#{ChrgBr, jdbcType=VARCHAR},						#{chargersCurrency,jdbcType=VARCHAR}, 			#{chargersAmount, jdbcType=VARCHAR},
+			#{chgAgtID, jdbcType=VARCHAR},						#{chgAgtBIC, jdbcType=VARCHAR},					
+			#{reasonCode, jdbcType=VARCHAR},					#{additionalInformation,jdbcType=VARCHAR},
+			#{OrgnlInterbankSettAmt, jdbcType=VARCHAR},			#{OrgnlInterbankSettCcy,jdbcType=VARCHAR}, 		#{OrgnlInterbankSettDate, jdbcType=VARCHAR},
+			#{OrgnlCatgyPurp, jdbcType=VARCHAR},				#{OrgnlMandateInfo,jdbcType=VARCHAR}, 			#{OrgnlRemtInfo, jdbcType=VARCHAR},
+			
+			#{OrgnlDbtrNm, jdbcType=VARCHAR},					#{OrgnlDbtrOrgIdAnyBIC, jdbcType=VARCHAR},		#{OrgnlDbtrOrgIdOthrId, jdbcType=DATE},
+			#{OrgnlDbtrOrgIdOthrIdSchmeNm, jdbcType=VARCHAR},	#{OrgnlDbtrOrgIdOthrIssr, jdbcType=VARCHAR},	#{OrgnlDbtrPrvtIdOthrId, jdbcType=VARCHAR},
+			#{OrgnlDbtrPrvtIdOthrIdSchmeNm, jdbcType=DATE},		#{OrgnlDbtrPrvtIdOthrIssr, jdbcType=TIMESTAMP},	#{OrgnlDbtrPhNo,jdbcType=VARCHAR},
+			#{OrgnlDbtrEmAddr, jdbcType=VARCHAR},
+			#{OrgnlDbtrAcctNo,jdbcType=VARCHAR}, 				#{OrgnlDbtrAcctNoTp, jdbcType=VARCHAR},
+			#{OrgnlDbtrAgtId, jdbcType=VARCHAR},				#{OrgnlDbtrAgtBIC,jdbcType=VARCHAR},
+			#{OrgnlCdtrNm, jdbcType=VARCHAR},					#{OrgnlCdtrOrgIdAnyBIC, jdbcType=VARCHAR},		#{OrgnlCdtrOrgIdOthrId, jdbcType=DATE},
+			#{OrgnlCdtrOrgIdOthrIdSchmeNm, jdbcType=VARCHAR},	#{OrgnlCdtrOrgIdOthrIssr, jdbcType=VARCHAR},	#{OrgnlCdtrPrvtIdOthrId, jdbcType=VARCHAR},
+			#{OrgnlCdtrPrvtIdOthrIdSchmeNm, jdbcType=DATE},		#{OrgnlCdtrPrvtIdOthrIssr, jdbcType=TIMESTAMP},	#{OrgnlCdtrPhNo,jdbcType=VARCHAR},
+			#{OrgnlCdtrEmAddr, jdbcType=VARCHAR},
+			#{OrgnlCdtrAcctNo, jdbcType=VARCHAR},				#{OrgnlCdtrAcctNoTp,jdbcType=VARCHAR}, 			
+			#{OrgnlCdtrAgtId, jdbcType=VARCHAR},				#{OrgnlCdtrAgtBIC, jdbcType=VARCHAR}
+		)
+	</insert>
+	<!-- 更新交易状态结束 -->
+	
+	<select id="inquiryP300ByJnlNo" resultType="com.forms.ffp.persistents.bean.payment.returnrefund.FFPJbP300">
+		SELECT * FROM TB_TX_P300DAT A
+		WHERE A.JNL_NO = #{jnlNo, jdbcType=VARCHAR}
+	</select>
+	
+	
+	<insert id="P300insertTXJNL">
+		<include refid="com.forms.ffp.persistents.dao.FFPIDao_TxJnl.INSERT_TXJNL"></include>
+	</insert>
+	
+	
+	<update id="updateTxjnl">
+		UPDATE TB_TX_JNL T
+		SET
+			TX_STAT=#{txStat, jdbcType=VARCHAR},
+			TX_REJ_CODE=#{txRejCode, jdbcType=VARCHAR},
+			TX_REJ_REASON=#{txRejReason, jdbcType=VARCHAR},
+			JNL_REF=#{jnlRef, jdbcType=VARCHAR},
+			LAST_UPDATE_TS=#{lastUpdateTs, jdbcType=TIMESTAMP}
+		WHERE T.JNL_NO = #{jnlNo}
+	</update>
+	
+</mapper>
